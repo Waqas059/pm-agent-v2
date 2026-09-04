@@ -2,7 +2,7 @@
 
 PM Agent is an AI product workspace designed to help Product Managers turn customer evidence, product context, and team decisions into clear, useful artifacts.
 
-T01 established the production-ready web foundation and a clean product shell. T02 added the Supabase client foundation, T03 added the version-controlled core schema migration, T04 added authorization and Row Level Security, T05 added the Product Workspace UI, T06 added Product Context Management, T07 added File Upload and Document Handling, T08 added Evidence Retrieval and the Citation Model, T09 added the OpenAI Responses API foundation, T10 added the generic workflow orchestration and structured-output boundary, and T11 adds Discover & Synthesize.
+T01 established the production-ready web foundation and a clean product shell. T02 added the Supabase client foundation, T03 added the version-controlled core schema migration, T04 added authorization and Row Level Security, T05 added the Product Workspace UI, T06 added Product Context Management, T07 added File Upload and Document Handling, T08 added Evidence Retrieval and the Citation Model, T09 added the OpenAI Responses API foundation, T10 added the generic workflow orchestration and structured-output boundary, T11–T23 added the connected PM workspace capabilities, and the latest stage adds LangChain Core orchestration around the OpenAI Responses runtime.
 
 ## Prerequisites
 
@@ -63,10 +63,12 @@ Use `npm run test:watch` for an interactive test session.
 
 - `src/app/` — Next.js App Router routes and global styles
 - `src/lib/supabase/` — browser/server clients and environment validation
+- `src/lib/langchain/` — shared LangChain Core orchestration pipeline and tests
+- `src/lib/openai/` — server-only OpenAI Responses runtime and structured-output boundary
 - `docs/PM_AGENT_V2_MASTER_SPEC.md` — authoritative product and technical source of truth
 - `AGENTS.md` — persistent instructions for Codex and future contributors
 - `vitest.config.mts` — test runner configuration
 
-## Scope boundary
+## Orchestration boundary
 
-T11 adds only the citation-grounded Discover & Synthesize workflow and reviewable transient result UI on top of T10. Document extraction, semantic retrieval, live market research, tool calling, Define, Align, chat UI, persistence, artifact history, and export are deliberately not included yet.
+LangChain Core provides the reusable `RunnableSequence` validation and invocation pipeline for Discover, Define, and Align. The final model call remains the official OpenAI Responses API with strict JSON Schema output, `store: false`, and server-only credentials. LangChain does not expose keys to the browser and does not add an autonomous agent swarm or unsupported provider routing.

@@ -9,6 +9,7 @@ export type IntegrationDefinition = {
 
 export const integrationDefinitions: IntegrationDefinition[] = [
   { name: "Supabase", purpose: "Authentication, workspace records, and private files", status: "connected", access: "server" },
+  { name: "LangChain Core", purpose: "Validated orchestration across the connected PM workflows", status: "connected", access: "server" },
   { name: "OpenAI Responses", purpose: "Grounded PM workflow generation", status: "connected", access: "server" },
   { name: "GitHub", purpose: "Optional source-control context", status: "not_connected", access: "read_only" },
   { name: "Messaging and project tools", purpose: "External delivery and task creation", status: "not_enabled", access: "none" },
