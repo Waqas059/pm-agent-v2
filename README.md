@@ -28,7 +28,7 @@ T01 does not require database, authentication, or AI-provider credentials.
 
 T02 requires only the Supabase project URL and publishable key. In the Supabase Dashboard, open the project’s **Connect** panel and copy those values into `.env.local`. Never expose a secret or service-role key in a `NEXT_PUBLIC_*` variable.
 
-T09 and T10 require an OpenAI API key only on the server. Add `OPENAI_API_KEY` and a supported `OPENAI_MODEL` to `.env.local`; never expose the key through a `NEXT_PUBLIC_*` variable or browser code.
+T09 and T10 require an OpenAI API key only on the server. Add `OPENAI_API_KEY` and a supported `OPENAI_MODEL` to `.env.local`; never expose the key through a `NEXT_PUBLIC_*` variable or browser code. Document extraction does not require an AI provider.
 
 ## Database migrations
 
@@ -39,6 +39,8 @@ supabase db push
 ```
 
 T03 creates the `workspaces`, `workspace_members`, and `context_items` tables. T04 enables RLS and grants authenticated users only the operations allowed by the workspace role policies. Anonymous requests have no access path. Do not use these tables from a deployed client until the app has a real authenticated session.
+
+The document extraction migration adds workspace-scoped `document_extractions` records. PDF, DOCX, Markdown, text, CSV, and JSON files can be extracted into searchable text with line locators. Legacy binary `.doc` files must be converted to `.docx` or PDF first. See [`docs/DOCUMENT_EXTRACTION.md`](docs/DOCUMENT_EXTRACTION.md).
 
 ## Local development
 
@@ -64,6 +66,7 @@ Use `npm run test:watch` for an interactive test session.
 - `src/app/` — Next.js App Router routes and global styles
 - `src/lib/supabase/` — browser/server clients and environment validation
 - `src/lib/langchain/` — shared LangChain Core orchestration pipeline and tests
+- `src/lib/documents/` — server-only document extraction and source locators
 - `src/lib/openai/` — server-only OpenAI Responses runtime and structured-output boundary
 - `docs/PM_AGENT_V2_MASTER_SPEC.md` — authoritative product and technical source of truth
 - `AGENTS.md` — persistent instructions for Codex and future contributors

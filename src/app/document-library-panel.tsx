@@ -50,6 +50,7 @@ export default function DocumentLibraryPanel() {
   const [message, setMessage] = useState("");
   const [messageTone, setMessageTone] = useState<"success" | "error">("success");
   const [isUploading, setIsUploading] = useState(false);
+  const [extractionStatus, setExtractionStatus] = useState<Record<string, "extracting" | "ready" | "error">>({});
 
   const loadDocuments = useCallback(async () => {
     setStatus("loading");
@@ -87,6 +88,16 @@ export default function DocumentLibraryPanel() {
 
       if (documentsError) throw documentsError;
       setDocuments(documentRows ?? []);
+
+      if (documentRows?.length) {
+        const { data: extractionRows } = await supabase
+          .from("document_extractions")
+          .select("document_id")
+          .in("document_id", documentRows.map((document) => document.id));
+        if (extractionRows) {
+          setExtractionStatus(Object.fromEntries(extractionRows.map((row) => [row.document_id, "ready"])));
+        }
+      }
       setStatus("ready");
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Unable to load documents.";
@@ -112,6 +123,27 @@ export default function DocumentLibraryPanel() {
     () => `${documents.length} ${documents.length === 1 ? "file" : "files"}`,
     [documents.length],
   );
+
+  async function extractDocument(document: DocumentRecord): Promise<boolean> {
+    setExtractionStatus((current) => ({ ...current, [document.id]: "extracting" }));
+    setMessage("");
+
+    try {
+      const response = await fetch(`/api/documents/${document.id}/extract`, { method: "POST" });
+      const payload = (await response.json()) as { error?: string; extraction?: { characters: number; locatorCount: number } };
+      if (!response.ok || !payload.extraction) throw new Error(payload.error || "Unable to extract this document.");
+
+      setExtractionStatus((current) => ({ ...current, [document.id]: "ready" }));
+      setMessage(`${document.original_name} is ready for evidence search (${payload.extraction.locatorCount} source lines indexed).`);
+      setMessageTone("success");
+      return true;
+    } catch (error) {
+      setExtractionStatus((current) => ({ ...current, [document.id]: "error" }));
+      setMessage(error instanceof Error ? error.message : "Unable to extract this document.");
+      setMessageTone("error");
+      return false;
+    }
+  }
 
   async function handleFileChange(event: ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
@@ -165,8 +197,11 @@ export default function DocumentLibraryPanel() {
       }
 
       setDocuments((current) => [document, ...current]);
-      setMessage(`${file.name} uploaded successfully.`);
-      setMessageTone("success");
+      const extracted = await extractDocument(document);
+      if (!extracted) {
+        setMessage(`${file.name} uploaded successfully, but text extraction needs attention.`);
+        setMessageTone("error");
+      }
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "Unable to upload this file.");
       setMessageTone("error");
@@ -238,7 +273,7 @@ export default function DocumentLibraryPanel() {
           </div>
           <p className="text-xs font-semibold text-[#8d98a9]">{documentCountLabel}</p>
         </div>
-        <p className="mt-4 flex items-start gap-2 text-xs leading-5 text-[#9aa4b3]"><span className="mt-0.5 text-[#53a977]">✓</span>Uploaded files are stored securely. Extraction and evidence indexing will be added in later tasks.</p>
+        <p className="mt-4 flex items-start gap-2 text-xs leading-5 text-[#9aa4b3]"><span className="mt-0.5 text-[#53a977]">✓</span>Text extraction runs without an AI call for PDF, DOCX, Markdown, text, CSV, and JSON. Legacy .doc files should be saved as .docx or PDF first.</p>
       </div>
 
       {documents.length === 0 ? (
@@ -259,6 +294,9 @@ export default function DocumentLibraryPanel() {
                 </div>
               </div>
               <div className="flex items-center gap-4 pl-[52px] text-xs font-semibold text-[#8d98a9] sm:pl-0">
+                <button type="button" onClick={() => void extractDocument(document)} disabled={extractionStatus[document.id] === "extracting"} className="hover:text-[#5269d8] disabled:cursor-wait disabled:opacity-60">
+                  {extractionStatus[document.id] === "extracting" ? "Extracting…" : extractionStatus[document.id] === "ready" ? "Text ready" : "Extract text"}
+                </button>
                 <button type="button" onClick={() => void downloadDocument(document)} className="hover:text-[#5269d8]">Download</button>
                 <button type="button" onClick={() => void deleteDocument(document)} className="hover:text-[#b4534b]">Delete</button>
               </div>

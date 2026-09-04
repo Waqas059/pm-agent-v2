@@ -141,6 +141,45 @@ export type Database = {
         };
         Relationships: [];
       };
+      document_extractions: {
+        Row: {
+          id: string;
+          document_id: string;
+          workspace_id: string;
+          extracted_text: string;
+          locators: Json;
+          extractor: string;
+          page_count: number | null;
+          created_by: string;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          document_id: string;
+          workspace_id: string;
+          extracted_text: string;
+          locators?: Json;
+          extractor: string;
+          page_count?: number | null;
+          created_by: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          document_id?: string;
+          workspace_id?: string;
+          extracted_text?: string;
+          locators?: Json;
+          extractor?: string;
+          page_count?: number | null;
+          created_by?: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
       evidence_items: {
         Row: {
           id: string;
