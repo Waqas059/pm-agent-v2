@@ -70,3 +70,32 @@ export async function updateWorkflowStep(
   if (error) throw error;
   return data;
 }
+
+export async function startWorkflowRun(
+  supabase: WorkflowDatabaseClient,
+  input: {
+    workspaceId: string;
+    workflowName: WorkflowName;
+    stepKey: WorkflowStepKey;
+    runInput: Database["public"]["Tables"]["workflow_runs"]["Insert"]["input"];
+    userId: string;
+  },
+) {
+  const run = await createWorkflowRun(supabase, {
+    workspace_id: input.workspaceId,
+    workflow_name: input.workflowName,
+    status: "running",
+    input: input.runInput,
+    created_by: input.userId,
+  });
+  const step = await createWorkflowStep(supabase, {
+    workflow_run_id: run.id,
+    workspace_id: input.workspaceId,
+    step_key: input.stepKey,
+    step_order: 1,
+    status: "running",
+    input: input.runInput,
+    created_by: input.userId,
+  });
+  return { run, step };
+}

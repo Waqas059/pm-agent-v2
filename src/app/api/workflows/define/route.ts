@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { runDefineWorkflow } from "@/lib/workflows/define";
+import { startWorkflowRun, updateWorkflowRun, updateWorkflowStep } from "@/lib/workflows/runs";
 import { createClient } from "@/lib/supabase/server";
 
 const MAX_OPPORTUNITY_LENGTH = 2_000;
@@ -11,6 +12,8 @@ function errorResponse(message: string, status: number) {
 
 export async function POST(request: Request) {
   let body: unknown;
+  let runId: string | null = null;
+  let stepId: string | null = null;
 
   try {
     body = await request.json();
@@ -72,14 +75,35 @@ export async function POST(request: Request) {
       return errorResponse("Add at least one citation-backed evidence item before running definition.", 422);
     }
 
+    const started = await startWorkflowRun(supabase, {
+      workspaceId: workspace.id,
+      workflowName: "define_specify",
+      stepKey: "define",
+      runInput: { opportunity: opportunityValue.trim() },
+      userId: userData.user.id,
+    });
+    runId = started.run.id;
+    stepId = started.step.id;
     const result = await runDefineWorkflow({
       opportunity: opportunityValue,
       contextItems: contextItems ?? [],
       evidenceItems,
     });
 
-    return NextResponse.json({ result });
+    const completedAt = new Date().toISOString();
+    await updateWorkflowStep(supabase, stepId, { status: "completed", output: result.output, completed_at: completedAt });
+    await updateWorkflowRun(supabase, runId, { status: "completed", output: result.output, completed_at: completedAt });
+
+    return NextResponse.json({ result: { ...result, id: runId } });
   } catch (error) {
+    if (runId) {
+      const supabase = await createClient().catch(() => null);
+      if (supabase) {
+        const failedAt = new Date().toISOString();
+        if (stepId) await updateWorkflowStep(supabase, stepId, { status: "failed", error_message: "The definition step failed.", completed_at: failedAt }).catch(() => undefined);
+        await updateWorkflowRun(supabase, runId, { status: "failed", error_message: "The definition workflow failed.", completed_at: failedAt }).catch(() => undefined);
+      }
+    }
     const message = error instanceof Error ? error.message : "The definition workflow could not be completed.";
     if (message.startsWith("Supabase is not configured")) {
       return errorResponse("Connect Supabase before running a definition workflow.", 503);

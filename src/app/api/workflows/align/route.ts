@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 
 import { runAlignWorkflow } from "@/lib/workflows/align";
 import { communicationFormats, type CommunicationFormat } from "@/lib/workflows/align-contract";
+import { startWorkflowRun, updateWorkflowRun, updateWorkflowStep } from "@/lib/workflows/runs";
 import { createClient } from "@/lib/supabase/server";
 
 const MAX_REQUEST_LENGTH = 2_000;
@@ -9,6 +10,8 @@ function errorResponse(message: string, status: number) { return NextResponse.js
 
 export async function POST(request: Request) {
   let body: unknown;
+  let runId: string | null = null;
+  let stepId: string | null = null;
   try { body = await request.json(); } catch { return errorResponse("Provide a valid JSON request.", 400); }
   if (typeof body !== "object" || body === null || Array.isArray(body)) return errorResponse("A communication request is required.", 400);
   const values = body as Record<string, unknown>;
@@ -38,9 +41,29 @@ export async function POST(request: Request) {
       return citationKey ? [{ ...item, citationKey }] : [];
     });
     if (evidenceItems.length === 0) return errorResponse("Add at least one citation-backed evidence item before running communication.", 422);
+    const started = await startWorkflowRun(supabase, {
+      workspaceId: workspace.id,
+      workflowName: "align_communicate",
+      stepKey: "align",
+      runInput: { format: format as CommunicationFormat, request: requestValue.trim() },
+      userId: userData.user.id,
+    });
+    runId = started.run.id;
+    stepId = started.step.id;
     const result = await runAlignWorkflow({ format: format as CommunicationFormat, request: requestValue, contextItems: contextItems ?? [], evidenceItems });
-    return NextResponse.json({ result });
+    const completedAt = new Date().toISOString();
+    await updateWorkflowStep(supabase, stepId, { status: "completed", output: result.output, completed_at: completedAt });
+    await updateWorkflowRun(supabase, runId, { status: "completed", output: result.output, completed_at: completedAt });
+    return NextResponse.json({ result: { ...result, id: runId } });
   } catch (error) {
+    if (runId) {
+      const supabase = await createClient().catch(() => null);
+      if (supabase) {
+        const failedAt = new Date().toISOString();
+        if (stepId) await updateWorkflowStep(supabase, stepId, { status: "failed", error_message: "The communication step failed.", completed_at: failedAt }).catch(() => undefined);
+        await updateWorkflowRun(supabase, runId, { status: "failed", error_message: "The communication workflow failed.", completed_at: failedAt }).catch(() => undefined);
+      }
+    }
     const message = error instanceof Error ? error.message : "The communication workflow could not be completed.";
     if (message.startsWith("Supabase is not configured")) return errorResponse("Connect Supabase before running a communication workflow.", 503);
     if (message.startsWith("OpenAI is not configured")) return errorResponse("Configure the server-side OpenAI settings before running a communication workflow.", 503);

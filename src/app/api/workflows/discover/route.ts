@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { runDiscoverWorkflow } from "@/lib/workflows/discover";
+import { startWorkflowRun, updateWorkflowRun, updateWorkflowStep } from "@/lib/workflows/runs";
 import { createClient } from "@/lib/supabase/server";
 
 const MAX_QUESTION_LENGTH = 2_000;
@@ -11,6 +12,8 @@ function errorResponse(message: string, status: number) {
 
 export async function POST(request: Request) {
   let body: unknown;
+  let runId: string | null = null;
+  let stepId: string | null = null;
 
   try {
     body = await request.json();
@@ -72,14 +75,35 @@ export async function POST(request: Request) {
       return errorResponse("Add at least one citation-backed evidence item before running discovery.", 422);
     }
 
+    const started = await startWorkflowRun(supabase, {
+      workspaceId: workspace.id,
+      workflowName: "discover_synthesize",
+      stepKey: "discover",
+      runInput: { question: questionValue.trim() },
+      userId: userData.user.id,
+    });
+    runId = started.run.id;
+    stepId = started.step.id;
     const result = await runDiscoverWorkflow({
       question: questionValue,
       contextItems: contextItems ?? [],
       evidenceItems,
     });
 
-    return NextResponse.json({ result });
+    const completedAt = new Date().toISOString();
+    await updateWorkflowStep(supabase, stepId, { status: "completed", output: result.output, completed_at: completedAt });
+    await updateWorkflowRun(supabase, runId, { status: "completed", output: result.output, completed_at: completedAt });
+
+    return NextResponse.json({ result: { ...result, id: runId } });
   } catch (error) {
+    if (runId) {
+      const supabase = await createClient().catch(() => null);
+      if (supabase) {
+        const failedAt = new Date().toISOString();
+        if (stepId) await updateWorkflowStep(supabase, stepId, { status: "failed", error_message: "The discovery step failed.", completed_at: failedAt }).catch(() => undefined);
+        await updateWorkflowRun(supabase, runId, { status: "failed", error_message: "The discovery workflow failed.", completed_at: failedAt }).catch(() => undefined);
+      }
+    }
     const message = error instanceof Error ? error.message : "The discovery workflow could not be completed.";
     if (message.startsWith("Supabase is not configured")) {
       return errorResponse("Connect Supabase before running a discovery workflow.", 503);
