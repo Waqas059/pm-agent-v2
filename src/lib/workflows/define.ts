@@ -1,6 +1,6 @@
 import "server-only";
 
-import { runStructuredWorkflow } from "@/lib/openai/workflows";
+import { runLangChainStructuredWorkflow } from "@/lib/langchain/structured-workflow";
 
 import {
   buildDefineInput,
@@ -22,7 +22,7 @@ export async function runDefineWorkflow({
 }): Promise<{ output: DefineOutput; id: string; model: string; status: string }> {
   const allowedCitationKeys = new Set(evidenceItems.map((item) => item.citationKey));
 
-  return runStructuredWorkflow({
+  return runLangChainStructuredWorkflow({
     name: "define_specify",
     description: "Grounded product definition and specification for a product workspace",
     instructions: [

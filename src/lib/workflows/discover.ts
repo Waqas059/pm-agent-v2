@@ -1,6 +1,6 @@
 import "server-only";
 
-import { runStructuredWorkflow } from "@/lib/openai/workflows";
+import { runLangChainStructuredWorkflow } from "@/lib/langchain/structured-workflow";
 
 import {
   buildDiscoverInput,
@@ -22,7 +22,7 @@ export async function runDiscoverWorkflow({
 }): Promise<{ output: DiscoverOutput; id: string; model: string; status: string }> {
   const allowedCitationKeys = new Set(evidenceItems.map((item) => item.citationKey));
 
-  return runStructuredWorkflow({
+  return runLangChainStructuredWorkflow({
     name: "discover_synthesis",
     description: "Grounded discovery synthesis for a product workspace",
     instructions: [
