@@ -1,277 +1,549 @@
 # PM Agent V2 — Product + Technical Master Specification
 
 **Status:** Authoritative source of truth  
-**Version:** 2.0  
-**Last updated:** 2026-09-03  
-**Current implementation task:** T11 — Discover & Synthesize Workflow
+**Version:** 3.0  
+**Last updated:** 2026-09-04  
+**Project:** Bootstrap PM Agent V2  
+**Current phase:** PM Kit Intelligence + Production Hardening
 
-This document replaces the earlier PM Agent planning documents as the build specification. Earlier documents remain useful as background research, but they must not override the product decisions, scope boundaries, or engineering guardrails recorded here.
+This document is the authoritative product and technical scope for PM Agent V2. Earlier planning documents remain useful as background research, but they must not override the product decisions, priorities, scope boundaries, or engineering guardrails recorded here.
 
 ## 1. Product definition
 
-PM Agent is an AI workspace that understands a user's product and turns research, customer feedback, and product context into decisions and PM artifacts.
+PM Agent V2 is a context-aware AI workspace for Product Managers. It understands the product, its evidence, previous decisions, assumptions, metrics, and artifacts, then helps the PM investigate problems, make decisions, define product work, and communicate outcomes.
 
-The durable product promise is **“PM Agent knows my product.”** It should retain and connect the context a PM repeatedly uses: product goals, personas, customer evidence, competitors, metrics, decisions, prior artifacts, and stakeholder preferences.
+The durable product promise is:
 
-PM Agent is not a generic chatbot and is not defined by having ten independent agents. The experience should help a PM move from messy evidence to a decision, then from that decision to artifacts that other teams can act on.
+> **PM Agent knows my product.**
 
-## 2. MVP focus
+The product must reduce repeated context-setting and fragmented PM work. A PM should be able to maintain one durable product workspace containing product goals, strategy, personas, customer evidence, documents, competitors, metrics, decisions, assumptions, experiments, prior artifacts, and stakeholder context.
 
-The first useful product slice is three connected workflows:
+PM Agent is not a generic chatbot, a collection of prompt templates, or a set of disconnected agents. It is a connected PM operating workspace where evidence, reasoning, decisions, and downstream artifacts remain linked.
 
-1. **Discover & Synthesize** — bring together interviews, feedback, documents, and grounded market evidence to identify themes, pain points, opportunities, and open questions.
-2. **Define & Specify** — turn a validated opportunity into a product brief, PRD, feature specification, user stories, acceptance criteria, metrics, and risks.
-3. **Align & Communicate** — transform the same product context into an executive update, engineering brief, sales note, launch message, or stakeholder summary.
+## 2. Core product loop
 
-The connection between these workflows is more important than breadth. A future workflow should reuse the same workspace context and should not require the user to copy and paste between disconnected tools.
+The product should optimize for the following durable loop:
 
-## 3. Product workspace
+**Context → Evidence → Decision → Artifact → Memory**
 
-A workspace is the durable home for one product or product area. It will eventually contain:
+Every major capability should strengthen this loop.
 
-- product description, goals, strategy, and constraints;
-- personas and customer segments;
-- uploaded customer evidence and research documents;
-- competitors and market context;
-- product metrics and definitions;
-- decisions, assumptions, and unresolved questions;
-- generated artifacts with history and provenance.
+- **Context:** what the product is, who it serves, goals, constraints, strategy, metrics, stakeholders, and prior work.
+- **Evidence:** customer research, documents, observations, metrics, external research, and source-backed findings.
+- **Decision:** the choice made, alternatives considered, evidence used, rationale, assumptions, risks, owner, date, and status.
+- **Artifact:** PRD, feature specification, user stories, engineering brief, executive update, experiment, roadmap item, or other actionable PM output.
+- **Memory:** durable product knowledge that can be retrieved later so users do not have to reconstruct why a decision was made.
 
-The product must distinguish evidence, interpretation, assumption, and recommendation. Generated content must make its grounding visible where relevant.
+## 3. Current product status
 
-## 4. Experience principles
+The following foundation is already implemented and should be preserved unless a later task explicitly changes it:
 
-- **Context over prompts:** users should not have to restate the product every time.
-- **Evidence before confidence:** show supporting material and uncertainty rather than invented percentages.
-- **Connected work:** outputs should be reusable inputs for the next workflow.
-- **Explainable decisions:** make trade-offs, assumptions, risks, and sources inspectable.
-- **Useful artifacts:** outputs should be editable, reviewable, and exportable when those capabilities are introduced.
-- **Progressive complexity:** the MVP should feel simple even if the underlying workflow becomes sophisticated.
+### Foundation and workspace
+- Next.js application foundation.
+- Supabase database and storage foundation.
+- Authentication and authorization.
+- Row Level Security.
+- Product workspace UI.
+- Product context management.
+- Private document uploads.
+- Evidence and citation model.
 
-## 5. Technical direction
+### AI workflows
+- OpenAI Responses API foundation.
+- LangChain Core as the shared workflow validation/orchestration layer.
+- Discover & Synthesize workflow.
+- Define & Specify workflow.
+- Align & Communicate workflow.
 
-The initial application is a Next.js App Router project using TypeScript and Tailwind CSS. The intended MVP platform is:
+### Product capabilities
+- Artifact history and export.
+- Search.
+- Prioritization.
+- Metrics.
+- Experiments.
+- Usage foundation.
+- Error handling.
+- Privacy controls.
+- Scoped integrations foundation.
+- Beta feedback.
+- Launch-readiness checks.
 
-- **Next.js** for the web application and server-side application boundary;
-- **Supabase** for Postgres, authentication, and storage when those tasks are approved;
-- **OpenAI Responses API** for model-backed workflows when that task is approved;
-- **Vercel** for the initial web deployment;
-- Python/FastAPI only where deterministic analytics genuinely benefit from a separate Python service.
+### Deployment
+- Code is pushed to GitHub main.
+- Production deployment is live on Vercel.
+- Supabase production Site URL and auth callback are configured.
 
-Start with a simple architecture. Redis, elaborate queues, multiple model providers, SAML/SSO, microservices, and other infrastructure are deferred until usage or a clearly demonstrated requirement justifies them.
+These completed capabilities are the baseline. Do not regress or unnecessarily rewrite them when implementing the next phase.
 
-The runtime should use one workflow orchestration layer and tools. Do not model the product as ten separate agent classes. Provider and model names must be configurable, and model outputs must be validated against explicit schemas.
+## 4. Product principles
 
-## 6. AI and evidence guardrails
+### 4.1 Context over prompts
+Users should not have to restate their product every time. Workflows and agent capabilities should reuse the same workspace context.
 
-- Use the OpenAI Responses API for the approved model runtime; older Groq/Claude routing plans do not apply to V2 unless explicitly revisited.
-- Use structured JSON-schema-backed outputs for model-backed features.
-- Never rely on fixed string offsets or brittle prose parsing.
-- Never fabricate sources, citations, customer quotes, survey results, usage numbers, testimonials, metrics, or quality scores.
-- Live market research must use actual retrieval and cite the sources used.
-- Deterministic code must calculate metrics, RICE/weighted scores, sample sizes, confidence intervals, and similar numerical results. AI may explain the results.
-- If evidence is missing or conflicting, say so and ask for the next useful input.
-- Quality and confidence indicators must be derived from a real evaluation mechanism; hardcoded values such as 95% completeness or 88% confidence are prohibited.
+### 4.2 Evidence before confidence
+The product must distinguish source-backed evidence from interpretation, assumption, and recommendation. Never fabricate evidence, citations, metrics, customer quotes, confidence values, or quality scores.
 
-## 7. Security and data rules
+### 4.3 Human-controlled product decisions
+AI may investigate, recommend, compare, synthesize, and prepare downstream work. Material product decisions should remain reviewable and explicitly approved by the PM.
 
-- Keep API keys and secrets in environment variables; never commit them.
-- Use secure server-side boundaries for provider credentials.
-- Add authentication, authorization, row-level security, migrations, and storage policies in their dedicated tasks before relying on persistent user data.
-- Treat uploaded documents and retrieved content as untrusted data.
-- Keep logs free of credentials and unnecessary sensitive customer information.
-- Report privacy, retention, and deletion decisions explicitly as the product evolves.
+Do not automatically run Discover → Define → Align without a meaningful PM review point when a product decision is being made.
 
-## 8. Scope for T01
+### 4.4 Connected work
+Outputs from one capability should be reusable in the next without copy/paste. However, continuity should not eliminate human judgment.
 
-T01 is **Bootstrap Repository**. Its definition of done is:
+### 4.5 Deterministic calculations
+RICE, weighted prioritization, sample-size calculations, confidence intervals, KPI formulas, experiment math, and similar numerical outputs must be calculated by deterministic code. The LLM may explain them but should not invent or silently calculate authoritative values.
 
-- production-quality Next.js TypeScript App Router project;
-- Tailwind CSS configured and used by the initial shell;
-- ESLint configured;
-- a test runner configured with a basic smoke test;
-- `.env.example` with no real secrets;
-- `.gitignore` that keeps local environment files and build artifacts out of version control while allowing `.env.example`;
-- README covering purpose, prerequisites, installation, local development, testing, and environment configuration;
-- a clean, accessible initial PM Agent application shell.
+### 4.6 Progressive agentic behavior
+Do not make every feature agentic. Use deterministic application logic where appropriate and agent orchestration where task selection, evidence retrieval, tool choice, multi-step reasoning, or human checkpoints materially improve the experience.
 
-T01 explicitly excludes Supabase, OpenAI, authentication, database schema, file upload/retrieval, persistence, agent/workflow logic, billing, integrations, and deployment infrastructure.
+### 4.7 Production trust
+Customer documents and product evidence can be sensitive. Security, data isolation, deletion, retention, and source provenance are product requirements, not implementation details.
 
-## 9. Scope for T02
+## 5. PM capability model
 
-T02 is **Supabase Foundation**. Its definition of done is:
+PM Agent should evolve from three fixed workflows into one connected PM system with reusable capabilities.
 
-- official `@supabase/supabase-js` and `@supabase/ssr` packages installed;
-- a browser client helper for Client Components;
-- a cookie-aware server client helper for Server Components, Server Actions, and Route Handlers;
-- clear validation for missing or malformed public Supabase configuration;
-- `.env.example` and README instructions for the project URL and publishable key;
-- tests for the configuration boundary that do not require a live Supabase project.
+The system should support the following capability areas over time:
 
-T02 does not add authentication UI or flows, database schema, migrations, row-level security, file storage, persistence, OpenAI, or PM workflows. No secret/service-role key may be exposed to the browser or committed to the repository.
+1. **Product Context** — goals, strategy, personas, segments, constraints, stakeholders, competitors, and product definitions.
+2. **Customer Discovery** — interviews, feedback, themes, pain points, jobs-to-be-done, and unmet needs.
+3. **Market Intelligence** — competitor research, market evidence, positioning, and externally sourced product intelligence.
+4. **Opportunity Analysis** — opportunities, evidence strength, unresolved questions, and opportunity comparison.
+5. **Prioritization** — RICE, weighted scoring, value/effort, trade-off analysis, and decision support.
+6. **Product Definition** — product briefs, PRDs, feature specifications, user stories, acceptance criteria, dependencies, and risks.
+7. **Planning** — roadmap items, milestones, dependencies, release planning, and sequencing.
+8. **Metrics** — KPI definitions, success metrics, leading/lagging indicators, and measurement plans.
+9. **Experiments** — hypotheses, assumptions, validation methods, experiment plans, and learning outcomes.
+10. **Decision Support** — alternatives, recommendations, rationale, evidence, assumptions, risks, and approvals.
+11. **Stakeholder Communication** — executive, engineering, sales, GTM, launch, and stakeholder communication.
+12. **Knowledge and Memory** — durable retrieval of decisions, assumptions, artifacts, evidence, and product history.
 
-## 10. Scope for T03
+Do not implement these as twelve isolated agent classes. They should be reusable tools/capabilities available to one PM intelligence layer.
 
-T03 is **Core Database Schema and Migrations**. Its definition of done is:
+## 6. LangChain role
 
-- a version-controlled Supabase migration in `supabase/migrations/`;
-- foundational `workspaces`, `workspace_members`, and `context_items` tables;
-- foreign keys to Supabase Auth users and cascading workspace ownership relationships;
-- explicit constraints for names, slugs, roles, context categories, and source types;
-- timestamps, update triggers, indexes, and JSON provenance storage;
-- matching TypeScript database types used by the Supabase client helpers;
-- documentation for applying the migration through the Supabase CLI.
+LangChain is the shared orchestration layer. It is not the product itself and should not be added merely as an abstraction around a single model call.
 
-T03 does not add authentication UI or flows, row-level security policies, storage buckets, OpenAI, or PM workflows. RLS is intentionally deferred to T04; the public tables must be treated as unsafe for deployed client access until T04 is complete.
+The next phase should make LangChain materially useful by enabling reusable PM tools, state-aware execution, retrieval, structured workflow handoffs, and human approval checkpoints.
 
-## 11. Scope for T04
+The desired direction is:
 
-T04 is **Authorization and Row Level Security** for the T03 core schema. Its definition of done is:
+**PM request → understand task → retrieve relevant context/evidence → select PM capabilities/tools → reason → ask for PM decision when needed → create/update artifact → persist traceable outcome**
 
-- Add a new versioned migration; do not edit the applied T03 migration.
-- Enable RLS on `workspaces`, `workspace_members`, and `context_items`.
-- Deny anonymous access and grant authenticated clients only the operations represented by the policies.
-- Automatically create an owner membership when a workspace is created.
-- Allow workspace owners to manage the workspace and non-owner memberships.
-- Allow members to read workspace data and create/update/delete context; viewers are read-only.
-- Keep membership checks in private, fixed-search-path security-definer helpers.
-- Prevent changing a membership identity or moving context between workspaces through an update.
+LangChain should help orchestrate this behavior while OpenAI remains the approved model runtime unless explicitly changed.
 
-T04 does not add authentication UI or sign-in/sign-out flows, storage buckets, OpenAI integration, or PM workflows.
+Where long-running stateful workflows, branching, checkpointing, recovery, or human-in-the-loop execution become necessary, evaluate LangGraph rather than implementing brittle custom state machines.
 
-## 12. Scope for T05
+## 7. PM tool layer
 
-T05 is **Product Workspace UI**. Its definition of done is:
+Introduce reusable server-side PM tools/capabilities instead of continuously adding monolithic workflows.
 
-- Replace the foundation shell with a responsive product workspace dashboard.
-- Provide clear workspace navigation for overview, product context, workflows, and activity.
-- Show honest empty states for product context and activity instead of fabricated records or metrics.
-- Present the product-context areas that will be populated in T06.
-- Present the three connected workflow entry points without implementing workflow behavior.
-- Keep the current workspace clearly marked as a preview until authentication and persistence are introduced.
+Initial tool candidates:
 
-T05 does not add authentication UI or flows, database persistence, context CRUD, file uploads, OpenAI integration, or PM workflow execution.
+- `search_product_context`
+- `search_evidence`
+- `retrieve_artifact`
+- `retrieve_decision`
+- `retrieve_assumptions`
+- `compare_opportunities`
+- `calculate_rice`
+- `calculate_weighted_score`
+- `define_success_metrics`
+- `create_experiment_plan`
+- `create_prd`
+- `create_user_stories`
+- `create_engineering_brief`
+- `create_executive_update`
+- `create_roadmap_item`
+- `record_decision`
 
-## 13. Scope for T06
+Tool contracts must be typed, validated, permission-aware, and testable. Do not expose unrestricted arbitrary tool execution.
 
-T06 is **Product Context Management**. Its definition of done is:
+## 8. New first-class domain objects
 
-- Provide a context management interface for the approved product-context categories.
-- Allow an authenticated workspace user to create, read, update, and delete manually entered context items.
-- Persist context items through the typed Supabase browser client and existing T04 RLS policies.
-- Support category filtering and clear loading, empty, signed-out, unconfigured, and error states.
-- Preserve source provenance as `user_input`; imported and generated context remain future capabilities.
-- Make workspace creation explicit when an authenticated account has no workspace yet.
+### 8.1 Decision record
 
-T06 does not add authentication UI or flows, file uploads, document extraction, evidence retrieval, OpenAI integration, or PM workflow execution.
+Add a first-class Decision object so PM Agent can answer not only what was produced, but why a product choice was made.
 
-## 14. Scope for T07
+A decision should support at minimum:
 
-T07 is **File Upload and Document Handling**. Its definition of done is:
+- title / decision question;
+- selected decision;
+- alternatives considered;
+- evidence references;
+- rationale;
+- assumptions;
+- risks;
+- owner;
+- decision date;
+- status: proposed, approved, revisited, reversed;
+- links to resulting artifacts;
+- provenance and timestamps.
 
-- Add private document metadata storage and a private workspace-scoped Storage bucket.
-- Allow authenticated workspace owners and members to upload supported source documents.
-- Allow workspace members to list and download their workspace documents.
-- Allow owners to delete any workspace document and members to delete documents they uploaded.
-- Enforce a 6 MiB upload limit and allow only PDF, Word, Markdown, text, CSV, and JSON files.
-- Record original filename, MIME type, byte size, uploader, storage path, upload status, and timestamps.
-- Keep uploaded files private and do not expose a service-role key to the browser.
+Decision history should be auditable. Avoid destructive overwrites of material historical decisions.
 
-T07 does not add document extraction, OCR, evidence retrieval, citation generation, OpenAI integration, or PM workflow execution.
+### 8.2 Assumption record
 
-## 15. Scope for T08
+Add an Assumption object supporting:
 
-T08 is **Evidence Retrieval and Citation Model**. Its definition of done is:
+- statement;
+- related opportunity / decision / artifact;
+- supporting evidence;
+- evidence strength;
+- impact if wrong;
+- validation status;
+- proposed validation method;
+- owner;
+- timestamps.
 
-- Add versioned `evidence_items` and `evidence_citations` tables with workspace-scoped RLS.
-- Support evidence kinds for direct quotes, observations, and metrics.
-- Require every evidence item to carry a source label and a citation reference.
-- Support optional links from evidence to an uploaded document and a source locator.
-- Add indexed text retrieval over evidence title, content, and source label.
-- Provide a manual evidence library UI with search, source-aware creation, and deletion.
-- Keep evidence wording faithful to user-provided source material; do not fabricate quotes, metrics, confidence, or citations.
+The system should be able to identify high-impact, weakly supported assumptions in a proposed product direction.
 
-T08 does not add automatic document extraction, OCR, semantic/vector retrieval, OpenAI integration, or PM workflow execution.
+## 9. Evidence model and reasoning labels
 
-## 16. Scope for T09
+The product must keep these concepts distinct:
 
-T09 is **OpenAI Responses API Foundation**. Its definition of done is:
+- **Evidence:** source-backed information such as a quote, metric, documented fact, or observation.
+- **Observation:** a faithful synthesis of one or more pieces of evidence.
+- **Interpretation:** what the evidence may mean.
+- **Assumption:** something believed or required to be true but not yet sufficiently validated.
+- **Recommendation:** a proposed action based on evidence, interpretation, constraints, and assumptions.
 
-- Add the official OpenAI TypeScript SDK and a server-only import boundary.
-- Validate `OPENAI_API_KEY` and configurable `OPENAI_MODEL` without exposing either to browser code.
-- Provide a small typed helper around `client.responses.create(...)` for future workflow tasks.
-- Return normalized response id, model, status, and text while preserving provider errors for callers to handle.
-- Default response storage to disabled for sensitive product and customer context.
-- Add configuration tests that do not require an API key or a live OpenAI request.
+UI and structured outputs should preserve these distinctions where they materially affect user trust.
 
-T09 does not add chat UI, PM workflows, document extraction, semantic retrieval, tool calling, or production API routes.
+## 10. Document intelligence
 
-## 17. Scope for T10
+Document uploads are already available, but documents should become usable product knowledge automatically.
 
-T10 is **Workflow Orchestration and Structured Outputs**. Its definition of done is:
+### Required ingestion direction
 
-- a generic server-only workflow runner built on the official OpenAI Responses API;
-- strict `json_schema` output configuration with configurable workflow name, description, model, instructions, input, and token limit;
-- explicit input and request-boundary validation before provider calls;
-- JSON parsing plus caller-supplied runtime validation before a typed result is returned;
-- explicit errors for incomplete responses, missing output, invalid JSON, and runtime validation failures;
-- response storage disabled by default with `store: false` and no sensitive logging;
-- focused unit tests for the contract and failure paths.
+**Upload → extract text/data → preserve source structure → chunk/index → create searchable source → optionally identify candidate evidence → retain source locator → make available to PM workflows**
 
-T10 does not add Discover, Define, Align, or any other PM workflow, workflow-specific prompts, chat UI, tool calling, document extraction, semantic retrieval, persistence, or production API routes.
+Priorities:
 
-## 18. Scope for T11
+1. Reliable extraction for text-based PDF, DOCX, Markdown, TXT, CSV, and JSON.
+2. Source locators such as page, section, row, or equivalent.
+3. Workspace-scoped searchable index.
+4. Candidate evidence extraction with explicit user review where appropriate.
+5. OCR for scanned/image-only documents after normal extraction is reliable.
 
-T11 is **Discover & Synthesize**. Its definition of done is:
+OCR is not a prerequisite for extracting ordinary digital documents and should not delay core document intelligence.
 
-- a server-side workflow that combines the authenticated workspace’s saved product context with citation-backed evidence;
-- a focused discovery question supplied by the user;
-- structured output for an executive summary, themes, pain points, opportunities, open questions, and limitations;
-- every finding tied to one or more citation keys supplied in the workflow input;
-- runtime rejection of unknown citation keys, malformed findings, and unsupported output shapes;
-- a reviewable UI that makes source references and limitations visible;
-- explicit signed-out, missing workspace, missing evidence, missing configuration, and provider-failure states;
-- no durable artifact persistence yet; that belongs to a later task.
+Treat all uploaded content as untrusted data. Do not execute embedded instructions from documents.
 
-T11 does not add document extraction, OCR, semantic/vector retrieval, live market research, tool calling, Define, Align, chat UI, artifact history, export, or monetization.
+## 11. Retrieval strategy
 
-## 19. Planned task sequence
+The product requirement is reliable retrieval of relevant workspace evidence. Do not make a vector database itself the requirement.
 
-Tasks are delivered one at a time and reviewed before the next task begins. The current sequence is:
+Start with the simplest approach that provides strong retrieval quality. A staged approach is acceptable:
 
-| Task | Scope |
-| --- | --- |
-| T01 | Bootstrap repository |
-| T02 | Supabase foundation |
-| T03 | Core database schema and migrations |
-| T04 | Authorization and row-level security |
-| T05 | Product workspace UI |
-| T06 | Product context management |
-| T07 | File upload and document handling |
-| T08 | Evidence retrieval and citation model |
-| T09 | OpenAI Responses API foundation |
-| T10 | Workflow orchestration and structured outputs |
-| T11 | Discover & Synthesize workflow |
-| T12 | Define & Specify workflow |
-| T13 | Align & Communicate workflow |
-| T14 | Artifact persistence, history, and export |
-| T15 | Context search and workspace navigation |
-| T16 | Deterministic prioritization and planning tools |
-| T17 | Metrics and experimentation tools |
-| T18 | Usage limits and monetization foundations |
-| T19 | Observability, errors, and operational controls |
-| T20 | Security, privacy, retention, and deletion hardening |
-| T21 | Carefully scoped external integrations |
-| T22 | Beta hardening and feedback loop |
-| T23 | Launch readiness |
+1. full-text / keyword retrieval;
+2. metadata filters;
+3. model-assisted reranking where justified;
+4. hybrid semantic retrieval / embeddings when corpus size or quality demonstrates the need;
+5. retrieval evaluation and regression tests.
 
-The task list is a planning sequence, not permission to implement future tasks early. Each task needs its own acceptance criteria and validation.
+Every finding that materially relies on retrieved evidence must preserve source references.
 
-## 20. Decision log
+## 12. Connected workflow handoff
 
-- V2 prioritizes three connected workflows over launching ten disconnected agents.
-- Product Workspace is the central product object and long-term differentiation.
-- Codex is the engineering agent used to build PM Agent; it is not part of the PM Agent runtime.
-- OpenAI Responses API is the intended runtime foundation; older provider-routing assumptions are superseded.
-- Revenue projections, launch targets, and market claims are hypotheses unless backed by real evidence.
-- Marketing must not use invented founder history, surveys, testimonials, customer names, or traction.
+The current Discover, Define, and Align workflows share context but are user-triggered separately. The next phase should connect them without removing PM judgment.
+
+Target experience:
+
+**Discover → recommendation / opportunity set → PM review and selection → Define → PM review → Align**
+
+Requirements:
+
+- allow a Discover result/opportunity to be selected as structured input to Define;
+- preserve evidence lineage during handoff;
+- allow a saved Define artifact to become structured input to Align;
+- preserve artifact lineage and decision references;
+- show the PM what information is being handed forward;
+- allow refinement before continuation;
+- do not auto-select a material product opportunity without a review checkpoint.
+
+## 13. PM Agent entry point
+
+Introduce a task-oriented entry point in addition to workflow-specific entry points.
+
+Example user request:
+
+> “Our WhatsApp activation is declining and management wants an improvement plan.”
+
+The system should determine which capabilities are required, such as context retrieval, evidence retrieval, metric inspection, discovery analysis, prioritization, or clarification.
+
+The agent should be able to explain the proposed next step before taking consequential actions.
+
+The PM Agent entry point should initially remain constrained to approved PM tools and workspace data. It must not become an unrestricted autonomous agent.
+
+## 14. External market research
+
+Live market research is a later capability, but when implemented it must:
+
+- use actual external retrieval rather than model memory alone;
+- cite the sources used;
+- clearly label **workspace/internal evidence** separately from **external/web evidence**;
+- preserve source URL, retrieval date, title, and relevant excerpt/locator metadata;
+- avoid presenting external claims as internal customer evidence;
+- support review before external research is persisted into durable product knowledge.
+
+## 15. Evaluation framework
+
+AI evaluation is a P0 product requirement before wider public usage.
+
+Create a representative PM evaluation set covering at least:
+
+- evidence synthesis;
+- citation accuracy;
+- opportunity identification;
+- PRD quality;
+- acceptance criteria quality;
+- prioritization explanations;
+- decision rationale;
+- assumption identification;
+- stakeholder communication;
+- failure behavior when evidence is insufficient or conflicting.
+
+Track at minimum:
+
+- grounding accuracy;
+- citation validity;
+- unsupported-claim / hallucination rate;
+- completeness;
+- schema validity;
+- instruction adherence;
+- human acceptance/rejection;
+- latency;
+- model/token cost.
+
+No static or invented confidence/quality percentages are allowed.
+
+## 16. AI observability
+
+Every production AI run should record appropriate non-sensitive operational metadata, including where available:
+
+- workflow / capability;
+- model;
+- latency;
+- input/output token usage;
+- estimated provider cost;
+- status/error class;
+- tools invoked;
+- retrieval count/source types;
+- artifact created or updated;
+- user acceptance/rejection or feedback signal.
+
+Do not log raw sensitive customer content unnecessarily.
+
+Observability should support both product learning and cost management.
+
+## 17. Product analytics and success metrics
+
+The product needs outcome metrics, not only technical completion status.
+
+### North-star candidate
+
+**Useful PM outcomes completed per active workspace**
+
+### Supporting metrics
+
+- workspace activation rate;
+- time to first useful artifact or decision;
+- first successful evidence-backed workflow;
+- Discover → Define handoff rate;
+- Define → Align handoff rate;
+- artifact acceptance / reuse / export rate;
+- artifact edit rate;
+- evidence/citation inspection or use rate;
+- decisions recorded per active workspace;
+- assumptions created and resolved;
+- weekly returning PMs / workspace retention;
+- AI run latency and failure rate;
+- AI cost per useful outcome.
+
+Analytics must distinguish real events from demo/sample data.
+
+## 18. Onboarding
+
+Add an activation-focused onboarding flow so a new PM does not land in an empty workspace without guidance.
+
+Suggested onboarding sequence:
+
+1. create workspace;
+2. describe the product/product area;
+3. identify target customers/personas;
+4. add goals and current priorities;
+5. upload existing product material;
+6. optionally add competitors and KPIs;
+7. prepare workspace context;
+8. guide user into a first evidence-backed investigation.
+
+The onboarding goal is not form completion. It is time to first useful PM outcome.
+
+## 19. Production hardening
+
+The following work remains mandatory before considering the current beta broadly production-ready:
+
+- final authenticated UAT on the live website;
+- final review of Supabase RLS policies;
+- final review of storage policies;
+- authentication and callback verification in production;
+- server-side input validation review;
+- secret/configuration review;
+- privacy and sensitive-data logging review;
+- complete workspace deletion behavior;
+- retention policy decisions and automation;
+- failure/retry behavior for AI calls and ingestion;
+- update T23/status UI to remove stale pre-deployment “pending” wording;
+- production smoke tests after every release.
+
+## 20. Usage, billing, and plans
+
+Real server-side usage enforcement and billing are deferred until beta usage demonstrates repeated value.
+
+For the current phase:
+
+- retain usage instrumentation;
+- protect the service from accidental/unbounded usage;
+- measure model cost per capability and useful outcome;
+- do not spend major engineering effort on paid-plan complexity before retention and workflow value are validated.
+
+Billing, subscriptions, enterprise administration, and complex plan entitlements belong to a later commercialization phase.
+
+## 21. Integrations
+
+Do not build broad integrations prematurely.
+
+Prioritize integrations based on observed user behavior. Examples:
+
+- Jira/Linear if product definitions and user stories are frequently moved into delivery systems;
+- Slack/Teams if stakeholder communication is a frequent downstream action;
+- Notion/Confluence if artifact knowledge synchronization is repeatedly requested.
+
+Tool calling and external write actions must require explicit authorization and appropriate human confirmation.
+
+## 22. Prioritized next backlog
+
+### P0 — prove trust and production quality
+
+1. **Live authenticated UAT**
+   - Complete end-to-end UAT against the deployed production URL.
+   - Test signup/sign-in, workspace creation, context, evidence, document upload, workflows, artifacts, prioritization, metrics, experiments, privacy, feedback, sign-out, and failure states.
+
+2. **Production security review**
+   - Review RLS, storage policies, auth callbacks, secret handling, server boundaries, and sensitive logging.
+
+3. **Fix production status accuracy**
+   - Remove obsolete pre-deployment “pending” wording from T23/status surfaces.
+
+4. **AI evaluation harness**
+   - Establish representative PM tasks, grounding/citation tests, regression checks, and quality baselines.
+
+5. **Document text extraction**
+   - Parse ordinary digital documents, preserve locators, and make extracted content available to workspace retrieval.
+
+### P1 — make PM Kit intelligent and connected
+
+6. **Human-approved Discover → Define → Align handoff**
+   - Structured handoff with evidence/artifact lineage and explicit PM checkpoints.
+
+7. **Decision records**
+   - First-class decisions with alternatives, evidence, rationale, assumptions, risks, status, and artifact links.
+
+8. **Assumption registry**
+   - Track high-impact assumptions and validation status.
+
+9. **PM tool layer + constrained agent entry point**
+   - Expose reusable PM capabilities through typed tools and allow LangChain to select among approved tools.
+
+10. **Retrieval quality upgrade**
+    - Improve retrieval using full-text, metadata, reranking, and semantic/hybrid retrieval when justified by evaluation.
+
+11. **AI observability + product analytics**
+    - Measure model quality, latency, cost, tool usage, outcomes, and workflow conversion.
+
+12. **Activation onboarding**
+    - Guide a new PM from workspace setup to first useful evidence-backed outcome.
+
+13. **Workspace deletion + retention automation**
+    - Complete user-controlled deletion and enforce documented retention behavior.
+
+### P2 — expand after core loop proves value
+
+14. **Live market research**
+15. **OCR for scanned documents**
+16. **External tool calling / integrations**
+17. **Billing and paid plans**
+18. **Enterprise administration / advanced governance**
+
+## 23. Explicit non-goals for the current phase
+
+Do not prioritize the following before the P0/P1 loop is proven:
+
+- dozens of standalone PM generators;
+- ten or more independent AI agents;
+- autonomous product decisions without PM approval;
+- broad Jira/Slack/Notion/Confluence integrations at once;
+- complex multi-provider model routing without measured need;
+- microservice decomposition without a concrete scaling requirement;
+- Redis/queue infrastructure without demonstrated workload need;
+- enterprise SSO/SAML before enterprise demand;
+- advanced billing complexity before retention validation;
+- decorative AI confidence scores;
+- unsupported market statistics or fabricated customer evidence.
+
+## 24. Engineering guardrails
+
+- Keep secrets server-side and out of repository/logs.
+- Preserve workspace isolation and RLS.
+- Treat documents, retrieved web content, and model output as untrusted input.
+- Validate model outputs with explicit schemas and runtime validation.
+- Preserve evidence and artifact provenance.
+- Any schema change requires a versioned migration and rollback consideration.
+- Any AI contract change requires tests/eval fixtures and backward compatibility review.
+- Prefer small, testable changes over broad rewrites.
+- Codex must report assumptions/blockers rather than silently inventing product behavior.
+- Do not replace working deterministic code with LLM calls merely to make a feature “AI-powered.”
+
+## 25. Definition of the next product phase
+
+The next phase is successful when a PM can:
+
+1. create a product workspace and provide enough initial context;
+2. upload product/customer documents and have their usable content extracted automatically;
+3. ask a real product question rather than selecting a rigid template;
+4. have PM Agent retrieve relevant product context and evidence;
+5. receive source-grounded analysis and an explicit distinction between evidence, interpretation, assumption, and recommendation;
+6. review/select an opportunity or decision direction;
+7. carry that approved direction into Define without copy/paste;
+8. produce a reviewable PRD/specification with evidence lineage;
+9. carry an approved artifact into stakeholder communication;
+10. save the decision, rationale, assumptions, artifacts, and evidence relationships as durable product memory;
+11. later ask “Why did we make this decision?” and receive an answer grounded in the recorded decision and evidence;
+12. complete the flow reliably in production with measurable quality, latency, cost, and user feedback signals.
+
+## 26. Product positioning
+
+Do not position PM Agent primarily as “AI that generates PRDs.”
+
+The stronger product thesis is:
+
+> **PM Agent is a context-aware PM workspace that connects product context, evidence, decisions, artifacts, and memory so Product Managers can move from a messy problem to an explainable decision and actionable product work.**
+
+LangChain is an implementation enabler for orchestration and reusable PM capabilities. The user value remains the connected product-management workflow and durable product knowledge.
+
+## 27. Codex execution instruction
+
+This specification is the new authoritative scope for the **Bootstrap PM Agent V2** project.
+
+Before implementing new functionality:
+
+1. preserve the completed baseline;
+2. review the P0 and P1 priorities in this document;
+3. do not restart completed tasks unless a real defect or dependency requires it;
+4. implement one bounded task at a time with acceptance criteria and tests;
+5. keep the product loop **Context → Evidence → Decision → Artifact → Memory** intact;
+6. prioritize production trust, document intelligence, evaluation, and connected PM workflow continuity over adding more standalone generators.
+
+When future requirements conflict with older PM Agent V2 documents, this Version 3.0 specification wins unless explicitly superseded by a newer approved specification.
