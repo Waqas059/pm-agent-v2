@@ -23,7 +23,17 @@
 `workflow_run_steps` tables for resumable long-chain execution. The tables are
 protected by authenticated workspace-member RLS and store structured JSON state
 without logging provider credentials. Discover, Define, and Align now create a
-run and step record, then persist completed or failed outcomes. Human-approved
-cross-workflow handoff and automatic resume are the next workflow controls.
+run and step record, then persist completed or failed outcomes. The P1 control
+layer now includes human-approved Discover handoffs into Define or Align,
+durable decision records, and a workspace-scoped assumption registry.
+Automatic resume and richer artifact lineage remain follow-up work.
+
+## P1 workflow controls
+
+Migration `20260905010000_handoffs_decisions_assumptions.sql` adds
+RLS-protected `workflow_handoffs`, `decision_records`, and `assumptions` tables.
+Discover results expose explicit approval actions; approved handoffs are loaded
+into Define and Align as editable starting context. Decisions and assumptions
+are maintained by the human PM in the Decisions workspace section.
 
 No deployment, GitHub push, account change, payment action, or external data sharing is performed by the local readiness checklist.

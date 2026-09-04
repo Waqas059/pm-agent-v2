@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { recordSessionAiRun } from "@/lib/usage";
 import { communicationFormatLabels, communicationFormats, type AlignOutput, type CommunicationFormat } from "@/lib/workflows/align-contract";
 import ArtifactActions from "./artifact-actions";
@@ -13,6 +13,21 @@ export default function AlignWorkflowPanel() {
   const [result, setResult] = useState<WorkflowResult | null>(null);
   const [message, setMessage] = useState("");
   const [isRunning, setIsRunning] = useState(false);
+
+  useEffect(() => {
+    let active = true;
+    void fetch("/api/workflows/handoffs?target=align_communicate")
+      .then((response) => response.json() as Promise<{ handoff?: { payload?: { discovery?: { executiveSummary?: string } } } | null }>)
+      .then((payload) => {
+        const summary = payload.handoff?.payload?.discovery?.executiveSummary;
+        if (active && summary && !request) {
+          setRequest(`Share the approved Discover summary with stakeholders: ${summary}`);
+          setMessage("Approved Discover handoff loaded for Align.");
+        }
+      })
+      .catch(() => undefined);
+    return () => { active = false; };
+  }, [request]);
   async function runWorkflow(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!request.trim()) return;

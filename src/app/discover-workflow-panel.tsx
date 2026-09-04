@@ -17,6 +17,15 @@ export default function DiscoverWorkflowPanel() {
   const [result, setResult] = useState<WorkflowResult | null>(null);
   const [message, setMessage] = useState("");
   const [isRunning, setIsRunning] = useState(false);
+  const [handoffMessage, setHandoffMessage] = useState("");
+
+  async function approveHandoff(targetWorkflow: "define_specify" | "align_communicate") {
+    if (!result) return;
+    setHandoffMessage("");
+    const response = await fetch("/api/workflows/handoffs", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ sourceRunId: result.id, targetWorkflow, payload: { discovery: result.output } }) });
+    const payload = await response.json() as { error?: string };
+    setHandoffMessage(response.ok ? `Approved for ${targetWorkflow === "define_specify" ? "Define" : "Align"}.` : payload.error || "The handoff could not be approved.");
+  }
 
   async function runWorkflow(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -80,7 +89,8 @@ export default function DiscoverWorkflowPanel() {
             <TextGroup title="Open questions" items={result.output.openQuestions} />
             <TextGroup title="Limitations" items={result.output.limitations} />
           </div>
-          <p className="text-xs leading-5 text-[#8d98a9]">Run {result.id} · {result.model} · Review required. This result is not saved as a durable artifact yet.</p>
+          <div className="flex flex-wrap items-center gap-3"><p className="text-xs leading-5 text-[#8d98a9]">Run {result.id} · {result.model} · Review required.</p><button type="button" onClick={() => void approveHandoff("define_specify")} className="rounded-lg border border-[#cdd6f6] bg-white px-3 py-2 text-xs font-semibold text-[#5269d8]">Approve for Define</button><button type="button" onClick={() => void approveHandoff("align_communicate")} className="rounded-lg border border-[#f0d9cf] bg-white px-3 py-2 text-xs font-semibold text-[#b45f40]">Approve for Align</button></div>
+          {handoffMessage && <p role="status" className="text-xs text-[#4d8c65]">{handoffMessage}</p>}
         </div>
       )}
     </div>

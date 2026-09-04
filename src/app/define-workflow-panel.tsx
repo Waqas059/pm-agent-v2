@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { recordSessionAiRun } from "@/lib/usage";
 
 import type { DefineOutput } from "@/lib/workflows/define-contract";
@@ -18,6 +18,21 @@ export default function DefineWorkflowPanel() {
   const [result, setResult] = useState<WorkflowResult | null>(null);
   const [message, setMessage] = useState("");
   const [isRunning, setIsRunning] = useState(false);
+
+  useEffect(() => {
+    let active = true;
+    void fetch("/api/workflows/handoffs?target=define_specify")
+      .then((response) => response.json() as Promise<{ handoff?: { payload?: { discovery?: { opportunities?: Array<{ title?: string }> } } } | null }>)
+      .then((payload) => {
+        const title = payload.handoff?.payload?.discovery?.opportunities?.[0]?.title;
+        if (active && title && !opportunity) {
+          setOpportunity(title);
+          setMessage("Approved Discover handoff loaded for Define.");
+        }
+      })
+      .catch(() => undefined);
+    return () => { active = false; };
+  }, [opportunity]);
 
   async function runWorkflow(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();

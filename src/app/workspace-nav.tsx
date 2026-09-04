@@ -14,6 +14,7 @@ const items = [
   { label: "Privacy", href: "#privacy" },
   { label: "Integrations", href: "#integrations" },
   { label: "Feedback", href: "#feedback" },
+  { label: "Decisions", href: "#decisions" },
   { label: "Launch readiness", href: "#launch" },
   { label: "Activity", href: "#activity" },
 ];

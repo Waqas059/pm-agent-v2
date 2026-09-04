@@ -17,6 +17,7 @@ import PrivacyPanel from "./privacy-panel";
 import IntegrationsPanel from "./integrations-panel";
 import FeedbackPanel from "./feedback-panel";
 import LaunchReadinessPanel from "./launch-readiness-panel";
+import DecisionAssumptionPanel from "./decision-assumption-panel";
 
 type IconName =
   | "activity"
@@ -269,6 +270,10 @@ export default function Home() {
 
             <section id="feedback" aria-labelledby="feedback-heading" className="mt-8 rounded-2xl border border-[#e3e7ee] bg-white p-5 sm:p-7">
               <FeedbackPanel />
+            </section>
+
+            <section id="decisions" aria-labelledby="decision-assumption-heading" className="mt-8 rounded-2xl border border-[#e3e7ee] bg-white p-5 sm:p-7">
+              <DecisionAssumptionPanel />
             </section>
 
             <section id="launch" aria-labelledby="launch-heading" className="mt-8 rounded-2xl border border-[#e3e7ee] bg-white p-5 sm:p-7">
