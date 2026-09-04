@@ -2,7 +2,7 @@ import "server-only";
 
 import type { SupabaseClient } from "@supabase/supabase-js";
 
-import type { Database, Json } from "@/lib/supabase/database.types";
+import type { Database } from "@/lib/supabase/database.types";
 
 export type WorkflowName = Database["public"]["Tables"]["workflow_runs"]["Row"]["workflow_name"];
 export type WorkflowRunStatus = Database["public"]["Tables"]["workflow_runs"]["Row"]["status"];
@@ -69,8 +69,4 @@ export async function updateWorkflowStep(
   const { data, error } = await supabase.from("workflow_run_steps").update(patch).eq("id", stepId).select().single();
   if (error) throw error;
   return data;
-}
-
-export function asWorkflowJson(value: unknown): Json {
-  return value as Json;
 }
