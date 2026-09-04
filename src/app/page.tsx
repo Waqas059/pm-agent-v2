@@ -1,9 +1,22 @@
 import Link from "next/link";
 
+import AlignWorkflowPanel from "./align-workflow-panel";
+import ArtifactLibraryPanel from "./artifact-library-panel";
+import AuthPanel from "./auth-panel";
+import DefineWorkflowPanel from "./define-workflow-panel";
 import DocumentLibraryPanel from "./document-library-panel";
 import DiscoverWorkflowPanel from "./discover-workflow-panel";
 import EvidenceLibraryPanel from "./evidence-library-panel";
 import ProductContextPanel from "./product-context-panel";
+import PrioritizationPanel from "./prioritization-panel";
+import MetricsExperimentPanel from "./metrics-experiment-panel";
+import WorkspaceNav from "./workspace-nav";
+import WorkspaceSearchPanel from "./workspace-search-panel";
+import UsagePanel from "./usage-panel";
+import PrivacyPanel from "./privacy-panel";
+import IntegrationsPanel from "./integrations-panel";
+import FeedbackPanel from "./feedback-panel";
+import LaunchReadinessPanel from "./launch-readiness-panel";
 
 type IconName =
   | "activity"
@@ -59,35 +72,29 @@ function Icon({ name, className = "h-5 w-5" }: { name: IconName; className?: str
   }
 }
 
-const navigation = [
-  { label: "Overview", href: "#overview", icon: "home" as IconName, active: true },
-  { label: "Product context", href: "#context", icon: "context" as IconName },
-  { label: "Documents", href: "#documents", icon: "book" as IconName },
-  { label: "Evidence", href: "#evidence", icon: "check" as IconName },
-  { label: "Workflows", href: "#workflows", icon: "sparkle" as IconName },
-  { label: "Activity", href: "#activity", icon: "activity" as IconName },
-];
-
 const workflows = [
   {
     number: "01",
     title: "Discover & synthesize",
     description: "Turn customer evidence into grounded themes and opportunities.",
     status: "Ready",
+    available: true,
     accent: "#5269d8",
   },
   {
     number: "02",
     title: "Define & specify",
     description: "Shape a clear, buildable brief from an agreed opportunity.",
-    status: "Planned",
+    status: "Ready",
+    available: true,
     accent: "#a06bd8",
   },
   {
     number: "03",
     title: "Align & communicate",
     description: "Create useful updates from the same product context.",
-    status: "Planned",
+    status: "Ready",
+    available: true,
     accent: "#d17b54",
   },
 ];
@@ -118,21 +125,7 @@ export default function Home() {
             </div>
           </div>
 
-          <nav aria-label="Workspace navigation" className="mt-7 px-4">
-            <p className="px-3 text-[10px] font-bold uppercase tracking-[0.18em] text-[#a0a9b8]">Workspace</p>
-            <div className="mt-2 space-y-1">
-              {navigation.map((item) => (
-                <Link
-                  key={item.label}
-                  href={item.href}
-                  className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors ${item.active ? "bg-[#eef1ff] font-semibold text-[#435ac6]" : "text-[#68748a] hover:bg-[#f5f7fa] hover:text-[#192235]"}`}
-                >
-                  <Icon name={item.icon} className="h-[18px] w-[18px]" />
-                  {item.label}
-                </Link>
-              ))}
-            </div>
-          </nav>
+          <WorkspaceNav />
 
           <div className="mt-auto px-4 pb-5">
             <div className="mb-4 rounded-xl bg-[#192235] p-4 text-white">
@@ -170,9 +163,8 @@ export default function Home() {
                 <span className="h-2 w-2 rounded-full bg-[#53b67b]" />
                 System ready
               </span>
-              <button type="button" disabled className="flex h-9 w-9 items-center justify-center rounded-lg border border-[#e3e7ee] text-[#9ba4b2]" aria-label="Search coming soon" title="Search is planned for a later task">
-                <Icon name="search" className="h-[17px] w-[17px]" />
-              </button>
+              <AuthPanel />
+              <WorkspaceSearchPanel />
               <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#dfe7ff] text-xs font-bold text-[#435ac6] lg:hidden">W</span>
             </div>
           </header>
@@ -243,13 +235,53 @@ export default function Home() {
               <DiscoverWorkflowPanel />
             </section>
 
+            <section id="define" aria-labelledby="define-heading" className="mt-8 rounded-2xl border border-[#e3e7ee] bg-white p-5 sm:p-7">
+              <DefineWorkflowPanel />
+            </section>
+
+            <section id="align" aria-labelledby="align-heading" className="mt-8 rounded-2xl border border-[#e3e7ee] bg-white p-5 sm:p-7">
+              <AlignWorkflowPanel />
+            </section>
+
+            <section id="artifacts" aria-labelledby="artifacts-heading" className="mt-8 rounded-2xl border border-[#e3e7ee] bg-white p-5 sm:p-7">
+              <ArtifactLibraryPanel />
+            </section>
+
+            <section id="planning" aria-labelledby="planning-heading" className="mt-8 rounded-2xl border border-[#e3e7ee] bg-white p-5 sm:p-7">
+              <PrioritizationPanel />
+            </section>
+
+            <section id="metrics" aria-labelledby="metrics-heading" className="mt-8 rounded-2xl border border-[#e3e7ee] bg-white p-5 sm:p-7">
+              <MetricsExperimentPanel />
+            </section>
+
+            <section id="usage" aria-labelledby="usage-heading" className="mt-8 rounded-2xl border border-[#e3e7ee] bg-white p-5 sm:p-7">
+              <UsagePanel />
+            </section>
+
+            <section id="privacy" aria-labelledby="privacy-heading" className="mt-8 rounded-2xl border border-[#e3e7ee] bg-white p-5 sm:p-7">
+              <PrivacyPanel />
+            </section>
+
+            <section id="integrations" aria-labelledby="integrations-heading" className="mt-8 rounded-2xl border border-[#e3e7ee] bg-white p-5 sm:p-7">
+              <IntegrationsPanel />
+            </section>
+
+            <section id="feedback" aria-labelledby="feedback-heading" className="mt-8 rounded-2xl border border-[#e3e7ee] bg-white p-5 sm:p-7">
+              <FeedbackPanel />
+            </section>
+
+            <section id="launch" aria-labelledby="launch-heading" className="mt-8 rounded-2xl border border-[#e3e7ee] bg-white p-5 sm:p-7">
+              <LaunchReadinessPanel />
+            </section>
+
             <section id="workflows" aria-labelledby="workflows-heading" className="mt-8">
               <div className="flex items-end justify-between gap-4 border-b border-[#e3e7ee] pb-4">
                 <div>
                   <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#8d98a9]">The connected path</p>
                   <h2 id="workflows-heading" className="mt-2 text-2xl font-semibold tracking-[-0.04em] text-[#192235]">Workflows built on your context</h2>
                 </div>
-                <span className="hidden text-xs font-semibold text-[#a0a9b8] sm:inline">Planned sequence · T05</span>
+                <span className="hidden text-xs font-semibold text-[#a0a9b8] sm:inline">Connected path · T23</span>
               </div>
               <div className="mt-4 grid gap-3 lg:grid-cols-3">
                 {workflows.map((workflow) => (
@@ -260,7 +292,7 @@ export default function Home() {
                     </div>
                     <h3 className="mt-7 text-base font-semibold text-[#192235]">{workflow.title}</h3>
                     <p className="mt-2 min-h-12 text-sm leading-6 text-[#68748a]">{workflow.description}</p>
-                    <div className="mt-5 flex items-center gap-2 text-xs font-semibold text-[#a0a9b8]">Available in a later task <Icon name="arrow" className="h-3.5 w-3.5" /></div>
+                    <div className="mt-5 flex items-center gap-2 text-xs font-semibold text-[#a0a9b8]">{workflow.available ? "Open workflow below" : "Available in a later task"} <Icon name="arrow" className="h-3.5 w-3.5" /></div>
                   </article>
                 ))}
               </div>

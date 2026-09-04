@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { recordSessionAiRun } from "@/lib/usage";
 
 import type { DiscoverOutput } from "@/lib/workflows/discover-contract";
 
@@ -34,6 +35,7 @@ export default function DiscoverWorkflowPanel() {
       const payload = (await response.json()) as { result?: WorkflowResult; error?: string };
       if (!response.ok || !payload.result) throw new Error(payload.error || "The workflow could not be completed.");
       setResult(payload.result);
+      recordSessionAiRun();
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "The workflow could not be completed.");
     } finally {

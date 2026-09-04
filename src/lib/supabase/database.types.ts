@@ -217,11 +217,75 @@ export type Database = {
         };
         Relationships: [];
       };
+      artifacts: {
+        Row: {
+          id: string;
+          workspace_id: string;
+          kind: Database["public"]["Enums"]["artifact_kind"];
+          title: string;
+          source_workflow: "define_specify" | "align_communicate";
+          created_by: string;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          workspace_id: string;
+          kind: Database["public"]["Enums"]["artifact_kind"];
+          title: string;
+          source_workflow: "define_specify" | "align_communicate";
+          created_by: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          workspace_id?: string;
+          kind?: Database["public"]["Enums"]["artifact_kind"];
+          title?: string;
+          source_workflow?: "define_specify" | "align_communicate";
+          created_by?: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      artifact_versions: {
+        Row: {
+          id: string;
+          artifact_id: string;
+          workspace_id: string;
+          version: number;
+          content: Json;
+          created_by: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          artifact_id: string;
+          workspace_id: string;
+          version: number;
+          content: Json;
+          created_by: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          artifact_id?: string;
+          workspace_id?: string;
+          version?: number;
+          content?: Json;
+          created_by?: string;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
     };
     Views: Record<string, never>;
     Functions: Record<string, never>;
     Enums: {
       document_status: "uploaded" | "processing" | "ready" | "failed";
+      artifact_kind: "product_brief" | "communication_message";
       evidence_kind: "quote" | "observation" | "metric";
       workspace_member_role: "owner" | "member" | "viewer";
       context_category:

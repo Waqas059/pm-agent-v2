@@ -1,0 +1,15 @@
+"use client";
+
+import { useCallback, useEffect, useState } from "react";
+
+type Artifact = { id: string; kind: "product_brief" | "communication_message"; title: string; source_workflow: string; created_at: string; updated_at: string; versions: { id: string; version: number; created_at: string }[] };
+
+export default function ArtifactLibraryPanel() {
+  const [artifacts, setArtifacts] = useState<Artifact[]>([]);
+  const [message, setMessage] = useState("");
+  const load = useCallback(async () => {
+    try { const response = await fetch("/api/artifacts"); const payload = await response.json() as { artifacts?: Artifact[]; error?: string }; if (!response.ok) throw new Error(payload.error || "Artifacts could not be loaded."); setArtifacts(payload.artifacts ?? []); } catch (error) { setMessage(error instanceof Error ? error.message : "Artifacts could not be loaded."); }
+  }, []);
+  useEffect(() => { const initialLoad = window.setTimeout(() => void load(), 0); const handler = () => void load(); window.addEventListener("artifacts:changed", handler); return () => { window.clearTimeout(initialLoad); window.removeEventListener("artifacts:changed", handler); }; }, [load]);
+  return <div><div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-start"><div><p className="text-xs font-bold uppercase tracking-[0.18em] text-[#5269d8]">DURABLE WORKSPACE OUTPUT</p><h2 id="artifacts-heading" className="mt-2 text-2xl font-semibold tracking-[-0.04em] text-[#192235]">Artifact history</h2><p className="mt-2 max-w-2xl text-sm leading-6 text-[#68748a]">Saved briefs and messages stay in this workspace with version history and Markdown export.</p></div><span className="inline-flex w-fit items-center gap-2 rounded-full border border-[#cfe5d6] bg-[#f5fbf6] px-3 py-2 text-xs font-semibold text-[#4d8c65]"><span className="h-2 w-2 rounded-full bg-[#53b67b]" />Private</span></div>{message && <div role="alert" className="mt-4 rounded-lg border border-[#f0d4d0] bg-[#fff9f8] px-4 py-3 text-sm text-[#a04c43]">{message}</div>}{artifacts.length === 0 ? <div className="mt-6 rounded-xl border border-dashed border-[#d8dee8] px-5 py-8 text-center text-sm text-[#9aa4b3]">No saved artifacts yet. Use Save artifact on a reviewed workflow result.</div> : <div className="mt-6 grid gap-3 lg:grid-cols-2">{artifacts.map((artifact) => <article key={artifact.id} className="rounded-xl border border-[#e3e7ee] bg-white p-4"><div className="flex items-start justify-between gap-3"><div><p className="text-[10px] font-bold uppercase tracking-[0.14em] text-[#8d98a9]">{artifact.kind === "product_brief" ? "Product brief" : "Communication"}</p><h3 className="mt-2 text-sm font-semibold text-[#192235]">{artifact.title}</h3></div><a href={`/api/artifacts/${artifact.id}/export`} className="shrink-0 text-xs font-semibold text-[#5269d8]">Export</a></div><p className="mt-3 text-xs text-[#8d98a9]">{artifact.versions.length} version{artifact.versions.length === 1 ? "" : "s"} · Updated {new Date(artifact.updated_at).toLocaleString()}</p></article>)}</div>}</div>;
+}
