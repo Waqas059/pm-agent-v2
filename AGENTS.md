@@ -131,3 +131,15 @@ For T08 specifically:
 - Scope evidence and citation access through authenticated workspace membership and existing owner/member/viewer rules.
 - Keep the UI manual and source-aware. Automatic extraction, OCR, OpenAI integration, and workflow execution are out of scope.
 - Do not begin T09 or any later task in the same change.
+
+T09 is OpenAI Responses API Foundation only.
+
+For T09 specifically:
+
+- Use the official `openai` TypeScript SDK through a server-only module; never import it into a Client Component.
+- Keep `OPENAI_API_KEY` and model configuration server-only. Never use an OpenAI key in a `NEXT_PUBLIC_*` variable or commit a real key.
+- Use `client.responses.create(...)` as the provider boundary. Keep the model configurable and do not hard-code workflow prompts or provider-specific orchestration yet.
+- Default response storage to disabled for product and customer context. Do not log prompts, responses, credentials, or unnecessary sensitive data.
+- Validate inputs and normalize only the response fields needed by future tasks; preserve provider failures for explicit error handling.
+- Do not add chat UI, PM workflows, document extraction, semantic retrieval, tool calling, or production API routes.
+- Do not begin T10 or any later task in the same change.

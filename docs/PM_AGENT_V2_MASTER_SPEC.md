@@ -3,7 +3,7 @@
 **Status:** Authoritative source of truth  
 **Version:** 2.0  
 **Last updated:** 2026-09-03  
-**Current implementation task:** T08 — Evidence Retrieval and Citation Model
+**Current implementation task:** T09 — OpenAI Responses API Foundation
 
 This document replaces the earlier PM Agent planning documents as the build specification. Earlier documents remain useful as background research, but they must not override the product decisions, scope boundaries, or engineering guardrails recorded here.
 
@@ -193,7 +193,20 @@ T08 is **Evidence Retrieval and Citation Model**. Its definition of done is:
 
 T08 does not add automatic document extraction, OCR, semantic/vector retrieval, OpenAI integration, or PM workflow execution.
 
-## 16. Planned task sequence
+## 16. Scope for T09
+
+T09 is **OpenAI Responses API Foundation**. Its definition of done is:
+
+- Add the official OpenAI TypeScript SDK and a server-only import boundary.
+- Validate `OPENAI_API_KEY` and configurable `OPENAI_MODEL` without exposing either to browser code.
+- Provide a small typed helper around `client.responses.create(...)` for future workflow tasks.
+- Return normalized response id, model, status, and text while preserving provider errors for callers to handle.
+- Default response storage to disabled for sensitive product and customer context.
+- Add configuration tests that do not require an API key or a live OpenAI request.
+
+T09 does not add chat UI, PM workflows, document extraction, semantic retrieval, tool calling, or production API routes.
+
+## 17. Planned task sequence
 
 Tasks are delivered one at a time and reviewed before the next task begins. The current sequence is:
 
@@ -225,7 +238,7 @@ Tasks are delivered one at a time and reviewed before the next task begins. The 
 
 The task list is a planning sequence, not permission to implement future tasks early. Each task needs its own acceptance criteria and validation.
 
-## 17. Decision log
+## 18. Decision log
 
 - V2 prioritizes three connected workflows over launching ten disconnected agents.
 - Product Workspace is the central product object and long-term differentiation.

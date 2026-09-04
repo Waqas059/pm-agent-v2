@@ -2,7 +2,7 @@
 
 PM Agent is an AI product workspace designed to help Product Managers turn customer evidence, product context, and team decisions into clear, useful artifacts.
 
-T01 established the production-ready web foundation and a clean product shell. T02 added the Supabase client foundation, T03 added the version-controlled core schema migration, T04 added authorization and Row Level Security, T05 added the Product Workspace UI, T06 added Product Context Management, T07 added File Upload and Document Handling, and T08 adds Evidence Retrieval and the Citation Model.
+T01 established the production-ready web foundation and a clean product shell. T02 added the Supabase client foundation, T03 added the version-controlled core schema migration, T04 added authorization and Row Level Security, T05 added the Product Workspace UI, T06 added Product Context Management, T07 added File Upload and Document Handling, T08 added Evidence Retrieval and the Citation Model, and T09 adds the OpenAI Responses API foundation.
 
 ## Prerequisites
 
@@ -27,6 +27,8 @@ On Windows PowerShell, use `Copy-Item .env.example .env.local` instead.
 T01 does not require database, authentication, or AI-provider credentials.
 
 T02 requires only the Supabase project URL and publishable key. In the Supabase Dashboard, open the project’s **Connect** panel and copy those values into `.env.local`. Never expose a secret or service-role key in a `NEXT_PUBLIC_*` variable.
+
+T09 requires an OpenAI API key only on the server. Add `OPENAI_API_KEY` and a supported `OPENAI_MODEL` to `.env.local`; never expose the key through a `NEXT_PUBLIC_*` variable or browser code.
 
 ## Database migrations
 
@@ -67,4 +69,4 @@ Use `npm run test:watch` for an interactive test session.
 
 ## Scope boundary
 
-T08 adds manual, source-aware evidence records and keyword retrieval backed by the typed client and RLS policies. Authentication UI, automatic document extraction, semantic retrieval, OpenAI, and PM workflows are deliberately not included yet.
+T09 adds only the server-side OpenAI Responses API client and typed text-response helper. Chat UI, document extraction, semantic retrieval, tool calling, and PM workflows are deliberately not included yet.
