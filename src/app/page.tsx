@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import DocumentLibraryPanel from "./document-library-panel";
+import DiscoverWorkflowPanel from "./discover-workflow-panel";
 import EvidenceLibraryPanel from "./evidence-library-panel";
 import ProductContextPanel from "./product-context-panel";
 
@@ -72,7 +73,7 @@ const workflows = [
     number: "01",
     title: "Discover & synthesize",
     description: "Turn customer evidence into grounded themes and opportunities.",
-    status: "Coming next",
+    status: "Ready",
     accent: "#5269d8",
   },
   {
@@ -236,6 +237,10 @@ export default function Home() {
 
             <section id="evidence" aria-labelledby="evidence-heading" className="mt-6 rounded-2xl border border-[#e3e7ee] bg-white p-5 sm:p-7">
               <EvidenceLibraryPanel />
+            </section>
+
+            <section id="discover" aria-labelledby="discover-heading" className="mt-8 rounded-2xl border border-[#e3e7ee] bg-white p-5 sm:p-7">
+              <DiscoverWorkflowPanel />
             </section>
 
             <section id="workflows" aria-labelledby="workflows-heading" className="mt-8">

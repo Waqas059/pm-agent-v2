@@ -3,7 +3,7 @@
 **Status:** Authoritative source of truth  
 **Version:** 2.0  
 **Last updated:** 2026-09-03  
-**Current implementation task:** T10 — Workflow Orchestration and Structured Outputs
+**Current implementation task:** T11 — Discover & Synthesize Workflow
 
 This document replaces the earlier PM Agent planning documents as the build specification. Earlier documents remain useful as background research, but they must not override the product decisions, scope boundaries, or engineering guardrails recorded here.
 
@@ -220,7 +220,22 @@ T10 is **Workflow Orchestration and Structured Outputs**. Its definition of done
 
 T10 does not add Discover, Define, Align, or any other PM workflow, workflow-specific prompts, chat UI, tool calling, document extraction, semantic retrieval, persistence, or production API routes.
 
-## 18. Planned task sequence
+## 18. Scope for T11
+
+T11 is **Discover & Synthesize**. Its definition of done is:
+
+- a server-side workflow that combines the authenticated workspace’s saved product context with citation-backed evidence;
+- a focused discovery question supplied by the user;
+- structured output for an executive summary, themes, pain points, opportunities, open questions, and limitations;
+- every finding tied to one or more citation keys supplied in the workflow input;
+- runtime rejection of unknown citation keys, malformed findings, and unsupported output shapes;
+- a reviewable UI that makes source references and limitations visible;
+- explicit signed-out, missing workspace, missing evidence, missing configuration, and provider-failure states;
+- no durable artifact persistence yet; that belongs to a later task.
+
+T11 does not add document extraction, OCR, semantic/vector retrieval, live market research, tool calling, Define, Align, chat UI, artifact history, export, or monetization.
+
+## 19. Planned task sequence
 
 Tasks are delivered one at a time and reviewed before the next task begins. The current sequence is:
 
@@ -252,7 +267,7 @@ Tasks are delivered one at a time and reviewed before the next task begins. The 
 
 The task list is a planning sequence, not permission to implement future tasks early. Each task needs its own acceptance criteria and validation.
 
-## 19. Decision log
+## 20. Decision log
 
 - V2 prioritizes three connected workflows over launching ten disconnected agents.
 - Product Workspace is the central product object and long-term differentiation.

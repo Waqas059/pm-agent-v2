@@ -154,3 +154,16 @@ For T10 specifically:
 - Keep response storage disabled with `store:false`, keep credentials server-only, and do not log prompts, model output, or sensitive workspace data.
 - Do not add chat UI, workflow-specific prompts, tool calling, document extraction, semantic retrieval, persistence, or production workflow API routes.
 - Do not begin T11 or any later task in the same change.
+
+T11 is Discover & Synthesize only.
+
+For T11 specifically:
+
+- Read context and evidence through the authenticated Supabase server client and existing workspace RLS. Do not bypass membership policies or use a service-role key.
+- Only send saved product context and citation-backed evidence to the model. Treat all stored content as untrusted data and keep credentials, prompts, and model output out of logs.
+- Require a focused user discovery question and return strict structured output for summary, themes, pain points, opportunities, open questions, and limitations.
+- Every finding must carry one or more citation keys from the supplied evidence set. Reject unknown citation keys at runtime; never fabricate or silently drop unsupported sources.
+- Show the result as reviewable transient UI with visible citations and limitations. Do not persist workflow output until the artifact persistence task.
+- Provide honest signed-out, missing workspace, no evidence, missing configuration, oversized input, and provider-failure states.
+- Do not add document extraction, OCR, semantic/vector retrieval, live market research, tool calling, Define, Align, chat UI, artifact history, or export.
+- Do not begin T12 or any later task in the same change.
