@@ -106,3 +106,16 @@ For T06 specifically:
 - Show explicit loading, signed-out, missing-configuration, no-workspace, empty, and error states. Never imply that a save succeeded unless Supabase confirms it.
 - Do not add authentication UI, file uploads, document extraction, evidence retrieval, OpenAI integration, or PM workflow execution.
 - Do not begin T07 or any later task in the same change.
+
+T07 is File Upload and Document Handling only.
+
+For T07 specifically:
+
+- Keep uploaded files in a private, workspace-scoped Storage bucket and metadata in a versioned database migration.
+- Enforce file type and size limits in both the UI and Storage/database constraints; never rely on the UI alone for security.
+- Scope Storage and metadata access through the existing authenticated workspace membership helpers and RLS policies.
+- Keep upload paths workspace-scoped and user-scoped. Do not use `upsert` for new uploads, and never expose a service-role key in browser code.
+- Record original filename, MIME type, size, uploader, storage path, and upload status without extracting or interpreting document contents yet.
+- Show explicit signed-out, missing-configuration, no-workspace, empty, and error states. Never imply an upload succeeded unless both Storage and metadata persistence succeed.
+- Do not add OCR, document extraction, evidence retrieval, citations, OpenAI integration, or PM workflow execution.
+- Do not begin T08 or any later task in the same change.

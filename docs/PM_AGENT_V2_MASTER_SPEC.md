@@ -3,7 +3,7 @@
 **Status:** Authoritative source of truth  
 **Version:** 2.0  
 **Last updated:** 2026-09-03  
-**Current implementation task:** T06 — Product Context Management
+**Current implementation task:** T07 — File Upload and Document Handling
 
 This document replaces the earlier PM Agent planning documents as the build specification. Earlier documents remain useful as background research, but they must not override the product decisions, scope boundaries, or engineering guardrails recorded here.
 
@@ -165,7 +165,21 @@ T06 is **Product Context Management**. Its definition of done is:
 
 T06 does not add authentication UI or flows, file uploads, document extraction, evidence retrieval, OpenAI integration, or PM workflow execution.
 
-## 14. Planned task sequence
+## 14. Scope for T07
+
+T07 is **File Upload and Document Handling**. Its definition of done is:
+
+- Add private document metadata storage and a private workspace-scoped Storage bucket.
+- Allow authenticated workspace owners and members to upload supported source documents.
+- Allow workspace members to list and download their workspace documents.
+- Allow owners to delete any workspace document and members to delete documents they uploaded.
+- Enforce a 6 MiB upload limit and allow only PDF, Word, Markdown, text, CSV, and JSON files.
+- Record original filename, MIME type, byte size, uploader, storage path, upload status, and timestamps.
+- Keep uploaded files private and do not expose a service-role key to the browser.
+
+T07 does not add document extraction, OCR, evidence retrieval, citation generation, OpenAI integration, or PM workflow execution.
+
+## 15. Planned task sequence
 
 Tasks are delivered one at a time and reviewed before the next task begins. The current sequence is:
 
@@ -197,7 +211,7 @@ Tasks are delivered one at a time and reviewed before the next task begins. The 
 
 The task list is a planning sequence, not permission to implement future tasks early. Each task needs its own acceptance criteria and validation.
 
-## 15. Decision log
+## 16. Decision log
 
 - V2 prioritizes three connected workflows over launching ten disconnected agents.
 - Product Workspace is the central product object and long-term differentiation.

@@ -102,10 +102,50 @@ export type Database = {
         };
         Relationships: [];
       };
+      documents: {
+        Row: {
+          id: string;
+          workspace_id: string;
+          original_name: string;
+          storage_path: string;
+          mime_type: string;
+          size_bytes: number;
+          status: Database["public"]["Enums"]["document_status"];
+          uploaded_by: string;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          workspace_id: string;
+          original_name: string;
+          storage_path: string;
+          mime_type: string;
+          size_bytes: number;
+          status?: Database["public"]["Enums"]["document_status"];
+          uploaded_by: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          workspace_id?: string;
+          original_name?: string;
+          storage_path?: string;
+          mime_type?: string;
+          size_bytes?: number;
+          status?: Database["public"]["Enums"]["document_status"];
+          uploaded_by?: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
     };
     Views: Record<string, never>;
     Functions: Record<string, never>;
     Enums: {
+      document_status: "uploaded" | "processing" | "ready" | "failed";
       workspace_member_role: "owner" | "member" | "viewer";
       context_category:
         | "product"

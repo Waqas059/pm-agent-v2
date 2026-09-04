@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import DocumentLibraryPanel from "./document-library-panel";
 import ProductContextPanel from "./product-context-panel";
 
 type IconName =
@@ -59,6 +60,7 @@ function Icon({ name, className = "h-5 w-5" }: { name: IconName; className?: str
 const navigation = [
   { label: "Overview", href: "#overview", icon: "home" as IconName, active: true },
   { label: "Product context", href: "#context", icon: "context" as IconName },
+  { label: "Documents", href: "#documents", icon: "book" as IconName },
   { label: "Workflows", href: "#workflows", icon: "sparkle" as IconName },
   { label: "Activity", href: "#activity", icon: "activity" as IconName },
 ];
@@ -188,7 +190,7 @@ export default function Home() {
             <section aria-label="Workspace status" className="grid gap-3 py-7 sm:grid-cols-3">
               {[
                 { label: "Product context", value: "Not added yet", detail: "Start with the essentials", icon: "context" as IconName },
-                { label: "Source files", value: "No files yet", detail: "Uploads arrive in T07", icon: "book" as IconName },
+                { label: "Documents", value: "Secure library", detail: "Upload source files below", icon: "book" as IconName },
                 { label: "Workflows", value: "3 connected paths", detail: "Ready to be built", icon: "sparkle" as IconName },
               ].map((item) => (
                 <div key={item.label} className="rounded-xl border border-[#e3e7ee] bg-white p-4 sm:p-5">
@@ -224,6 +226,10 @@ export default function Home() {
                 </div>
               </section>
             </div>
+
+            <section id="documents" aria-labelledby="documents-heading" className="mt-6 rounded-2xl border border-[#e3e7ee] bg-white p-5 sm:p-7">
+              <DocumentLibraryPanel />
+            </section>
 
             <section id="workflows" aria-labelledby="workflows-heading" className="mt-8">
               <div className="flex items-end justify-between gap-4 border-b border-[#e3e7ee] pb-4">
