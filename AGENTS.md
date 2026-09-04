@@ -119,3 +119,15 @@ For T07 specifically:
 - Show explicit signed-out, missing-configuration, no-workspace, empty, and error states. Never imply an upload succeeded unless both Storage and metadata persistence succeed.
 - Do not add OCR, document extraction, evidence retrieval, citations, OpenAI integration, or PM workflow execution.
 - Do not begin T08 or any later task in the same change.
+
+T08 is Evidence Retrieval and Citation Model only.
+
+For T08 specifically:
+
+- Store evidence and citations in new versioned migrations; do not edit applied migrations.
+- Require a real source label for every evidence item and preserve optional document/locator provenance.
+- Keep evidence kinds explicit: quote, observation, or metric. Never invent a quote, metric, confidence score, or source.
+- Use the indexed evidence text only for deterministic keyword retrieval; semantic retrieval and AI interpretation belong to later tasks.
+- Scope evidence and citation access through authenticated workspace membership and existing owner/member/viewer rules.
+- Keep the UI manual and source-aware. Automatic extraction, OCR, OpenAI integration, and workflow execution are out of scope.
+- Do not begin T09 or any later task in the same change.

@@ -3,7 +3,7 @@
 **Status:** Authoritative source of truth  
 **Version:** 2.0  
 **Last updated:** 2026-09-03  
-**Current implementation task:** T07 — File Upload and Document Handling
+**Current implementation task:** T08 — Evidence Retrieval and Citation Model
 
 This document replaces the earlier PM Agent planning documents as the build specification. Earlier documents remain useful as background research, but they must not override the product decisions, scope boundaries, or engineering guardrails recorded here.
 
@@ -179,7 +179,21 @@ T07 is **File Upload and Document Handling**. Its definition of done is:
 
 T07 does not add document extraction, OCR, evidence retrieval, citation generation, OpenAI integration, or PM workflow execution.
 
-## 15. Planned task sequence
+## 15. Scope for T08
+
+T08 is **Evidence Retrieval and Citation Model**. Its definition of done is:
+
+- Add versioned `evidence_items` and `evidence_citations` tables with workspace-scoped RLS.
+- Support evidence kinds for direct quotes, observations, and metrics.
+- Require every evidence item to carry a source label and a citation reference.
+- Support optional links from evidence to an uploaded document and a source locator.
+- Add indexed text retrieval over evidence title, content, and source label.
+- Provide a manual evidence library UI with search, source-aware creation, and deletion.
+- Keep evidence wording faithful to user-provided source material; do not fabricate quotes, metrics, confidence, or citations.
+
+T08 does not add automatic document extraction, OCR, semantic/vector retrieval, OpenAI integration, or PM workflow execution.
+
+## 16. Planned task sequence
 
 Tasks are delivered one at a time and reviewed before the next task begins. The current sequence is:
 
@@ -211,7 +225,7 @@ Tasks are delivered one at a time and reviewed before the next task begins. The 
 
 The task list is a planning sequence, not permission to implement future tasks early. Each task needs its own acceptance criteria and validation.
 
-## 16. Decision log
+## 17. Decision log
 
 - V2 prioritizes three connected workflows over launching ten disconnected agents.
 - Product Workspace is the central product object and long-term differentiation.

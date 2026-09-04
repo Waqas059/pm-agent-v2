@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import DocumentLibraryPanel from "./document-library-panel";
+import EvidenceLibraryPanel from "./evidence-library-panel";
 import ProductContextPanel from "./product-context-panel";
 
 type IconName =
@@ -61,6 +62,7 @@ const navigation = [
   { label: "Overview", href: "#overview", icon: "home" as IconName, active: true },
   { label: "Product context", href: "#context", icon: "context" as IconName },
   { label: "Documents", href: "#documents", icon: "book" as IconName },
+  { label: "Evidence", href: "#evidence", icon: "check" as IconName },
   { label: "Workflows", href: "#workflows", icon: "sparkle" as IconName },
   { label: "Activity", href: "#activity", icon: "activity" as IconName },
 ];
@@ -187,10 +189,11 @@ export default function Home() {
               </span>
             </section>
 
-            <section aria-label="Workspace status" className="grid gap-3 py-7 sm:grid-cols-3">
+            <section aria-label="Workspace status" className="grid gap-3 py-7 sm:grid-cols-2 xl:grid-cols-4">
               {[
                 { label: "Product context", value: "Not added yet", detail: "Start with the essentials", icon: "context" as IconName },
                 { label: "Documents", value: "Secure library", detail: "Upload source files below", icon: "book" as IconName },
+                { label: "Evidence", value: "Traceable only", detail: "Record source-backed items", icon: "check" as IconName },
                 { label: "Workflows", value: "3 connected paths", detail: "Ready to be built", icon: "sparkle" as IconName },
               ].map((item) => (
                 <div key={item.label} className="rounded-xl border border-[#e3e7ee] bg-white p-4 sm:p-5">
@@ -229,6 +232,10 @@ export default function Home() {
 
             <section id="documents" aria-labelledby="documents-heading" className="mt-6 rounded-2xl border border-[#e3e7ee] bg-white p-5 sm:p-7">
               <DocumentLibraryPanel />
+            </section>
+
+            <section id="evidence" aria-labelledby="evidence-heading" className="mt-6 rounded-2xl border border-[#e3e7ee] bg-white p-5 sm:p-7">
+              <EvidenceLibraryPanel />
             </section>
 
             <section id="workflows" aria-labelledby="workflows-heading" className="mt-8">

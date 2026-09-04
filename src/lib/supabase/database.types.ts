@@ -141,11 +141,88 @@ export type Database = {
         };
         Relationships: [];
       };
+      evidence_items: {
+        Row: {
+          id: string;
+          workspace_id: string;
+          document_id: string | null;
+          kind: Database["public"]["Enums"]["evidence_kind"];
+          title: string;
+          content: string;
+          source_label: string;
+          source_locator: Json;
+          created_by: string;
+          created_at: string;
+          updated_at: string;
+          search_vector: string;
+        };
+        Insert: {
+          id?: string;
+          workspace_id: string;
+          document_id?: string | null;
+          kind: Database["public"]["Enums"]["evidence_kind"];
+          title: string;
+          content: string;
+          source_label: string;
+          source_locator?: Json;
+          created_by: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          workspace_id?: string;
+          document_id?: string | null;
+          kind?: Database["public"]["Enums"]["evidence_kind"];
+          title?: string;
+          content?: string;
+          source_label?: string;
+          source_locator?: Json;
+          created_by?: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      evidence_citations: {
+        Row: {
+          id: string;
+          workspace_id: string;
+          evidence_item_id: string;
+          citation_key: string;
+          label: string;
+          locator: Json;
+          created_by: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          workspace_id: string;
+          evidence_item_id: string;
+          citation_key: string;
+          label: string;
+          locator?: Json;
+          created_by: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          workspace_id?: string;
+          evidence_item_id?: string;
+          citation_key?: string;
+          label?: string;
+          locator?: Json;
+          created_by?: string;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
     };
     Views: Record<string, never>;
     Functions: Record<string, never>;
     Enums: {
       document_status: "uploaded" | "processing" | "ready" | "failed";
+      evidence_kind: "quote" | "observation" | "metric";
       workspace_member_role: "owner" | "member" | "viewer";
       context_category:
         | "product"
