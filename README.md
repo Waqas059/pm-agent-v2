@@ -2,7 +2,7 @@
 
 PM Agent is an AI product workspace designed to help Product Managers turn customer evidence, product context, and team decisions into clear, useful artifacts.
 
-T01 established the production-ready web foundation and a clean product shell. T02 added the Supabase client foundation, and T03 adds the first version-controlled core schema migration.
+T01 established the production-ready web foundation and a clean product shell. T02 added the Supabase client foundation, T03 added the version-controlled core schema migration, and T04 adds authorization and Row Level Security.
 
 ## Prerequisites
 
@@ -36,7 +36,7 @@ Schema changes live in `supabase/migrations/` and should be applied through the 
 supabase db push
 ```
 
-T03 creates the `workspaces`, `workspace_members`, and `context_items` tables. Row Level Security and authorization policies are intentionally deferred to T04. Do not use these tables from a deployed client until T04 is complete.
+T03 creates the `workspaces`, `workspace_members`, and `context_items` tables. T04 enables RLS and grants authenticated users only the operations allowed by the workspace role policies. Anonymous requests have no access path. Do not use these tables from a deployed client until the app has a real authenticated session.
 
 ## Local development
 
@@ -67,4 +67,4 @@ Use `npm run test:watch` for an interactive test session.
 
 ## Scope boundary
 
-T03 adds only the core schema migration and matching TypeScript types. Authentication flows, row-level security, file storage, OpenAI, and PM workflows are deliberately not included yet.
+T04 adds only authorization and RLS for the existing core schema. Authentication UI, file storage, OpenAI, and PM workflows are deliberately not included yet.

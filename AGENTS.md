@@ -71,3 +71,16 @@ For T03 specifically:
 - Do not begin T04 or any later task in the same change.
 - Every future schema change must be a new migration; do not edit an applied migration.
 - Treat the schema as unsafe for direct client use until T04 adds and verifies RLS policies.
+
+T04 is authorization and Row Level Security for the existing core schema only.
+
+For T04 specifically:
+
+- Keep the existing core tables and migration immutable; add a new migration for every security change.
+- Enable RLS on every exposed core table and explicitly grant only authenticated client operations.
+- Keep anonymous access denied. Keep service-role credentials server-side only; never place them in browser code or a `NEXT_PUBLIC_*` variable.
+- Use narrowly scoped policies: workspace owners manage workspaces and memberships; members can read workspace data; viewers are read-only; owners and members can edit context.
+- Keep membership checks in private security-definer helpers with a fixed search path to avoid recursive RLS policy evaluation.
+- Automatically create the owner membership when a workspace is created, and prevent changing membership or context workspace boundaries through updates.
+- Do not add authentication UI, storage buckets, OpenAI integration, or PM workflows.
+- Do not begin T05 or any later task in the same change.

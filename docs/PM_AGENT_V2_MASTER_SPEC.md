@@ -3,7 +3,7 @@
 **Status:** Authoritative source of truth  
 **Version:** 2.0  
 **Last updated:** 2026-09-03  
-**Current implementation task:** T03 — Core Database Schema and Migrations
+**Current implementation task:** T04 — Authorization and Row Level Security
 
 This document replaces the earlier PM Agent planning documents as the build specification. Earlier documents remain useful as background research, but they must not override the product decisions, scope boundaries, or engineering guardrails recorded here.
 
@@ -124,7 +124,22 @@ T03 is **Core Database Schema and Migrations**. Its definition of done is:
 
 T03 does not add authentication UI or flows, row-level security policies, storage buckets, OpenAI, or PM workflows. RLS is intentionally deferred to T04; the public tables must be treated as unsafe for deployed client access until T04 is complete.
 
-## 11. Planned task sequence
+## 11. Scope for T04
+
+T04 is **Authorization and Row Level Security** for the T03 core schema. Its definition of done is:
+
+- Add a new versioned migration; do not edit the applied T03 migration.
+- Enable RLS on `workspaces`, `workspace_members`, and `context_items`.
+- Deny anonymous access and grant authenticated clients only the operations represented by the policies.
+- Automatically create an owner membership when a workspace is created.
+- Allow workspace owners to manage the workspace and non-owner memberships.
+- Allow members to read workspace data and create/update/delete context; viewers are read-only.
+- Keep membership checks in private, fixed-search-path security-definer helpers.
+- Prevent changing a membership identity or moving context between workspaces through an update.
+
+T04 does not add authentication UI or sign-in/sign-out flows, storage buckets, OpenAI integration, or PM workflows.
+
+## 12. Planned task sequence
 
 Tasks are delivered one at a time and reviewed before the next task begins. The current sequence is:
 
@@ -156,7 +171,7 @@ Tasks are delivered one at a time and reviewed before the next task begins. The 
 
 The task list is a planning sequence, not permission to implement future tasks early. Each task needs its own acceptance criteria and validation.
 
-## 12. Decision log
+## 13. Decision log
 
 - V2 prioritizes three connected workflows over launching ten disconnected agents.
 - Product Workspace is the central product object and long-term differentiation.
