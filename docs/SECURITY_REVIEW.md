@@ -23,9 +23,9 @@ authenticated production test or a Supabase dashboard review.
 
 ## Still required before wider public use
 
-- Apply and verify the workflow persistence migration in the linked Supabase
-  project. The current CLI environment needs a fresh `supabase login` because
-  it has no access token; no token should be pasted into chat.
+- The workflow persistence migration has now been applied successfully to the
+  linked Supabase project. Verify the new tables once in the dashboard as part
+  of the authenticated UAT.
 - Complete authenticated production UAT across signup/sign-in, workspace
   creation, context, evidence, documents, workflows, artifacts, planning,
   metrics, privacy, feedback, sign-out, and failure states.
