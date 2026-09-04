@@ -143,3 +143,14 @@ For T09 specifically:
 - Validate inputs and normalize only the response fields needed by future tasks; preserve provider failures for explicit error handling.
 - Do not add chat UI, PM workflows, document extraction, semantic retrieval, tool calling, or production API routes.
 - Do not begin T10 or any later task in the same change.
+
+T10 is Workflow Orchestration and Structured Outputs only.
+
+For T10 specifically:
+
+- Build only a generic server-only workflow boundary on top of the official OpenAI Responses API; do not implement Discover, Define, Align, or any other PM workflow yet.
+- Use Responses API Structured Outputs with a strict JSON Schema, then parse and validate the returned value at runtime before returning it to callers.
+- Validate workflow names, input sizes, schemas, and token limits before making a provider call. Preserve provider failures and return explicit errors for incomplete, missing, invalid, or schema-invalid outputs; never fabricate a fallback result.
+- Keep response storage disabled with `store:false`, keep credentials server-only, and do not log prompts, model output, or sensitive workspace data.
+- Do not add chat UI, workflow-specific prompts, tool calling, document extraction, semantic retrieval, persistence, or production workflow API routes.
+- Do not begin T11 or any later task in the same change.

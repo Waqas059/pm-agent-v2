@@ -3,7 +3,7 @@
 **Status:** Authoritative source of truth  
 **Version:** 2.0  
 **Last updated:** 2026-09-03  
-**Current implementation task:** T09 — OpenAI Responses API Foundation
+**Current implementation task:** T10 — Workflow Orchestration and Structured Outputs
 
 This document replaces the earlier PM Agent planning documents as the build specification. Earlier documents remain useful as background research, but they must not override the product decisions, scope boundaries, or engineering guardrails recorded here.
 
@@ -206,7 +206,21 @@ T09 is **OpenAI Responses API Foundation**. Its definition of done is:
 
 T09 does not add chat UI, PM workflows, document extraction, semantic retrieval, tool calling, or production API routes.
 
-## 17. Planned task sequence
+## 17. Scope for T10
+
+T10 is **Workflow Orchestration and Structured Outputs**. Its definition of done is:
+
+- a generic server-only workflow runner built on the official OpenAI Responses API;
+- strict `json_schema` output configuration with configurable workflow name, description, model, instructions, input, and token limit;
+- explicit input and request-boundary validation before provider calls;
+- JSON parsing plus caller-supplied runtime validation before a typed result is returned;
+- explicit errors for incomplete responses, missing output, invalid JSON, and runtime validation failures;
+- response storage disabled by default with `store: false` and no sensitive logging;
+- focused unit tests for the contract and failure paths.
+
+T10 does not add Discover, Define, Align, or any other PM workflow, workflow-specific prompts, chat UI, tool calling, document extraction, semantic retrieval, persistence, or production API routes.
+
+## 18. Planned task sequence
 
 Tasks are delivered one at a time and reviewed before the next task begins. The current sequence is:
 
@@ -238,7 +252,7 @@ Tasks are delivered one at a time and reviewed before the next task begins. The 
 
 The task list is a planning sequence, not permission to implement future tasks early. Each task needs its own acceptance criteria and validation.
 
-## 18. Decision log
+## 19. Decision log
 
 - V2 prioritizes three connected workflows over launching ten disconnected agents.
 - Product Workspace is the central product object and long-term differentiation.
