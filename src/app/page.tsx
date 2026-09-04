@@ -1,137 +1,293 @@
 import Link from "next/link";
 
+type IconName =
+  | "activity"
+  | "arrow"
+  | "book"
+  | "check"
+  | "chevron"
+  | "context"
+  | "home"
+  | "plus"
+  | "search"
+  | "settings"
+  | "sparkle"
+  | "users";
+
+function Icon({ name, className = "h-5 w-5" }: { name: IconName; className?: string }) {
+  const common = {
+    className,
+    fill: "none",
+    stroke: "currentColor",
+    strokeLinecap: "round" as const,
+    strokeLinejoin: "round" as const,
+    strokeWidth: 1.8,
+    viewBox: "0 0 24 24",
+    "aria-hidden": true,
+  };
+
+  switch (name) {
+    case "activity":
+      return <svg {...common}><path d="M3 12h4l2.2-7 4.1 14 2.2-7H21" /></svg>;
+    case "arrow":
+      return <svg {...common}><path d="M5 12h13M13 6l6 6-6 6" /></svg>;
+    case "book":
+      return <svg {...common}><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v16H6.5A2.5 2.5 0 0 0 4 21.5v-16Z" /><path d="M4 5.5v16M8 7h8M8 11h6" /></svg>;
+    case "check":
+      return <svg {...common}><path d="m5 12 4 4L19 6" /></svg>;
+    case "chevron":
+      return <svg {...common}><path d="m7 9 5 5 5-5" /></svg>;
+    case "context":
+      return <svg {...common}><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v16H6.5A2.5 2.5 0 0 0 4 21.5v-16Z" /><path d="M4 5.5v16M8 8h8M8 12h6M8 16h4" /></svg>;
+    case "home":
+      return <svg {...common}><path d="m4 10 8-7 8 7v10a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V10Z" /><path d="M9 21v-6h6v6" /></svg>;
+    case "plus":
+      return <svg {...common}><path d="M12 5v14M5 12h14" /></svg>;
+    case "search":
+      return <svg {...common}><circle cx="10.8" cy="10.8" r="6.8" /><path d="m16 16 4.5 4.5" /></svg>;
+    case "settings":
+      return <svg {...common}><path d="M12 15.2a3.2 3.2 0 1 0 0-6.4 3.2 3.2 0 0 0 0 6.4Z" /><path d="m19.4 15 .1.1a1.8 1.8 0 0 1-2.5 2.5l-.1-.1a1.8 1.8 0 0 0-3.1 1.3v.2a1.8 1.8 0 0 1-3.6 0v-.2a1.8 1.8 0 0 0-3.1-1.3l-.1.1a1.8 1.8 0 0 1-2.5-2.5l.1-.1a1.8 1.8 0 0 0-1.3-3.1h-.2a1.8 1.8 0 0 1 0-3.6h.2a1.8 1.8 0 0 0 1.3-3.1l-.1-.1a1.8 1.8 0 0 1 2.5-2.5l.1.1a1.8 1.8 0 0 0 3.1-1.3V1.2a1.8 1.8 0 0 1 3.6 0v.2a1.8 1.8 0 0 0 3.1 1.3l.1-.1a1.8 1.8 0 0 1 2.5 2.5l-.1.1a1.8 1.8 0 0 0 1.3 3.1h.2a1.8 1.8 0 0 1 0 3.6h-.2a1.8 1.8 0 0 0-1.3 3.1Z" /></svg>;
+    case "sparkle":
+      return <svg {...common}><path d="m12 3 1.4 5.6L19 10l-5.6 1.4L12 17l-1.4-5.6L5 10l5.6-1.4L12 3ZM19 16l.6 2.4L22 19l-2.4.6L19 22l-.6-2.4L16 19l2.4-.6L19 16Z" /></svg>;
+    case "users":
+      return <svg {...common}><path d="M16 20v-1.5a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4V20M9.5 10.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7ZM17 11a3 3 0 1 0 0-6M17 14.5a4 4 0 0 1 4 4V20" /></svg>;
+  }
+}
+
+const navigation = [
+  { label: "Overview", href: "#overview", icon: "home" as IconName, active: true },
+  { label: "Product context", href: "#context", icon: "context" as IconName },
+  { label: "Workflows", href: "#workflows", icon: "sparkle" as IconName },
+  { label: "Activity", href: "#activity", icon: "activity" as IconName },
+];
+
+const contextAreas = [
+  { title: "Product overview", description: "What you are building and why", icon: "sparkle" as IconName },
+  { title: "Users & personas", description: "Who you serve and what they need", icon: "users" as IconName },
+  { title: "Goals & metrics", description: "How you will know it is working", icon: "activity" as IconName },
+  { title: "Constraints & decisions", description: "The boundaries your team works within", icon: "book" as IconName },
+];
+
 const workflows = [
   {
-    eyebrow: "01",
+    number: "01",
     title: "Discover & synthesize",
-    description: "Find the signal in interviews, feedback, and product evidence.",
+    description: "Turn customer evidence into grounded themes and opportunities.",
     status: "Coming next",
+    accent: "#5269d8",
   },
   {
-    eyebrow: "02",
+    number: "02",
     title: "Define & specify",
-    description: "Turn a validated opportunity into a clear, buildable product brief.",
+    description: "Shape a clear, buildable brief from an agreed opportunity.",
     status: "Planned",
+    accent: "#a06bd8",
   },
   {
-    eyebrow: "03",
+    number: "03",
     title: "Align & communicate",
-    description: "Create the right update for every stakeholder from the same context.",
+    description: "Create useful updates from the same product context.",
     status: "Planned",
+    accent: "#d17b54",
   },
 ];
 
 export default function Home() {
   return (
-    <main className="min-h-screen bg-[#f6f8fb] text-[#172033]">
-      <div className="mx-auto flex min-h-screen max-w-[1440px] flex-col px-5 py-5 sm:px-8 lg:px-10">
-        <header className="flex items-center justify-between border-b border-[#dfe5ee] pb-5">
-          <Link className="flex items-center gap-3" href="/" aria-label="PM Agent home">
-            <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#172033] text-sm font-bold text-white">
-              PM
-            </span>
-            <span className="text-base font-semibold tracking-[-0.02em]">PM Agent</span>
-          </Link>
-          <div className="flex items-center gap-3 text-sm text-[#68748a]">
-            <span className="hidden sm:inline">Product workspace</span>
-            <span className="h-2 w-2 rounded-full bg-[#42b883]" aria-label="System ready" />
+    <main className="min-h-screen bg-[#f7f8fa] text-[#192235]">
+      <div className="flex min-h-screen">
+        <aside className="hidden w-64 shrink-0 flex-col border-r border-[#e3e7ee] bg-white lg:flex">
+          <div className="flex h-20 items-center border-b border-[#e3e7ee] px-6">
+            <Link className="flex items-center gap-3" href="#overview" aria-label="PM Agent overview">
+              <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#192235] text-xs font-bold tracking-tight text-white">PM</span>
+              <span className="text-[15px] font-semibold tracking-[-0.02em]">PM Agent</span>
+            </Link>
           </div>
-        </header>
 
-        <div className="grid flex-1 gap-8 py-10 lg:grid-cols-[220px_1fr] lg:gap-14 lg:py-14">
-          <aside className="flex flex-row gap-2 lg:flex-col lg:pt-2">
-            <nav aria-label="Workspace navigation" className="flex flex-row gap-2 lg:flex-col">
-              <a
-                href="#overview"
-                className="rounded-lg bg-white px-3 py-2 text-sm font-semibold text-[#172033] shadow-sm ring-1 ring-[#dfe5ee]"
-              >
-                Overview
-              </a>
-              <a
-                href="#workflows"
-                className="rounded-lg px-3 py-2 text-sm text-[#68748a] transition-colors hover:bg-white hover:text-[#172033]"
-              >
-                Workflows
-              </a>
-              <a
-                href="#principles"
-                className="rounded-lg px-3 py-2 text-sm text-[#68748a] transition-colors hover:bg-white hover:text-[#172033]"
-              >
-                Principles
-              </a>
-            </nav>
-          </aside>
-
-          <section id="overview" className="max-w-5xl">
-            <div className="max-w-3xl">
-              <p className="mb-4 text-xs font-bold uppercase tracking-[0.2em] text-[#4968d8]">
-                Your product, understood
-              </p>
-              <h1 className="max-w-3xl text-4xl font-semibold leading-[1.08] tracking-[-0.05em] text-[#172033] sm:text-6xl">
-                Make better product decisions from the context you already have.
-              </h1>
-              <p className="mt-6 max-w-2xl text-base leading-7 text-[#68748a] sm:text-lg">
-                PM Agent is an AI workspace for turning customer evidence, product context, and
-                team decisions into useful PM artifacts.
-              </p>
-            </div>
-
-            <div className="mt-12 grid gap-4 sm:grid-cols-3">
-              {[
-                ["One workspace", "Your product context stays connected."],
-                ["Evidence first", "Separate what is known from what is assumed."],
-                ["Built for decisions", "Move from insight to action with clarity."],
-              ].map(([title, description]) => (
-                <div key={title} className="rounded-2xl border border-[#dfe5ee] bg-white p-5">
-                  <p className="text-sm font-semibold text-[#172033]">{title}</p>
-                  <p className="mt-2 text-sm leading-6 text-[#68748a]">{description}</p>
+          <div className="px-4 pt-5">
+            <div className="rounded-xl border border-[#e3e7ee] bg-[#fafbfc] p-3">
+              <p className="px-1 text-[10px] font-bold uppercase tracking-[0.18em] text-[#8d98a9]">Workspace</p>
+              <div className="mt-2 flex items-center justify-between gap-2">
+                <div className="flex min-w-0 items-center gap-2">
+                  <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-[#e9edff] text-xs font-bold text-[#5269d8]">P</span>
+                  <span className="truncate text-sm font-semibold">Product workspace</span>
                 </div>
+                <Icon name="chevron" className="h-4 w-4 shrink-0 text-[#8d98a9]" />
+              </div>
+              <p className="mt-2 px-1 text-xs text-[#8d98a9]">Preview · not connected</p>
+            </div>
+          </div>
+
+          <nav aria-label="Workspace navigation" className="mt-7 px-4">
+            <p className="px-3 text-[10px] font-bold uppercase tracking-[0.18em] text-[#a0a9b8]">Workspace</p>
+            <div className="mt-2 space-y-1">
+              {navigation.map((item) => (
+                <Link
+                  key={item.label}
+                  href={item.href}
+                  className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors ${item.active ? "bg-[#eef1ff] font-semibold text-[#435ac6]" : "text-[#68748a] hover:bg-[#f5f7fa] hover:text-[#192235]"}`}
+                >
+                  <Icon name={item.icon} className="h-[18px] w-[18px]" />
+                  {item.label}
+                </Link>
               ))}
             </div>
+          </nav>
 
-            <div id="workflows" className="mt-16">
-              <div className="flex items-end justify-between gap-4 border-b border-[#dfe5ee] pb-4">
-                <div>
-                  <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#8a95a8]">
-                    The connected path
-                  </p>
-                  <h2 className="mt-2 text-2xl font-semibold tracking-[-0.03em]">Start with the work that matters</h2>
-                </div>
-                <span className="hidden text-sm text-[#8a95a8] sm:inline">T01 · Foundation</span>
+          <div className="mt-auto px-4 pb-5">
+            <div className="mb-4 rounded-xl bg-[#192235] p-4 text-white">
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#303d59] text-xs font-bold">AI</div>
+              <p className="mt-3 text-sm font-semibold">Your product, understood.</p>
+              <p className="mt-1 text-xs leading-5 text-[#b9c3d3]">Build context once. Use it across every PM workflow.</p>
+            </div>
+            <Link href="#settings" className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-[#68748a] hover:bg-[#f5f7fa] hover:text-[#192235]">
+              <Icon name="settings" className="h-[18px] w-[18px]" />
+              Settings
+            </Link>
+            <div className="mt-3 flex items-center gap-3 border-t border-[#e3e7ee] px-3 pt-4">
+              <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#dfe7ff] text-xs font-bold text-[#435ac6]">W</span>
+              <div className="min-w-0">
+                <p className="truncate text-sm font-semibold">Waqas</p>
+                <p className="truncate text-xs text-[#8d98a9]">Product manager</p>
               </div>
+            </div>
+          </div>
+        </aside>
 
-              <div className="mt-4 divide-y divide-[#dfe5ee]">
-                {workflows.map((workflow) => (
-                  <article key={workflow.eyebrow} className="grid gap-3 py-6 sm:grid-cols-[64px_1fr_auto] sm:items-center">
-                    <span className="text-sm font-semibold text-[#4968d8]">{workflow.eyebrow}</span>
+        <div className="min-w-0 flex-1">
+          <header className="flex h-20 items-center justify-between border-b border-[#e3e7ee] bg-white px-5 sm:px-8 lg:px-10">
+            <div className="flex items-center gap-3 lg:hidden">
+              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#192235] text-[10px] font-bold text-white">PM</span>
+              <span className="text-sm font-semibold">PM Agent</span>
+            </div>
+            <div className="hidden items-center gap-2 text-sm text-[#8d98a9] lg:flex">
+              <span>Product workspace</span>
+              <span className="text-[#c5cbd5]">/</span>
+              <span className="font-medium text-[#192235]">Overview</span>
+            </div>
+            <div className="flex items-center gap-2 sm:gap-4">
+              <span className="hidden items-center gap-2 text-xs font-medium text-[#68806f] sm:flex">
+                <span className="h-2 w-2 rounded-full bg-[#53b67b]" />
+                System ready
+              </span>
+              <button type="button" disabled className="flex h-9 w-9 items-center justify-center rounded-lg border border-[#e3e7ee] text-[#9ba4b2]" aria-label="Search coming soon" title="Search is planned for a later task">
+                <Icon name="search" className="h-[17px] w-[17px]" />
+              </button>
+              <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#dfe7ff] text-xs font-bold text-[#435ac6] lg:hidden">W</span>
+            </div>
+          </header>
+
+          <div className="mx-auto max-w-[1440px] px-5 py-8 sm:px-8 sm:py-10 lg:px-10 lg:py-12">
+            <section id="overview" aria-labelledby="overview-heading" className="flex flex-col justify-between gap-6 border-b border-[#e3e7ee] pb-8 sm:flex-row sm:items-end">
+              <div>
+                <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#5269d8]">Workspace overview</p>
+                <h1 id="overview-heading" className="mt-3 text-3xl font-semibold tracking-[-0.05em] text-[#192235] sm:text-4xl">Make your product easier to understand.</h1>
+                <p className="mt-3 max-w-2xl text-sm leading-6 text-[#68748a] sm:text-base">Welcome back, Waqas. This is the shared space for your product context, evidence, and decisions.</p>
+              </div>
+              <span className="inline-flex w-fit items-center gap-2 rounded-full border border-[#e3e7ee] bg-white px-3 py-2 text-xs font-semibold text-[#68748a]">
+                <span className="h-2 w-2 rounded-full bg-[#d6a453]" />
+                Preview workspace
+              </span>
+            </section>
+
+            <section aria-label="Workspace status" className="grid gap-3 py-7 sm:grid-cols-3">
+              {[
+                { label: "Product context", value: "Not added yet", detail: "Start with the essentials", icon: "context" as IconName },
+                { label: "Source files", value: "No files yet", detail: "Uploads arrive in T07", icon: "book" as IconName },
+                { label: "Workflows", value: "3 connected paths", detail: "Ready to be built", icon: "sparkle" as IconName },
+              ].map((item) => (
+                <div key={item.label} className="rounded-xl border border-[#e3e7ee] bg-white p-4 sm:p-5">
+                  <div className="flex items-start justify-between gap-4">
                     <div>
-                      <h3 className="font-semibold text-[#172033]">{workflow.title}</h3>
-                      <p className="mt-1 text-sm leading-6 text-[#68748a]">{workflow.description}</p>
+                      <p className="text-xs font-semibold text-[#8d98a9]">{item.label}</p>
+                      <p className="mt-2 text-lg font-semibold tracking-[-0.02em] text-[#192235]">{item.value}</p>
+                      <p className="mt-1 text-xs text-[#8d98a9]">{item.detail}</p>
                     </div>
-                    <span className="w-fit rounded-full bg-[#eef1f8] px-3 py-1 text-xs font-semibold text-[#68748a]">
-                      {workflow.status}
-                    </span>
+                    <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#f1f3ff] text-[#5269d8]"><Icon name={item.icon} className="h-[18px] w-[18px]" /></span>
+                  </div>
+                </div>
+              ))}
+            </section>
+
+            <div className="grid gap-6 xl:grid-cols-[minmax(0,1.45fr)_minmax(300px,0.8fr)]">
+              <section id="context" aria-labelledby="context-heading" className="rounded-2xl border border-[#e3e7ee] bg-white p-5 sm:p-7">
+                <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-start">
+                  <div>
+                    <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#8d98a9]">The foundation</p>
+                    <h2 id="context-heading" className="mt-2 text-2xl font-semibold tracking-[-0.04em] text-[#192235]">Build your product context</h2>
+                    <p className="mt-2 max-w-xl text-sm leading-6 text-[#68748a]">Capture the facts your team returns to, so future PM work starts with shared understanding.</p>
+                  </div>
+                  <button type="button" disabled className="inline-flex w-fit cursor-not-allowed items-center gap-2 rounded-lg bg-[#dfe4f8] px-3.5 py-2.5 text-sm font-semibold text-[#7d88b2]" title="Context editing is available in T06">
+                    <Icon name="plus" className="h-4 w-4" />
+                    Add context
+                  </button>
+                </div>
+
+                <div className="mt-7 grid gap-3 sm:grid-cols-2">
+                  {contextAreas.map((area) => (
+                    <article key={area.title} className="group rounded-xl border border-dashed border-[#d8dee8] p-4 transition-colors hover:border-[#aab8ee] hover:bg-[#fbfcff]">
+                      <div className="flex items-start gap-3">
+                        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#f3f5fb] text-[#5269d8]"><Icon name={area.icon} className="h-[18px] w-[18px]" /></span>
+                        <div className="min-w-0">
+                          <h3 className="text-sm font-semibold text-[#192235]">{area.title}</h3>
+                          <p className="mt-1 text-xs leading-5 text-[#8d98a9]">{area.description}</p>
+                        </div>
+                      </div>
+                      <div className="mt-4 flex items-center gap-2 text-xs font-medium text-[#a0a9b8]"><span className="h-1.5 w-1.5 rounded-full bg-[#c9d0dc]" />Not added</div>
+                    </article>
+                  ))}
+                </div>
+                <div className="mt-5 flex items-start gap-2 rounded-lg bg-[#f8f9fb] px-3 py-2.5 text-xs leading-5 text-[#8d98a9]">
+                  <Icon name="check" className="mt-0.5 h-4 w-4 shrink-0 text-[#53a977]" />
+                  Your context will remain separate from assumptions and evidence. Nothing is saved in this preview yet.
+                </div>
+              </section>
+
+              <section id="activity" aria-labelledby="activity-heading" className="rounded-2xl border border-[#e3e7ee] bg-white p-5 sm:p-7">
+                <div className="flex items-center justify-between gap-3">
+                  <div>
+                    <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#8d98a9]">Workspace pulse</p>
+                    <h2 id="activity-heading" className="mt-2 text-xl font-semibold tracking-[-0.03em] text-[#192235]">Recent activity</h2>
+                  </div>
+                  <Icon name="activity" className="h-5 w-5 text-[#a5afbe]" />
+                </div>
+                <div className="mt-8 flex min-h-40 flex-col items-center justify-center rounded-xl border border-dashed border-[#d8dee8] px-5 text-center">
+                  <span className="flex h-10 w-10 items-center justify-center rounded-full bg-[#f3f5fb] text-[#8692a6]"><Icon name="activity" className="h-[18px] w-[18px]" /></span>
+                  <p className="mt-3 text-sm font-semibold text-[#526075]">Your workspace is ready.</p>
+                  <p className="mt-1 max-w-xs text-xs leading-5 text-[#9aa4b3]">Activity will appear here as context and decisions are added.</p>
+                </div>
+              </section>
+            </div>
+
+            <section id="workflows" aria-labelledby="workflows-heading" className="mt-8">
+              <div className="flex items-end justify-between gap-4 border-b border-[#e3e7ee] pb-4">
+                <div>
+                  <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#8d98a9]">The connected path</p>
+                  <h2 id="workflows-heading" className="mt-2 text-2xl font-semibold tracking-[-0.04em] text-[#192235]">Workflows built on your context</h2>
+                </div>
+                <span className="hidden text-xs font-semibold text-[#a0a9b8] sm:inline">Planned sequence · T05</span>
+              </div>
+              <div className="mt-4 grid gap-3 lg:grid-cols-3">
+                {workflows.map((workflow) => (
+                  <article key={workflow.number} className="group rounded-2xl border border-[#e3e7ee] bg-white p-5 transition-shadow hover:shadow-[0_8px_24px_rgba(25,34,53,0.06)]">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold" style={{ color: workflow.accent }}>{workflow.number}</span>
+                      <span className="rounded-full bg-[#f3f5f8] px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.12em] text-[#8d98a9]">{workflow.status}</span>
+                    </div>
+                    <h3 className="mt-7 text-base font-semibold text-[#192235]">{workflow.title}</h3>
+                    <p className="mt-2 min-h-12 text-sm leading-6 text-[#68748a]">{workflow.description}</p>
+                    <div className="mt-5 flex items-center gap-2 text-xs font-semibold text-[#a0a9b8]">Available in a later task <Icon name="arrow" className="h-3.5 w-3.5" /></div>
                   </article>
                 ))}
               </div>
-            </div>
+            </section>
 
-            <div id="principles" className="mt-10 rounded-2xl bg-[#172033] p-6 text-white sm:p-8">
-              <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#a8baff]">North star</p>
-              <p className="mt-4 max-w-2xl text-xl leading-8 tracking-[-0.02em] text-[#f4f6fb]">
-                PM Agent should know your product—not just answer a prompt.
-              </p>
-              <p className="mt-4 max-w-2xl text-sm leading-6 text-[#b9c2d2]">
-                This foundation keeps the product focused on connected workflows, grounded evidence,
-                and decisions that teams can explain.
-              </p>
-            </div>
-          </section>
+            <footer className="mt-10 flex flex-col justify-between gap-2 border-t border-[#e3e7ee] pt-5 text-xs text-[#a0a9b8] sm:flex-row">
+              <span>PM Agent V2 · Product workspace preview</span>
+              <span>Context first. Evidence grounded. Decisions clearer.</span>
+            </footer>
+          </div>
         </div>
-
-        <footer className="border-t border-[#dfe5ee] pt-5 text-xs text-[#8a95a8]">
-          PM Agent V2 · Foundation in progress
-        </footer>
       </div>
     </main>
   );

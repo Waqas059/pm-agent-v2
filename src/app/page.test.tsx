@@ -3,14 +3,15 @@ import { describe, expect, it } from "vitest";
 
 import Home from "./page";
 
-describe("PM Agent foundation shell", () => {
-  it("renders the product promise and initial workflow path", () => {
+describe("PM Agent product workspace", () => {
+  it("renders the workspace overview and context entry points", () => {
     render(<Home />);
 
     expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent(
-      "Make better product decisions from the context you already have.",
+      "Make your product easier to understand.",
     );
-    expect(screen.getByText("Discover & synthesize")).toBeInTheDocument();
-    expect(screen.getByText("PM Agent should know your product—not just answer a prompt.")).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Build your product context" })).toBeInTheDocument();
+    expect(screen.getByText("Product overview")).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Workflows built on your context" })).toBeInTheDocument();
   });
 });

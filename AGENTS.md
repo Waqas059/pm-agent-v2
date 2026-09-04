@@ -84,3 +84,14 @@ For T04 specifically:
 - Automatically create the owner membership when a workspace is created, and prevent changing membership or context workspace boundaries through updates.
 - Do not add authentication UI, storage buckets, OpenAI integration, or PM workflows.
 - Do not begin T05 or any later task in the same change.
+
+T05 is the Product Workspace UI only.
+
+For T05 specifically:
+
+- Build the responsive overview dashboard and workspace navigation on top of the existing App Router foundation.
+- Use honest preview and empty-state copy; do not fabricate saved context, customer evidence, activity, or business metrics.
+- Keep future actions visibly unavailable until their approved task: context editing belongs to T06, uploads to T07, and workflows to T11–T13.
+- Keep the UI presentational unless a small client component is necessary for local interface state; do not connect persistence yet.
+- Do not add authentication UI, database writes, file uploads, OpenAI integration, or PM workflow execution.
+- Do not begin T06 or any later task in the same change.
