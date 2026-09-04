@@ -3,7 +3,7 @@
 **Status:** Authoritative source of truth  
 **Version:** 2.0  
 **Last updated:** 2026-09-03  
-**Current implementation task:** T05 — Product Workspace UI
+**Current implementation task:** T06 — Product Context Management
 
 This document replaces the earlier PM Agent planning documents as the build specification. Earlier documents remain useful as background research, but they must not override the product decisions, scope boundaries, or engineering guardrails recorded here.
 
@@ -152,7 +152,20 @@ T05 is **Product Workspace UI**. Its definition of done is:
 
 T05 does not add authentication UI or flows, database persistence, context CRUD, file uploads, OpenAI integration, or PM workflow execution.
 
-## 13. Planned task sequence
+## 13. Scope for T06
+
+T06 is **Product Context Management**. Its definition of done is:
+
+- Provide a context management interface for the approved product-context categories.
+- Allow an authenticated workspace user to create, read, update, and delete manually entered context items.
+- Persist context items through the typed Supabase browser client and existing T04 RLS policies.
+- Support category filtering and clear loading, empty, signed-out, unconfigured, and error states.
+- Preserve source provenance as `user_input`; imported and generated context remain future capabilities.
+- Make workspace creation explicit when an authenticated account has no workspace yet.
+
+T06 does not add authentication UI or flows, file uploads, document extraction, evidence retrieval, OpenAI integration, or PM workflow execution.
+
+## 14. Planned task sequence
 
 Tasks are delivered one at a time and reviewed before the next task begins. The current sequence is:
 
@@ -184,7 +197,7 @@ Tasks are delivered one at a time and reviewed before the next task begins. The 
 
 The task list is a planning sequence, not permission to implement future tasks early. Each task needs its own acceptance criteria and validation.
 
-## 14. Decision log
+## 15. Decision log
 
 - V2 prioritizes three connected workflows over launching ten disconnected agents.
 - Product Workspace is the central product object and long-term differentiation.

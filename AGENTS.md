@@ -95,3 +95,14 @@ For T05 specifically:
 - Keep the UI presentational unless a small client component is necessary for local interface state; do not connect persistence yet.
 - Do not add authentication UI, database writes, file uploads, OpenAI integration, or PM workflow execution.
 - Do not begin T06 or any later task in the same change.
+
+T06 is Product Context Management only.
+
+For T06 specifically:
+
+- Use the existing typed Supabase browser client and T04 RLS policies for context persistence.
+- Support manual create, read, update, delete, and category filtering for `context_items`.
+- Preserve `source_type = user_input` and record lightweight provenance; imported and generated sources belong to later tasks.
+- Show explicit loading, signed-out, missing-configuration, no-workspace, empty, and error states. Never imply that a save succeeded unless Supabase confirms it.
+- Do not add authentication UI, file uploads, document extraction, evidence retrieval, OpenAI integration, or PM workflow execution.
+- Do not begin T07 or any later task in the same change.

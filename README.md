@@ -2,7 +2,7 @@
 
 PM Agent is an AI product workspace designed to help Product Managers turn customer evidence, product context, and team decisions into clear, useful artifacts.
 
-T01 established the production-ready web foundation and a clean product shell. T02 added the Supabase client foundation, T03 added the version-controlled core schema migration, T04 added authorization and Row Level Security, and T05 adds the Product Workspace UI.
+T01 established the production-ready web foundation and a clean product shell. T02 added the Supabase client foundation, T03 added the version-controlled core schema migration, T04 added authorization and Row Level Security, T05 added the Product Workspace UI, and T06 adds Product Context Management.
 
 ## Prerequisites
 
@@ -67,4 +67,4 @@ Use `npm run test:watch` for an interactive test session.
 
 ## Scope boundary
 
-T05 adds only the responsive Product Workspace UI and honest empty states. Authentication UI, context persistence, file storage, OpenAI, and PM workflows are deliberately not included yet.
+T06 adds manual Product Context Management backed by the typed Supabase client and T04 RLS policies. Authentication UI, file storage, document extraction, OpenAI, and PM workflows are deliberately not included yet.

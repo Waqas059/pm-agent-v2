@@ -1,5 +1,7 @@
 import Link from "next/link";
 
+import ProductContextPanel from "./product-context-panel";
+
 type IconName =
   | "activity"
   | "arrow"
@@ -59,13 +61,6 @@ const navigation = [
   { label: "Product context", href: "#context", icon: "context" as IconName },
   { label: "Workflows", href: "#workflows", icon: "sparkle" as IconName },
   { label: "Activity", href: "#activity", icon: "activity" as IconName },
-];
-
-const contextAreas = [
-  { title: "Product overview", description: "What you are building and why", icon: "sparkle" as IconName },
-  { title: "Users & personas", description: "Who you serve and what they need", icon: "users" as IconName },
-  { title: "Goals & metrics", description: "How you will know it is working", icon: "activity" as IconName },
-  { title: "Constraints & decisions", description: "The boundaries your team works within", icon: "book" as IconName },
 ];
 
 const workflows = [
@@ -211,36 +206,7 @@ export default function Home() {
 
             <div className="grid gap-6 xl:grid-cols-[minmax(0,1.45fr)_minmax(300px,0.8fr)]">
               <section id="context" aria-labelledby="context-heading" className="rounded-2xl border border-[#e3e7ee] bg-white p-5 sm:p-7">
-                <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-start">
-                  <div>
-                    <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#8d98a9]">The foundation</p>
-                    <h2 id="context-heading" className="mt-2 text-2xl font-semibold tracking-[-0.04em] text-[#192235]">Build your product context</h2>
-                    <p className="mt-2 max-w-xl text-sm leading-6 text-[#68748a]">Capture the facts your team returns to, so future PM work starts with shared understanding.</p>
-                  </div>
-                  <button type="button" disabled className="inline-flex w-fit cursor-not-allowed items-center gap-2 rounded-lg bg-[#dfe4f8] px-3.5 py-2.5 text-sm font-semibold text-[#7d88b2]" title="Context editing is available in T06">
-                    <Icon name="plus" className="h-4 w-4" />
-                    Add context
-                  </button>
-                </div>
-
-                <div className="mt-7 grid gap-3 sm:grid-cols-2">
-                  {contextAreas.map((area) => (
-                    <article key={area.title} className="group rounded-xl border border-dashed border-[#d8dee8] p-4 transition-colors hover:border-[#aab8ee] hover:bg-[#fbfcff]">
-                      <div className="flex items-start gap-3">
-                        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#f3f5fb] text-[#5269d8]"><Icon name={area.icon} className="h-[18px] w-[18px]" /></span>
-                        <div className="min-w-0">
-                          <h3 className="text-sm font-semibold text-[#192235]">{area.title}</h3>
-                          <p className="mt-1 text-xs leading-5 text-[#8d98a9]">{area.description}</p>
-                        </div>
-                      </div>
-                      <div className="mt-4 flex items-center gap-2 text-xs font-medium text-[#a0a9b8]"><span className="h-1.5 w-1.5 rounded-full bg-[#c9d0dc]" />Not added</div>
-                    </article>
-                  ))}
-                </div>
-                <div className="mt-5 flex items-start gap-2 rounded-lg bg-[#f8f9fb] px-3 py-2.5 text-xs leading-5 text-[#8d98a9]">
-                  <Icon name="check" className="mt-0.5 h-4 w-4 shrink-0 text-[#53a977]" />
-                  Your context will remain separate from assumptions and evidence. Nothing is saved in this preview yet.
-                </div>
+                <ProductContextPanel />
               </section>
 
               <section id="activity" aria-labelledby="activity-heading" className="rounded-2xl border border-[#e3e7ee] bg-white p-5 sm:p-7">
