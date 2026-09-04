@@ -1,0 +1,2 @@
+-- T03 intentionally has no seed data. Product data is user-owned and will be
+-- introduced through authenticated workflows in later tasks.
