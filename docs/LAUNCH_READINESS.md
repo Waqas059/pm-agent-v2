@@ -22,7 +22,8 @@
 `20260904040000_workflow_runs.sql` adds workspace-scoped `workflow_runs` and
 `workflow_run_steps` tables for resumable long-chain execution. The tables are
 protected by authenticated workspace-member RLS and store structured JSON state
-without logging provider credentials. The current workflow routes remain
-transient until the chain executor is introduced.
+without logging provider credentials. Discover, Define, and Align now create a
+run and step record, then persist completed or failed outcomes. Human-approved
+cross-workflow handoff and automatic resume are the next workflow controls.
 
 No deployment, GitHub push, account change, payment action, or external data sharing is performed by the local readiness checklist.
