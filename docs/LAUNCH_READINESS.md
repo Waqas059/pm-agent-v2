@@ -17,4 +17,12 @@
 - Recheck Supabase Auth redirect URLs, RLS policies, storage policies, and retention decisions in production.
 - Run final authenticated UAT against the deployed URL.
 
+## Workflow persistence foundation
+
+`20260904040000_workflow_runs.sql` adds workspace-scoped `workflow_runs` and
+`workflow_run_steps` tables for resumable long-chain execution. The tables are
+protected by authenticated workspace-member RLS and store structured JSON state
+without logging provider credentials. The current workflow routes remain
+transient until the chain executor is introduced.
+
 No deployment, GitHub push, account change, payment action, or external data sharing is performed by the local readiness checklist.
