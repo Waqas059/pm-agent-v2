@@ -124,7 +124,7 @@ export default function Home() {
                 </div>
                 <Icon name="chevron" className="h-4 w-4 shrink-0 text-[#8d98a9]" />
               </div>
-              <p className="mt-2 px-1 text-xs text-[#8d98a9]">Preview · not connected</p>
+              <p className="mt-2 px-1 text-xs text-[#8d98a9]">Connected · production workspace</p>
             </div>
           </div>
 
@@ -181,7 +181,7 @@ export default function Home() {
               </div>
               <span className="inline-flex w-fit items-center gap-2 rounded-full border border-[#e3e7ee] bg-white px-3 py-2 text-xs font-semibold text-[#68748a]">
                 <span className="h-2 w-2 rounded-full bg-[#d6a453]" />
-                Preview workspace
+                Connected workspace
               </span>
             </section>
 
@@ -314,7 +314,7 @@ export default function Home() {
             </section>
 
             <footer className="mt-10 flex flex-col justify-between gap-2 border-t border-[#e3e7ee] pt-5 text-xs text-[#a0a9b8] sm:flex-row">
-              <span>PM Agent V2 · Product workspace preview</span>
+              <span>PM Agent V2 · Product workspace</span>
               <span>Context first. Evidence grounded. Decisions clearer.</span>
             </footer>
           </div>

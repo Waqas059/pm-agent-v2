@@ -20,6 +20,8 @@ authenticated production test or a Supabase dashboard review.
   fixed same-application root URL; provider details are not returned to users.
 - Workflow-run and step identity guards prevent moving durable state between
   workspaces after creation.
+- Production responses add baseline browser hardening headers for content type,
+  framing, referrer, permissions, and HTTPS transport.
 
 ## Still required before wider public use
 
