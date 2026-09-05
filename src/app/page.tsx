@@ -20,6 +20,7 @@ import LaunchReadinessPanel from "./launch-readiness-panel";
 import DecisionAssumptionPanel from "./decision-assumption-panel";
 import PmEntryPanel from "./pm-entry-panel";
 import ObservabilityPanel from "./observability-panel";
+import ActivationOnboardingPanel from "./activation-onboarding-panel";
 
 type IconName =
   | "activity"
@@ -204,6 +205,8 @@ export default function Home() {
                 </div>
               ))}
             </section>
+
+            <ActivationOnboardingPanel />
 
             <section id="pm-entry" aria-labelledby="pm-entry-heading" className="mt-8 rounded-2xl border border-[#e3e7ee] bg-white p-5 sm:p-7">
               <PmEntryPanel />

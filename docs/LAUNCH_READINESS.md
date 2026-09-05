@@ -9,6 +9,11 @@
 - `/api/health` returns `200` with a minimal status payload.
 - Authenticated browser smoke tests cover context, workflows, artifacts, planning, metrics, usage, privacy, integrations, and beta feedback.
 
+The activation onboarding guide is present on the workspace overview. It
+guides a new PM through context, source material, Discover, and capturing the
+first outcome. Checklist progress is local-only and does not create, update,
+or delete workspace data.
+
 ## Still requires an explicit release decision
 
 - Review and push the local branch to GitHub.
@@ -16,6 +21,8 @@
 - Add production-only server secrets through the host's secret manager.
 - Recheck Supabase Auth redirect URLs, RLS policies, storage policies, and retention decisions in production.
 - Run final authenticated UAT against the deployed URL.
+- Run a fresh browser smoke test for the activation checklist and its section
+  links on the deployed URL.
 
 ## Workflow persistence foundation
 
