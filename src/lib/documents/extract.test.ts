@@ -24,4 +24,9 @@ describe("document extraction", () => {
   it("rejects legacy Word documents with an actionable message", async () => {
     await expect(extractDocument(Buffer.from("not a binary doc"), "application/msword", "brief.doc")).rejects.toThrow("Save the file as .docx or PDF");
   });
+
+  it("rejects a legacy Word binary renamed with a docx extension", async () => {
+    const legacyWordHeader = Buffer.from([0xd0, 0xcf, 0x11, 0xe0, 0xa1, 0xb1, 0x1a, 0xe1]);
+    await expect(extractDocument(legacyWordHeader, "application/vnd.openxmlformats-officedocument.wordprocessingml.document", "brief.docx")).rejects.toThrow("Save the file as .docx or PDF");
+  });
 });

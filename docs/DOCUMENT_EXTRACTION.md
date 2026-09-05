@@ -8,7 +8,11 @@ Supported extraction formats:
 - DOCX, using `mammoth`
 - Markdown, plain text, CSV, and JSON, using UTF-8 decoding
 
-Legacy binary `.doc` files are intentionally rejected with an actionable message; users should save them as `.docx` or PDF first.
+Legacy binary `.doc` files are intentionally rejected with an actionable
+message; users should save them as `.docx` or PDF first. The extractor checks
+the binary container signature as well as the filename and MIME type, so a
+legacy `.doc` renamed to `.docx` is rejected safely instead of producing a
+generic parser failure.
 
 Each successful extraction stores normalized text and line locators containing the line number and exact start/end offsets. The workspace search endpoint searches extracted text alongside context, evidence, and artifacts. No AI provider is called during extraction.
 

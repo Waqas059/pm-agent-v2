@@ -41,8 +41,12 @@ Environment: `https://pm-agent-v2.vercel.app`
 
 ## Intentionally not run
 
-- No document was uploaded, extracted, downloaded, or deleted during this
-  pass.
+- No document was uploaded, downloaded, or deleted during this pass.
+- Extraction was attempted on the existing `WhatsApp to SMS Fallback_v3.docx`.
+  The file has a legacy `.doc` binary signature despite its `.docx` name; the
+  application now detects that mismatch and returns an actionable 422 message.
+  A real `.docx` or PDF should be uploaded for the successful extraction/search
+  path test.
 
 ## Remaining before wider public use
 
@@ -50,3 +54,5 @@ Environment: `https://pm-agent-v2.vercel.app`
 - Review retention and deletion decisions from the dashboard. Storage privacy
   and authentication callback configuration have been verified.
 - Decide whether to enable ongoing retention/deletion automation.
+- Re-upload that source as a valid `.docx` or PDF and verify successful
+  extraction and document search.

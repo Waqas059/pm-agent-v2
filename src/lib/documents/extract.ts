@@ -53,6 +53,11 @@ function normalizeText(text: string) {
   return normalized;
 }
 
+function isLegacyWordContainer(buffer: Buffer) {
+  const legacyHeader = Buffer.from([0xd0, 0xcf, 0x11, 0xe0, 0xa1, 0xb1, 0x1a, 0xe1]);
+  return buffer.byteLength >= legacyHeader.length && legacyHeader.every((byte, index) => buffer[index] === byte);
+}
+
 function result(text: string, extractor: DocumentExtraction["extractor"], pageCount?: number): DocumentExtraction {
   const normalized = normalizeText(text);
   return { text: normalized, locators: buildLineLocators(normalized), extractor, pageCount };
@@ -62,7 +67,7 @@ export async function extractDocument(buffer: Buffer, mimeType: string, original
   if (buffer.byteLength === 0) throw new Error("The document is empty.");
 
   const lowerName = originalName.toLowerCase();
-  if (mimeType === "application/msword" || lowerName.endsWith(".doc")) {
+  if (mimeType === "application/msword" || lowerName.endsWith(".doc") || isLegacyWordContainer(buffer)) {
     throw new Error("Legacy .doc files are not supported yet. Save the file as .docx or PDF and upload it again.");
   }
 
