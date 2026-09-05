@@ -105,10 +105,10 @@ const workflows = [
 
 export default function Home() {
   return (
-    <main className="min-h-screen bg-[#f7f8fa] text-[#192235]">
+    <main className="pm-app min-h-screen text-[#172033]">
       <div className="flex min-h-screen">
-        <aside className="hidden w-64 shrink-0 flex-col border-r border-[#e3e7ee] bg-white lg:flex">
-          <div className="flex h-20 items-center border-b border-[#e3e7ee] px-6">
+        <aside className="pm-sidebar hidden w-72 shrink-0 flex-col border-r lg:flex">
+          <div className="flex h-20 items-center border-b border-[#e4e7ec] px-6">
             <Link className="flex items-center gap-3" href="#overview" aria-label="PM Agent overview">
               <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#192235] text-xs font-bold tracking-tight text-white">PM</span>
               <span className="text-[15px] font-semibold tracking-[-0.02em]">PM Agent</span>
@@ -116,8 +116,8 @@ export default function Home() {
           </div>
 
           <div className="px-4 pt-5">
-            <div className="rounded-xl border border-[#e3e7ee] bg-[#fafbfc] p-3">
-              <p className="px-1 text-[10px] font-bold uppercase tracking-[0.18em] text-[#8d98a9]">Workspace</p>
+            <div className="rounded-xl border border-[#e4e7ec] bg-[#f8fafc] p-3">
+              <p className="px-1 text-[10px] font-bold uppercase tracking-[0.18em] text-[#98a2b3]">Current workspace</p>
               <div className="mt-2 flex items-center justify-between gap-2">
                 <div className="flex min-w-0 items-center gap-2">
                   <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-[#e9edff] text-xs font-bold text-[#5269d8]">P</span>
@@ -125,7 +125,7 @@ export default function Home() {
                 </div>
                 <Icon name="chevron" className="h-4 w-4 shrink-0 text-[#8d98a9]" />
               </div>
-              <p className="mt-2 px-1 text-xs text-[#8d98a9]">Connected · production workspace</p>
+              <p className="mt-2 px-1 text-xs text-[#98a2b3]">Connected · production workspace</p>
             </div>
           </div>
 
@@ -137,11 +137,11 @@ export default function Home() {
               <p className="mt-3 text-sm font-semibold">Your product, understood.</p>
               <p className="mt-1 text-xs leading-5 text-[#b9c3d3]">Build context once. Use it across every PM workflow.</p>
             </div>
-            <Link href="#settings" className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-[#68748a] hover:bg-[#f5f7fa] hover:text-[#192235]">
+            <Link href="#settings" className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-[#667085] hover:bg-[#f2f4f7] hover:text-[#172033]">
               <Icon name="settings" className="h-[18px] w-[18px]" />
               Settings
             </Link>
-            <div className="mt-3 flex items-center gap-3 border-t border-[#e3e7ee] px-3 pt-4">
+            <div className="mt-3 flex items-center gap-3 border-t border-[#e4e7ec] px-3 pt-4">
               <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#dfe7ff] text-xs font-bold text-[#435ac6]">W</span>
               <div className="min-w-0">
                 <p className="truncate text-sm font-semibold">Waqas</p>
@@ -152,7 +152,7 @@ export default function Home() {
         </aside>
 
         <div className="min-w-0 flex-1">
-          <header className="flex h-20 items-center justify-between border-b border-[#e3e7ee] bg-white px-5 sm:px-8 lg:px-10">
+          <header className="pm-topbar sticky top-0 z-30 flex h-20 items-center justify-between border-b px-5 sm:px-8 lg:px-10">
             <div className="flex items-center gap-3 lg:hidden">
               <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#192235] text-[10px] font-bold text-white">PM</span>
               <span className="text-sm font-semibold">PM Agent</span>
@@ -174,33 +174,43 @@ export default function Home() {
           </header>
 
           <div className="mx-auto max-w-[1440px] px-5 py-8 sm:px-8 sm:py-10 lg:px-10 lg:py-12">
-            <section id="overview" aria-labelledby="overview-heading" className="flex flex-col justify-between gap-6 border-b border-[#e3e7ee] pb-8 sm:flex-row sm:items-end">
-              <div>
-                <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#5269d8]">Workspace overview</p>
-                <h1 id="overview-heading" className="mt-3 text-3xl font-semibold tracking-[-0.05em] text-[#192235] sm:text-4xl">Make your product easier to understand.</h1>
-                <p className="mt-3 max-w-2xl text-sm leading-6 text-[#68748a] sm:text-base">Welcome back, Waqas. This is the shared space for your product context, evidence, and decisions.</p>
+            <section id="overview" aria-labelledby="overview-heading" className="pm-hero overflow-hidden p-6 sm:p-9 lg:p-10">
+              <div className="flex flex-col justify-between gap-8 lg:flex-row lg:items-start">
+                <div className="max-w-3xl">
+                  <div className="flex flex-wrap items-center gap-2 text-[11px] font-bold uppercase tracking-[0.18em] text-[#4f46c7]">
+                    <span>PM Agent workspace</span>
+                    <span aria-hidden className="text-[#b8bddc]">/</span>
+                    <span className="text-[#18864b]">Context connected</span>
+                  </div>
+                  <h1 id="overview-heading" className="mt-4 max-w-2xl text-4xl font-semibold tracking-[-0.06em] text-[#172033] sm:text-5xl">What are you trying to figure out?</h1>
+                  <p className="mt-4 max-w-2xl text-base leading-7 text-[#667085] sm:text-lg">Start with the product problem, opportunity, or decision on your mind. PM Agent brings your context, evidence, and past work into the next useful step.</p>
+                </div>
+                <div className="hidden shrink-0 rounded-2xl border border-white/80 bg-white/60 p-4 text-right shadow-sm sm:block">
+                  <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-[#98a2b3]">Workspace promise</p>
+                  <p className="mt-2 text-sm font-semibold text-[#172033]">Your product, understood.</p>
+                  <p className="mt-1 text-xs text-[#667085]">Evidence before confidence</p>
+                </div>
               </div>
-              <span className="inline-flex w-fit items-center gap-2 rounded-full border border-[#e3e7ee] bg-white px-3 py-2 text-xs font-semibold text-[#68748a]">
-                <span className="h-2 w-2 rounded-full bg-[#d6a453]" />
-                Connected workspace
-              </span>
+              <div id="pm-entry" className="mt-8 rounded-2xl border border-white/90 bg-white/80 p-4 shadow-[0_8px_24px_rgba(52,57,134,0.06)] backdrop-blur-sm sm:p-5">
+                <PmEntryPanel />
+              </div>
             </section>
 
-            <section aria-label="Workspace status" className="grid gap-3 py-7 sm:grid-cols-2 xl:grid-cols-4">
+            <section aria-label="Workspace status" className="grid gap-4 py-7 sm:grid-cols-2 xl:grid-cols-4">
               {[
-                { label: "Product context", value: "Not added yet", detail: "Start with the essentials", icon: "context" as IconName },
-                { label: "Documents", value: "Secure library", detail: "Upload source files below", icon: "book" as IconName },
-                { label: "Evidence", value: "Traceable only", detail: "Record source-backed items", icon: "check" as IconName },
-                { label: "Workflows", value: "3 connected paths", detail: "Ready to be built", icon: "sparkle" as IconName },
+                { label: "Product context", value: "Build once", detail: "Goals, users, constraints, strategy", icon: "context" as IconName, tone: "bg-[#eef0ff] text-[#4f46c7]" },
+                { label: "Evidence", value: "Traceable", detail: "Documents, observations, citations", icon: "check" as IconName, tone: "bg-[#edf8f1] text-[#18864b]" },
+                { label: "Decisions", value: "Human owned", detail: "Rationale, risks, assumptions", icon: "users" as IconName, tone: "bg-[#fff5e7] text-[#a86d14]" },
+                { label: "Artifacts", value: "Reusable work", detail: "Briefs, updates, experiments", icon: "sparkle" as IconName, tone: "bg-[#f5efff] text-[#7b4bb5]" },
               ].map((item) => (
-                <div key={item.label} className="rounded-xl border border-[#e3e7ee] bg-white p-4 sm:p-5">
+                <div key={item.label} className="pm-card p-4 sm:p-5">
                   <div className="flex items-start justify-between gap-4">
                     <div>
-                      <p className="text-xs font-semibold text-[#8d98a9]">{item.label}</p>
-                      <p className="mt-2 text-lg font-semibold tracking-[-0.02em] text-[#192235]">{item.value}</p>
-                      <p className="mt-1 text-xs text-[#8d98a9]">{item.detail}</p>
+                      <p className="text-xs font-semibold text-[#98a2b3]">{item.label}</p>
+                      <p className="mt-2 text-lg font-semibold tracking-[-0.03em] text-[#172033]">{item.value}</p>
+                      <p className="mt-1 text-xs leading-5 text-[#667085]">{item.detail}</p>
                     </div>
-                    <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#f1f3ff] text-[#5269d8]"><Icon name={item.icon} className="h-[18px] w-[18px]" /></span>
+                    <span className={`flex h-10 w-10 items-center justify-center rounded-xl ${item.tone}`}><Icon name={item.icon} className="h-[18px] w-[18px]" /></span>
                   </div>
                 </div>
               ))}
@@ -208,16 +218,12 @@ export default function Home() {
 
             <ActivationOnboardingPanel />
 
-            <section id="pm-entry" aria-labelledby="pm-entry-heading" className="mt-8 rounded-2xl border border-[#e3e7ee] bg-white p-5 sm:p-7">
-              <PmEntryPanel />
-            </section>
-
             <div className="grid gap-6 xl:grid-cols-[minmax(0,1.45fr)_minmax(300px,0.8fr)]">
-              <section id="context" aria-labelledby="context-heading" className="rounded-2xl border border-[#e3e7ee] bg-white p-5 sm:p-7">
+              <section id="context" aria-labelledby="context-heading" className="pm-panel p-5 sm:p-7">
                 <ProductContextPanel />
               </section>
 
-              <section id="activity" aria-labelledby="activity-heading" className="rounded-2xl border border-[#e3e7ee] bg-white p-5 sm:p-7">
+              <section id="activity" aria-labelledby="activity-heading" className="pm-panel p-5 sm:p-7">
                 <div className="flex items-center justify-between gap-3">
                   <div>
                     <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#8d98a9]">Workspace pulse</p>
@@ -233,63 +239,63 @@ export default function Home() {
               </section>
             </div>
 
-            <section id="documents" aria-labelledby="documents-heading" className="mt-6 rounded-2xl border border-[#e3e7ee] bg-white p-5 sm:p-7">
+            <section id="documents" aria-labelledby="documents-heading" className="pm-panel mt-6 p-5 sm:p-7">
               <DocumentLibraryPanel />
             </section>
 
-            <section id="evidence" aria-labelledby="evidence-heading" className="mt-6 rounded-2xl border border-[#e3e7ee] bg-white p-5 sm:p-7">
+            <section id="evidence" aria-labelledby="evidence-heading" className="pm-panel mt-6 p-5 sm:p-7">
               <EvidenceLibraryPanel />
             </section>
 
-            <section id="discover" aria-labelledby="discover-heading" className="mt-8 rounded-2xl border border-[#e3e7ee] bg-white p-5 sm:p-7">
+            <section id="discover" aria-labelledby="discover-heading" className="pm-panel mt-8 p-5 sm:p-7">
               <DiscoverWorkflowPanel />
             </section>
 
-            <section id="define" aria-labelledby="define-heading" className="mt-8 rounded-2xl border border-[#e3e7ee] bg-white p-5 sm:p-7">
+            <section id="define" aria-labelledby="define-heading" className="pm-panel mt-8 p-5 sm:p-7">
               <DefineWorkflowPanel />
             </section>
 
-            <section id="align" aria-labelledby="align-heading" className="mt-8 rounded-2xl border border-[#e3e7ee] bg-white p-5 sm:p-7">
+            <section id="align" aria-labelledby="align-heading" className="pm-panel mt-8 p-5 sm:p-7">
               <AlignWorkflowPanel />
             </section>
 
-            <section id="artifacts" aria-labelledby="artifacts-heading" className="mt-8 rounded-2xl border border-[#e3e7ee] bg-white p-5 sm:p-7">
+            <section id="artifacts" aria-labelledby="artifacts-heading" className="pm-panel mt-8 p-5 sm:p-7">
               <ArtifactLibraryPanel />
             </section>
 
-            <section id="planning" aria-labelledby="planning-heading" className="mt-8 rounded-2xl border border-[#e3e7ee] bg-white p-5 sm:p-7">
+            <section id="planning" aria-labelledby="planning-heading" className="pm-panel mt-8 p-5 sm:p-7">
               <PrioritizationPanel />
             </section>
 
-            <section id="metrics" aria-labelledby="metrics-heading" className="mt-8 rounded-2xl border border-[#e3e7ee] bg-white p-5 sm:p-7">
+            <section id="metrics" aria-labelledby="metrics-heading" className="pm-panel mt-8 p-5 sm:p-7">
               <MetricsExperimentPanel />
             </section>
 
-            <section id="usage" aria-labelledby="usage-heading" className="mt-8 rounded-2xl border border-[#e3e7ee] bg-white p-5 sm:p-7">
+            <section id="usage" aria-labelledby="usage-heading" className="pm-panel mt-8 p-5 sm:p-7">
               <UsagePanel />
             </section>
 
-            <section id="observability" aria-labelledby="observability-heading" className="mt-8 rounded-2xl border border-[#e3e7ee] bg-white p-5 sm:p-7">
+            <section id="observability" aria-labelledby="observability-heading" className="pm-panel mt-8 p-5 sm:p-7">
               <ObservabilityPanel />
             </section>
 
-            <section id="privacy" aria-labelledby="privacy-heading" className="mt-8 rounded-2xl border border-[#e3e7ee] bg-white p-5 sm:p-7">
+            <section id="privacy" aria-labelledby="privacy-heading" className="pm-panel mt-8 p-5 sm:p-7">
               <PrivacyPanel />
             </section>
 
-            <section id="integrations" aria-labelledby="integrations-heading" className="mt-8 rounded-2xl border border-[#e3e7ee] bg-white p-5 sm:p-7">
+            <section id="integrations" aria-labelledby="integrations-heading" className="pm-panel mt-8 p-5 sm:p-7">
               <IntegrationsPanel />
             </section>
 
-            <section id="feedback" aria-labelledby="feedback-heading" className="mt-8 rounded-2xl border border-[#e3e7ee] bg-white p-5 sm:p-7">
+            <section id="feedback" aria-labelledby="feedback-heading" className="pm-panel mt-8 p-5 sm:p-7">
               <FeedbackPanel />
             </section>
 
-            <section id="decisions" aria-labelledby="decision-assumption-heading" className="mt-8 rounded-2xl border border-[#e3e7ee] bg-white p-5 sm:p-7">
+            <section id="decisions" aria-labelledby="decision-assumption-heading" className="pm-panel mt-8 p-5 sm:p-7">
               <DecisionAssumptionPanel />
             </section>
 
-            <section id="launch" aria-labelledby="launch-heading" className="mt-8 rounded-2xl border border-[#e3e7ee] bg-white p-5 sm:p-7">
+            <section id="launch" aria-labelledby="launch-heading" className="pm-panel mt-8 p-5 sm:p-7">
               <LaunchReadinessPanel />
             </section>
 
@@ -303,7 +309,7 @@ export default function Home() {
               </div>
               <div className="mt-4 grid gap-3 lg:grid-cols-3">
                 {workflows.map((workflow) => (
-                  <article key={workflow.number} className="group rounded-2xl border border-[#e3e7ee] bg-white p-5 transition-shadow hover:shadow-[0_8px_24px_rgba(25,34,53,0.06)]">
+                  <article key={workflow.number} className="pm-card group p-5">
                     <div className="flex items-center justify-between">
                       <span className="text-xs font-bold" style={{ color: workflow.accent }}>{workflow.number}</span>
                       <span className="rounded-full bg-[#f3f5f8] px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.12em] text-[#8d98a9]">{workflow.status}</span>

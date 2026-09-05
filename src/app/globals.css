@@ -1,8 +1,20 @@
 @import "tailwindcss";
 
 :root {
-  --background: #f6f8fb;
+  --background: #f4f6f8;
   --foreground: #172033;
+  --pm-ink: #172033;
+  --pm-muted: #667085;
+  --pm-subtle: #98a2b3;
+  --pm-line: #e4e7ec;
+  --pm-surface: #ffffff;
+  --pm-surface-soft: #f8fafc;
+  --pm-primary: #4f46c7;
+  --pm-primary-dark: #3e38a8;
+  --pm-primary-soft: #eef0ff;
+  --pm-success: #18864b;
+  --pm-warning: #a86d14;
+  --pm-danger: #b54743;
 }
 
 @theme inline {
@@ -15,7 +27,7 @@
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
 }
 
 * {
@@ -25,4 +37,106 @@ body {
 button,
 a {
   -webkit-tap-highlight-color: transparent;
+}
+
+::selection {
+  background: #dfe2ff;
+  color: var(--pm-ink);
+}
+
+:where(button, a, input, textarea, select):focus-visible {
+  outline: 3px solid #b9c0ff;
+  outline-offset: 2px;
+}
+
+.pm-app {
+  background: radial-gradient(circle at 75% -10%, rgba(226, 228, 255, 0.72), transparent 34rem), var(--background);
+}
+
+.pm-sidebar {
+  background: rgba(255, 255, 255, 0.9);
+  border-color: var(--pm-line);
+}
+
+.pm-topbar {
+  background: rgba(255, 255, 255, 0.88);
+  border-color: var(--pm-line);
+  backdrop-filter: blur(16px);
+}
+
+.pm-panel {
+  border: 1px solid var(--pm-line);
+  border-radius: 1.25rem;
+  background: var(--pm-surface);
+  box-shadow: 0 8px 28px rgba(23, 32, 51, 0.045);
+}
+
+.pm-panel-soft {
+  border: 1px solid #dfe3ff;
+  border-radius: 1.25rem;
+  background: linear-gradient(135deg, rgba(248, 249, 255, 0.98), rgba(255, 255, 255, 0.94));
+}
+
+.pm-hero {
+  border: 1px solid #dfe3ff;
+  border-radius: 1.5rem;
+  background: linear-gradient(135deg, rgba(248, 249, 255, 0.98), rgba(255, 255, 255, 0.94) 58%, rgba(246, 250, 248, 0.95));
+  box-shadow: 0 18px 48px rgba(52, 57, 134, 0.08);
+}
+
+.pm-card {
+  border: 1px solid var(--pm-line);
+  border-radius: 1rem;
+  background: var(--pm-surface);
+  transition: border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease;
+}
+
+.pm-card:hover {
+  border-color: #cfd4e1;
+  box-shadow: 0 10px 26px rgba(23, 32, 51, 0.065);
+  transform: translateY(-1px);
+}
+
+.pm-field {
+  border: 1px solid #d7dce5;
+  border-radius: 0.8rem;
+  background: #ffffff;
+  color: var(--pm-ink);
+  transition: border-color 160ms ease, box-shadow 160ms ease;
+}
+
+.pm-field:focus {
+  border-color: #8f96ee;
+  box-shadow: 0 0 0 4px rgba(143, 150, 238, 0.16);
+  outline: none;
+}
+
+.pm-button-primary {
+  border-radius: 0.8rem;
+  background: var(--pm-primary);
+  color: #ffffff;
+  box-shadow: 0 5px 14px rgba(79, 70, 199, 0.2);
+  transition: background-color 160ms ease, box-shadow 160ms ease, transform 160ms ease;
+}
+
+.pm-button-primary:hover {
+  background: var(--pm-primary-dark);
+  box-shadow: 0 8px 18px rgba(79, 70, 199, 0.25);
+  transform: translateY(-1px);
+}
+
+.pm-button-primary:disabled {
+  box-shadow: none;
+  transform: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
 }

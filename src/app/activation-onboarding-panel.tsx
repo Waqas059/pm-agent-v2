@@ -81,7 +81,7 @@ export default function ActivationOnboardingPanel() {
   }
 
   return (
-    <section aria-labelledby="activation-heading" className="mb-8 rounded-2xl border border-[#dfe4ff] bg-[#f8f9ff] p-5 sm:p-7">
+    <section aria-labelledby="activation-heading" className="pm-panel-soft mb-8 p-5 sm:p-7">
       <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-start">
         <div>
           <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#5269d8]">Getting started</p>
@@ -98,7 +98,7 @@ export default function ActivationOnboardingPanel() {
         {steps.map((step, index) => {
           const isComplete = completed.includes(step.id);
           return (
-            <article key={step.id} className={`rounded-xl border p-4 ${isComplete ? "border-[#bfe0c8] bg-[#f5fbf6]" : "border-[#e3e7ee] bg-white"}`}>
+            <article key={step.id} className={`pm-card p-4 ${isComplete ? "border-[#bfe0c8] bg-[#f5fbf6]" : ""}`}>
               <div className="flex items-center justify-between gap-3">
                 <span className={`flex h-7 w-7 items-center justify-center rounded-full text-xs font-bold ${isComplete ? "bg-[#d9f0df] text-[#3c8752]" : "bg-[#eef1ff] text-[#5269d8]"}`}>{isComplete ? "✓" : index + 1}</span>
                 <button type="button" onClick={() => toggleStep(step.id)} className="text-[11px] font-semibold text-[#68748a] hover:text-[#192235]">{isComplete ? "Undo" : "Mark done"}</button>

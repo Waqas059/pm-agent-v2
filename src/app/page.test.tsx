@@ -8,7 +8,7 @@ describe("PM Agent product workspace", () => {
     render(<Home />);
 
     expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent(
-      "Make your product easier to understand.",
+      "What are you trying to figure out?",
     );
     expect(screen.getByRole("heading", { name: "Workflows built on your context" })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Reach your first useful PM outcome" })).toBeInTheDocument();
