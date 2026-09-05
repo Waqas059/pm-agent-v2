@@ -1,4 +1,5 @@
 "use client";
+import CitationChip from "./citation-chip";
 
 import { useState } from "react";
 import { recordSessionAiRun } from "@/lib/usage";
@@ -24,6 +25,10 @@ export default function DiscoverWorkflowPanel() {
     setHandoffMessage("");
     const response = await fetch("/api/workflows/handoffs", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ sourceRunId: result.id, targetWorkflow, payload: { discovery: result.output } }) });
     const payload = await response.json() as { error?: string };
+    if (response.ok) {
+      window.dispatchEvent(new Event("pm-handoff-approved"));
+      window.location.hash = targetWorkflow === "define_specify" ? "define" : "align";
+    }
     setHandoffMessage(response.ok ? `Approved for ${targetWorkflow === "define_specify" ? "Define" : "Align"}.` : payload.error || "The handoff could not be approved.");
   }
 
@@ -74,6 +79,7 @@ export default function DiscoverWorkflowPanel() {
         </div>
       </form>
 
+      {isRunning && <p role="status" aria-live="polite" className="kit-notice">Working on your request using saved context and evidence. The result will be ready for your review when the workflow completes.</p>}
       {message && <div role="alert" className="mt-4 rounded-lg border border-[#f0d4d0] bg-[#fff9f8] px-4 py-3 text-sm leading-6 text-[#a04c43]">{message}</div>}
 
       {result && (
@@ -89,7 +95,7 @@ export default function DiscoverWorkflowPanel() {
             <TextGroup title="Open questions" items={result.output.openQuestions} />
             <TextGroup title="Limitations" items={result.output.limitations} />
           </div>
-          <div className="flex flex-wrap items-center gap-3"><p className="text-xs leading-5 text-[#8d98a9]">Run {result.id} · {result.model} · Review required.</p><button type="button" onClick={() => void approveHandoff("define_specify")} className="rounded-lg border border-[#cdd6f6] bg-white px-3 py-2 text-xs font-semibold text-[#5269d8]">Approve for Define</button><button type="button" onClick={() => void approveHandoff("align_communicate")} className="rounded-lg border border-[#f0d9cf] bg-white px-3 py-2 text-xs font-semibold text-[#b45f40]">Approve for Align</button></div>
+          <div className="flex flex-wrap items-center gap-3"><p className="text-xs leading-5 text-[#8d98a9]">Run {result.id} · {result.model} · Review required.</p><button type="button" onClick={() => void approveHandoff("define_specify")} className="rounded-lg border border-[#cdd6f6] bg-white px-3 py-2 text-xs font-semibold text-[#5269d8]">Approve &amp; continue to Define →</button><button type="button" onClick={() => void approveHandoff("align_communicate")} className="rounded-lg border border-[#f0d9cf] bg-white px-3 py-2 text-xs font-semibold text-[#b45f40]">Approve &amp; continue to Align →</button></div>
           {handoffMessage && <p role="status" className="text-xs text-[#4d8c65]">{handoffMessage}</p>}
         </div>
       )}
@@ -101,7 +107,7 @@ function FindingGroup({ title, items, accent }: { title: string; items: Discover
   return (
     <section className="rounded-xl border border-[#e3e7ee] bg-white p-5">
       <h3 className="text-base font-semibold text-[#192235]">{title}</h3>
-      {items.length === 0 ? <p className="mt-3 text-sm text-[#9aa4b3]">No supported findings returned.</p> : <div className="mt-4 grid gap-3 lg:grid-cols-2">{items.map((item) => <article key={`${title}-${item.title}`} className="rounded-lg border border-[#e3e7ee] p-4"><span className={`inline-flex rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.12em] ${accent}`}>{title}</span><h4 className="mt-3 text-sm font-semibold text-[#192235]">{item.title}</h4><p className="mt-2 text-sm leading-6 text-[#68748a]">{item.summary}</p><div className="mt-3 flex flex-wrap gap-1.5">{item.citationKeys.map((citationKey) => <span key={citationKey} className="rounded bg-[#f3f5f8] px-2 py-1 font-mono text-[10px] font-semibold text-[#68748a]">[{citationKey}]</span>)}</div></article>)}</div>}
+      {items.length === 0 ? <p className="mt-3 text-sm text-[#9aa4b3]">No supported findings returned.</p> : <div className="mt-4 grid gap-3 lg:grid-cols-2">{items.map((item) => <article key={`${title}-${item.title}`} className="rounded-lg border border-[#e3e7ee] p-4"><span className={`inline-flex rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.12em] ${accent}`}>{title}</span><h4 className="mt-3 text-sm font-semibold text-[#192235]">{item.title}</h4><p className="mt-2 text-sm leading-6 text-[#68748a]">{item.summary}</p><div className="mt-3 flex flex-wrap gap-1.5">{item.citationKeys.map((citationKey) => <CitationChip key={citationKey} citationKey={citationKey} />)}</div></article>)}</div>}
     </section>
   );
 }

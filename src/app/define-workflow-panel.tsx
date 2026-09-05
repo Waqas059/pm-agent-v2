@@ -1,4 +1,5 @@
 "use client";
+import CitationChip from "./citation-chip";
 
 import { useEffect, useState } from "react";
 import { recordSessionAiRun } from "@/lib/usage";
@@ -18,6 +19,12 @@ export default function DefineWorkflowPanel() {
   const [result, setResult] = useState<WorkflowResult | null>(null);
   const [message, setMessage] = useState("");
   const [isRunning, setIsRunning] = useState(false);
+  const [handoffRevision, setHandoffRevision] = useState(0);
+  useEffect(() => {
+    const refresh = () => setHandoffRevision(value => value + 1);
+    window.addEventListener("pm-handoff-approved", refresh);
+    return () => window.removeEventListener("pm-handoff-approved", refresh);
+  }, []);
 
   useEffect(() => {
     let active = true;
@@ -32,7 +39,7 @@ export default function DefineWorkflowPanel() {
       })
       .catch(() => undefined);
     return () => { active = false; };
-  }, [opportunity]);
+  }, [opportunity, handoffRevision]);
 
   async function runWorkflow(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -81,6 +88,7 @@ export default function DefineWorkflowPanel() {
         </div>
       </form>
 
+      {isRunning && <p role="status" aria-live="polite" className="kit-notice">Working on your request using saved context and evidence. The result will be ready for your review when the workflow completes.</p>}
       {message && <div role="alert" className="mt-4 rounded-lg border border-[#f0d4d0] bg-[#fff9f8] px-4 py-3 text-sm leading-6 text-[#a04c43]">{message}</div>}
 
       {result && (
@@ -102,5 +110,5 @@ export default function DefineWorkflowPanel() {
 }
 
 function BriefField({ label, value }: { label: string; value: string }) { return <div><p className="text-xs font-semibold uppercase tracking-[0.12em] text-[#8d98a9]">{label}</p><p className="mt-2 text-sm leading-6 text-[#68748a]">{value}</p></div>; }
-function Citations({ keys }: { keys: string[] }) { return <div className="mt-3 flex flex-wrap gap-1.5">{keys.map((citationKey) => <span key={citationKey} className="rounded bg-[#f3f5f8] px-2 py-1 font-mono text-[10px] font-semibold text-[#68748a]">[{citationKey}]</span>)}</div>; }
+function Citations({ keys }: { keys: string[] }) { return <div className="mt-3 flex flex-wrap gap-1.5">{keys.map((citationKey) => <CitationChip key={citationKey} citationKey={citationKey} />)}</div>; }
 function StringSection({ title, items }: { title: string; items: string[] }) { return <section className="rounded-xl border border-[#e3e7ee] bg-white p-5"><h3 className="text-base font-semibold text-[#192235]">{title}</h3>{items.length === 0 ? <p className="mt-3 text-sm text-[#9aa4b3]">None returned.</p> : <ul className="mt-3 space-y-2">{items.map((item) => <li key={item} className="flex gap-2 text-sm leading-6 text-[#68748a]"><span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-[#aab5c4]" />{item}</li>)}</ul>}</section>; }

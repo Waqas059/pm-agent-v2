@@ -1,335 +1,69 @@
-import Link from "next/link";
-
+"use client";
+import { useEffect, useState } from "react";
+import AuthPanel from "./auth-panel";
+import WorkspaceSearchPanel from "./workspace-search-panel";
+import ProductContextPanel from "./product-context-panel";
+import DocumentLibraryPanel from "./document-library-panel";
+import EvidenceLibraryPanel from "./evidence-library-panel";
+import DiscoverWorkflowPanel from "./discover-workflow-panel";
+import DefineWorkflowPanel from "./define-workflow-panel";
 import AlignWorkflowPanel from "./align-workflow-panel";
 import ArtifactLibraryPanel from "./artifact-library-panel";
-import AuthPanel from "./auth-panel";
-import DefineWorkflowPanel from "./define-workflow-panel";
-import DocumentLibraryPanel from "./document-library-panel";
-import DiscoverWorkflowPanel from "./discover-workflow-panel";
-import EvidenceLibraryPanel from "./evidence-library-panel";
-import ProductContextPanel from "./product-context-panel";
+import DecisionAssumptionPanel from "./decision-assumption-panel";
 import PrioritizationPanel from "./prioritization-panel";
 import MetricsExperimentPanel from "./metrics-experiment-panel";
-import WorkspaceNav, { MobileWorkspaceNav } from "./workspace-nav";
-import WorkspaceSearchPanel from "./workspace-search-panel";
 import UsagePanel from "./usage-panel";
+import ObservabilityPanel from "./observability-panel";
 import PrivacyPanel from "./privacy-panel";
 import IntegrationsPanel from "./integrations-panel";
 import FeedbackPanel from "./feedback-panel";
 import LaunchReadinessPanel from "./launch-readiness-panel";
-import DecisionAssumptionPanel from "./decision-assumption-panel";
-import PmEntryPanel from "./pm-entry-panel";
-import ObservabilityPanel from "./observability-panel";
 import ActivationOnboardingPanel from "./activation-onboarding-panel";
-
-type IconName =
-  | "activity"
-  | "arrow"
-  | "book"
-  | "check"
-  | "chevron"
-  | "context"
-  | "home"
-  | "plus"
-  | "search"
-  | "settings"
-  | "sparkle"
-  | "users";
-
-function Icon({ name, className = "h-5 w-5" }: { name: IconName; className?: string }) {
-  const common = {
-    className,
-    fill: "none",
-    stroke: "currentColor",
-    strokeLinecap: "round" as const,
-    strokeLinejoin: "round" as const,
-    strokeWidth: 1.8,
-    viewBox: "0 0 24 24",
-    "aria-hidden": true,
-  };
-
-  switch (name) {
-    case "activity":
-      return <svg {...common}><path d="M3 12h4l2.2-7 4.1 14 2.2-7H21" /></svg>;
-    case "arrow":
-      return <svg {...common}><path d="M5 12h13M13 6l6 6-6 6" /></svg>;
-    case "book":
-      return <svg {...common}><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v16H6.5A2.5 2.5 0 0 0 4 21.5v-16Z" /><path d="M4 5.5v16M8 7h8M8 11h6" /></svg>;
-    case "check":
-      return <svg {...common}><path d="m5 12 4 4L19 6" /></svg>;
-    case "chevron":
-      return <svg {...common}><path d="m7 9 5 5 5-5" /></svg>;
-    case "context":
-      return <svg {...common}><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v16H6.5A2.5 2.5 0 0 0 4 21.5v-16Z" /><path d="M4 5.5v16M8 8h8M8 12h6M8 16h4" /></svg>;
-    case "home":
-      return <svg {...common}><path d="m4 10 8-7 8 7v10a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V10Z" /><path d="M9 21v-6h6v6" /></svg>;
-    case "plus":
-      return <svg {...common}><path d="M12 5v14M5 12h14" /></svg>;
-    case "search":
-      return <svg {...common}><circle cx="10.8" cy="10.8" r="6.8" /><path d="m16 16 4.5 4.5" /></svg>;
-    case "settings":
-      return <svg {...common}><path d="M12 15.2a3.2 3.2 0 1 0 0-6.4 3.2 3.2 0 0 0 0 6.4Z" /><path d="m19.4 15 .1.1a1.8 1.8 0 0 1-2.5 2.5l-.1-.1a1.8 1.8 0 0 0-3.1 1.3v.2a1.8 1.8 0 0 1-3.6 0v-.2a1.8 1.8 0 0 0-3.1-1.3l-.1.1a1.8 1.8 0 0 1-2.5-2.5l.1-.1a1.8 1.8 0 0 0-1.3-3.1h-.2a1.8 1.8 0 0 1 0-3.6h.2a1.8 1.8 0 0 0 1.3-3.1l-.1-.1a1.8 1.8 0 0 1 2.5-2.5l.1.1a1.8 1.8 0 0 0 3.1-1.3V1.2a1.8 1.8 0 0 1 3.6 0v.2a1.8 1.8 0 0 0 3.1 1.3l.1-.1a1.8 1.8 0 0 1 2.5 2.5l-.1.1a1.8 1.8 0 0 0 1.3 3.1h.2a1.8 1.8 0 0 1 0 3.6h-.2a1.8 1.8 0 0 0-1.3 3.1Z" /></svg>;
-    case "sparkle":
-      return <svg {...common}><path d="m12 3 1.4 5.6L19 10l-5.6 1.4L12 17l-1.4-5.6L5 10l5.6-1.4L12 3ZM19 16l.6 2.4L22 19l-2.4.6L19 22l-.6-2.4L16 19l2.4-.6L19 16Z" /></svg>;
-    case "users":
-      return <svg {...common}><path d="M16 20v-1.5a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4V20M9.5 10.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7ZM17 11a3 3 0 1 0 0-6M17 14.5a4 4 0 0 1 4 4V20" /></svg>;
-  }
-}
-
-const workflows = [
-  {
-    number: "01",
-    title: "Discover & synthesize",
-    description: "Turn customer evidence into grounded themes and opportunities.",
-    status: "Ready",
-    available: true,
-    accent: "#5269d8",
-  },
-  {
-    number: "02",
-    title: "Define & specify",
-    description: "Shape a clear, buildable brief from an agreed opportunity.",
-    status: "Ready",
-    available: true,
-    accent: "#a06bd8",
-  },
-  {
-    number: "03",
-    title: "Align & communicate",
-    description: "Create useful updates from the same product context.",
-    status: "Ready",
-    available: true,
-    accent: "#d17b54",
-  },
+import PmEntryPanel from "./pm-entry-panel";
+import WorkspaceOverview from "./workspace-overview";
+const views = [
+["overview","Home","Workspace","⌂"],["pm-entry","Ask PM Agent","Workspace","✦"],
+["context","Product context","Knowledge","◫"],["documents","Documents","Knowledge","▤"],["evidence","Evidence","Knowledge","◎"],
+["discover","Discover","Think & decide","◈"],["decisions","Decisions & assumptions","Think & decide","◇"],
+["planning","Priorities & planning","Build","≡"],["define","Define / PRDs","Build","▧"],["metrics","Metrics & experiments","Build","↗"],
+["align","Communicate","Communicate","↗"],["artifacts","Artifacts","Communicate","▣"],
+["activity","Recent work","Workspace controls","◷"],["usage","Usage","Workspace controls","◔"],["observability","AI performance","Workspace controls","⌁"],
+["privacy","Privacy","Workspace controls","◉"],["integrations","Integrations","Workspace controls","⊞"],["feedback","Feedback","Workspace controls","◌"],
+["launch","Launch readiness","Workspace controls","✓"],["settings","Account","Workspace controls","⚙"]
 ];
-
+const panels = {context:ProductContextPanel,documents:DocumentLibraryPanel,evidence:EvidenceLibraryPanel,discover:DiscoverWorkflowPanel,define:DefineWorkflowPanel,align:AlignWorkflowPanel,artifacts:ArtifactLibraryPanel,decisions:DecisionAssumptionPanel,planning:PrioritizationPanel,metrics:MetricsExperimentPanel,usage:UsagePanel,observability:ObservabilityPanel,privacy:PrivacyPanel,integrations:IntegrationsPanel,feedback:FeedbackPanel,launch:LaunchReadinessPanel};
 export default function Home() {
-  return (
-    <main className="pm-app min-h-screen text-[#172033]">
-      <div className="flex min-h-screen">
-        <aside className="pm-sidebar hidden w-72 shrink-0 flex-col border-r lg:flex">
-          <div className="flex h-20 items-center border-b border-[#e4e7ec] px-6">
-            <Link className="flex items-center gap-3" href="#overview" aria-label="PM Agent overview">
-              <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#192235] text-xs font-bold tracking-tight text-white">PM</span>
-              <span className="text-[15px] font-semibold tracking-[-0.02em]">PM Agent</span>
-            </Link>
-          </div>
-
-          <div className="px-4 pt-5">
-            <div className="rounded-xl border border-[#e4e7ec] bg-[#f8fafc] p-3">
-              <p className="px-1 text-[10px] font-bold uppercase tracking-[0.18em] text-[#98a2b3]">Current workspace</p>
-              <div className="mt-2 flex items-center justify-between gap-2">
-                <div className="flex min-w-0 items-center gap-2">
-                  <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-[#e9edff] text-xs font-bold text-[#5269d8]">P</span>
-                  <span className="truncate text-sm font-semibold">Product workspace</span>
-                </div>
-                <Icon name="chevron" className="h-4 w-4 shrink-0 text-[#8d98a9]" />
-              </div>
-              <p className="mt-2 px-1 text-xs text-[#98a2b3]">Connected · production workspace</p>
-            </div>
-          </div>
-
-          <WorkspaceNav />
-
-          <div className="mt-auto px-4 pb-5">
-            <div className="mb-4 rounded-xl bg-[#192235] p-4 text-white">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#303d59] text-xs font-bold">AI</div>
-              <p className="mt-3 text-sm font-semibold">Your product, understood.</p>
-              <p className="mt-1 text-xs leading-5 text-[#b9c3d3]">Build context once. Use it across every PM workflow.</p>
-            </div>
-            <Link href="#settings" className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-[#667085] hover:bg-[#f2f4f7] hover:text-[#172033]">
-              <Icon name="settings" className="h-[18px] w-[18px]" />
-              Settings
-            </Link>
-            <div className="mt-3 flex items-center gap-3 border-t border-[#e4e7ec] px-3 pt-4">
-              <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#dfe7ff] text-xs font-bold text-[#435ac6]">W</span>
-              <div className="min-w-0">
-                <p className="truncate text-sm font-semibold">Waqas</p>
-                <p className="truncate text-xs text-[#8d98a9]">Product manager</p>
-              </div>
-            </div>
-          </div>
-        </aside>
-
-        <div className="min-w-0 flex-1">
-          <header className="pm-topbar sticky top-0 z-30 flex h-20 items-center justify-between border-b px-5 sm:px-8 lg:px-10">
-            <div className="flex items-center gap-3 lg:hidden">
-              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#192235] text-[10px] font-bold text-white">PM</span>
-              <span className="text-sm font-semibold">PM Agent</span>
-              <MobileWorkspaceNav />
-            </div>
-            <div className="hidden items-center gap-2 text-sm text-[#8d98a9] lg:flex">
-              <span>Product workspace</span>
-              <span className="text-[#c5cbd5]">/</span>
-              <span className="font-medium text-[#192235]">Overview</span>
-            </div>
-            <div className="flex items-center gap-2 sm:gap-4">
-              <span className="hidden items-center gap-2 text-xs font-medium text-[#68806f] sm:flex">
-                <span className="h-2 w-2 rounded-full bg-[#53b67b]" />
-                System ready
-              </span>
-              <AuthPanel />
-              <WorkspaceSearchPanel />
-              <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#dfe7ff] text-xs font-bold text-[#435ac6] lg:hidden">W</span>
-            </div>
-          </header>
-
-          <div className="mx-auto max-w-[1440px] px-5 py-8 sm:px-8 sm:py-10 lg:px-10 lg:py-12">
-            <section id="overview" aria-labelledby="overview-heading" className="pm-hero overflow-hidden p-6 sm:p-9 lg:p-10">
-              <div className="flex flex-col justify-between gap-8 lg:flex-row lg:items-start">
-                <div className="max-w-3xl">
-                  <div className="flex flex-wrap items-center gap-2 text-[11px] font-bold uppercase tracking-[0.18em] text-[#4f46c7]">
-                    <span>PM Agent workspace</span>
-                    <span aria-hidden className="text-[#b8bddc]">/</span>
-                    <span className="text-[#18864b]">Context connected</span>
-                  </div>
-                  <h1 id="overview-heading" className="mt-4 max-w-2xl text-4xl font-semibold tracking-[-0.06em] text-[#172033] sm:text-5xl">What are you trying to figure out?</h1>
-                  <p className="mt-4 max-w-2xl text-base leading-7 text-[#667085] sm:text-lg">Start with the product problem, opportunity, or decision on your mind. PM Agent brings your context, evidence, and past work into the next useful step.</p>
-                </div>
-                <div className="hidden shrink-0 rounded-2xl border border-white/80 bg-white/60 p-4 text-right shadow-sm sm:block">
-                  <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-[#98a2b3]">Workspace promise</p>
-                  <p className="mt-2 text-sm font-semibold text-[#172033]">Your product, understood.</p>
-                  <p className="mt-1 text-xs text-[#667085]">Evidence before confidence</p>
-                </div>
-              </div>
-              <div id="pm-entry" className="mt-8 rounded-2xl border border-white/90 bg-white/80 p-4 shadow-[0_8px_24px_rgba(52,57,134,0.06)] backdrop-blur-sm sm:p-5">
-                <PmEntryPanel />
-              </div>
-            </section>
-
-            <section aria-label="Workspace status" className="grid gap-4 py-7 sm:grid-cols-2 xl:grid-cols-4">
-              {[
-                { label: "Product context", value: "Build once", detail: "Goals, users, constraints, strategy", icon: "context" as IconName, tone: "bg-[#eef0ff] text-[#4f46c7]" },
-                { label: "Evidence", value: "Traceable", detail: "Documents, observations, citations", icon: "check" as IconName, tone: "bg-[#edf8f1] text-[#18864b]" },
-                { label: "Decisions", value: "Human owned", detail: "Rationale, risks, assumptions", icon: "users" as IconName, tone: "bg-[#fff5e7] text-[#a86d14]" },
-                { label: "Artifacts", value: "Reusable work", detail: "Briefs, updates, experiments", icon: "sparkle" as IconName, tone: "bg-[#f5efff] text-[#7b4bb5]" },
-              ].map((item) => (
-                <div key={item.label} className="pm-card p-4 sm:p-5">
-                  <div className="flex items-start justify-between gap-4">
-                    <div>
-                      <p className="text-xs font-semibold text-[#98a2b3]">{item.label}</p>
-                      <p className="mt-2 text-lg font-semibold tracking-[-0.03em] text-[#172033]">{item.value}</p>
-                      <p className="mt-1 text-xs leading-5 text-[#667085]">{item.detail}</p>
-                    </div>
-                    <span className={`flex h-10 w-10 items-center justify-center rounded-xl ${item.tone}`}><Icon name={item.icon} className="h-[18px] w-[18px]" /></span>
-                  </div>
-                </div>
-              ))}
-            </section>
-
-            <ActivationOnboardingPanel />
-
-            <div className="grid gap-6 xl:grid-cols-[minmax(0,1.45fr)_minmax(300px,0.8fr)]">
-              <section id="context" aria-labelledby="context-heading" className="pm-panel p-5 sm:p-7">
-                <ProductContextPanel />
-              </section>
-
-              <section id="activity" aria-labelledby="activity-heading" className="pm-panel p-5 sm:p-7">
-                <div className="flex items-center justify-between gap-3">
-                  <div>
-                    <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#8d98a9]">Workspace pulse</p>
-                    <h2 id="activity-heading" className="mt-2 text-xl font-semibold tracking-[-0.03em] text-[#192235]">Recent activity</h2>
-                  </div>
-                  <Icon name="activity" className="h-5 w-5 text-[#a5afbe]" />
-                </div>
-                <div className="mt-8 flex min-h-40 flex-col items-center justify-center rounded-xl border border-dashed border-[#d8dee8] px-5 text-center">
-                  <span className="flex h-10 w-10 items-center justify-center rounded-full bg-[#f3f5fb] text-[#8692a6]"><Icon name="activity" className="h-[18px] w-[18px]" /></span>
-                  <p className="mt-3 text-sm font-semibold text-[#526075]">Your workspace is ready.</p>
-                  <p className="mt-1 max-w-xs text-xs leading-5 text-[#9aa4b3]">Activity will appear here as context and decisions are added.</p>
-                </div>
-              </section>
-            </div>
-
-            <section id="documents" aria-labelledby="documents-heading" className="pm-panel mt-6 p-5 sm:p-7">
-              <DocumentLibraryPanel />
-            </section>
-
-            <section id="evidence" aria-labelledby="evidence-heading" className="pm-panel mt-6 p-5 sm:p-7">
-              <EvidenceLibraryPanel />
-            </section>
-
-            <section id="discover" aria-labelledby="discover-heading" className="pm-panel mt-8 p-5 sm:p-7">
-              <DiscoverWorkflowPanel />
-            </section>
-
-            <section id="define" aria-labelledby="define-heading" className="pm-panel mt-8 p-5 sm:p-7">
-              <DefineWorkflowPanel />
-            </section>
-
-            <section id="align" aria-labelledby="align-heading" className="pm-panel mt-8 p-5 sm:p-7">
-              <AlignWorkflowPanel />
-            </section>
-
-            <section id="artifacts" aria-labelledby="artifacts-heading" className="pm-panel mt-8 p-5 sm:p-7">
-              <ArtifactLibraryPanel />
-            </section>
-
-            <section id="planning" aria-labelledby="planning-heading" className="pm-panel mt-8 p-5 sm:p-7">
-              <PrioritizationPanel />
-            </section>
-
-            <section id="metrics" aria-labelledby="metrics-heading" className="pm-panel mt-8 p-5 sm:p-7">
-              <MetricsExperimentPanel />
-            </section>
-
-            <section id="usage" aria-labelledby="usage-heading" className="pm-panel mt-8 p-5 sm:p-7">
-              <UsagePanel />
-            </section>
-
-            <section id="observability" aria-labelledby="observability-heading" className="pm-panel mt-8 p-5 sm:p-7">
-              <ObservabilityPanel />
-            </section>
-
-            <section id="privacy" aria-labelledby="privacy-heading" className="pm-panel mt-8 p-5 sm:p-7">
-              <PrivacyPanel />
-            </section>
-
-            <section id="integrations" aria-labelledby="integrations-heading" className="pm-panel mt-8 p-5 sm:p-7">
-              <IntegrationsPanel />
-            </section>
-
-            <section id="feedback" aria-labelledby="feedback-heading" className="pm-panel mt-8 p-5 sm:p-7">
-              <FeedbackPanel />
-            </section>
-
-            <section id="decisions" aria-labelledby="decision-assumption-heading" className="pm-panel mt-8 p-5 sm:p-7">
-              <DecisionAssumptionPanel />
-            </section>
-
-            <section id="launch" aria-labelledby="launch-heading" className="pm-panel mt-8 p-5 sm:p-7">
-              <LaunchReadinessPanel />
-            </section>
-
-            <section id="workflows" aria-labelledby="workflows-heading" className="mt-8">
-              <div className="flex items-end justify-between gap-4 border-b border-[#e3e7ee] pb-4">
-                <div>
-                  <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#8d98a9]">The connected path</p>
-                  <h2 id="workflows-heading" className="mt-2 text-2xl font-semibold tracking-[-0.04em] text-[#192235]">Workflows built on your context</h2>
-                </div>
-                <span className="hidden text-xs font-semibold text-[#a0a9b8] sm:inline">Connected path · T23</span>
-              </div>
-              <div className="mt-4 grid gap-3 lg:grid-cols-3">
-                {workflows.map((workflow) => (
-                  <article key={workflow.number} className="pm-card group p-5">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-bold" style={{ color: workflow.accent }}>{workflow.number}</span>
-                      <span className="rounded-full bg-[#f3f5f8] px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.12em] text-[#8d98a9]">{workflow.status}</span>
-                    </div>
-                    <h3 className="mt-7 text-base font-semibold text-[#192235]">{workflow.title}</h3>
-                    <p className="mt-2 min-h-12 text-sm leading-6 text-[#68748a]">{workflow.description}</p>
-                    <div className="mt-5 flex items-center gap-2 text-xs font-semibold text-[#a0a9b8]">{workflow.available ? "Open workflow below" : "Available in a later task"} <Icon name="arrow" className="h-3.5 w-3.5" /></div>
-                  </article>
-                ))}
-              </div>
-            </section>
-
-            <footer className="mt-10 flex flex-col justify-between gap-2 border-t border-[#e3e7ee] pt-5 text-xs text-[#a0a9b8] sm:flex-row">
-              <span>PM Agent V2 · Product workspace</span>
-              <span>Context first. Evidence grounded. Decisions clearer.</span>
-            </footer>
-          </div>
-        </div>
-      </div>
-    </main>
-  );
+ const [view,setView]=useState("overview"); const [menu,setMenu]=useState(false);
+ // Preserve local drafts and results when moving between visited views.
+ const [visited,setVisited]=useState<string[]>([]);
+ useEffect(()=>{const sync=()=>{const raw=window.location.hash.slice(1); const next=raw==="workflows"?"discover":views.some(([id])=>id===raw)?raw:"overview";setView(next);setVisited(current=>current.includes(next)?current:[...current,next]);setMenu(false);};sync();window.addEventListener("hashchange",sync);return()=>window.removeEventListener("hashchange",sync);},[]);
+ useEffect(()=>{const close=(e:KeyboardEvent)=>{if(e.key==="Escape"){setMenu(false);document.getElementById("kit-menu")?.focus();}};window.addEventListener("keydown",close);return()=>window.removeEventListener("keydown",close);},[]);
+ const current=views.find(([id])=>id===view)!;
+ useEffect(()=>{document.documentElement.scrollTop=0;document.body.scrollTop=0;document.getElementById("kit-main")?.focus({preventScroll:true});},[view]);
+ return <div className="kit">
+ <a className="kit-skip" href="#kit-main" onClick={event=>{event.preventDefault();document.getElementById("kit-main")?.focus();}}>Skip to content</a>
+ <aside className={`kit-sidebar ${menu?"is-open":""}`} id="kit-navigation">
+ <a href="#overview" className="kit-brand"><span>p<span className="kit-brand-dot">·</span></span> PM Kit <small>BETA</small></a>
+ <div className="kit-workspace-label">YOUR PRODUCT SPACE</div>
+ <nav aria-label="Workspace navigation">{[...new Set(views.map(item=>item[2]))].map(group=><div className="kit-nav-group" key={group}><p>{group}</p>{views.filter(item=>item[2]===group).map(([id,label,,icon])=><a key={id} href={`#${id}`} aria-current={view===id?"page":undefined}><span aria-hidden>{icon}</span>{label}</a>)}</div>)}</nav>
+ <div className="kit-sidebar-note">Context becomes clarity.<br/><strong>Keep the why with the work.</strong></div>
+ </aside>
+ <div className="kit-body"><header className="kit-header">
+ <button id="kit-menu" className="kit-menu" aria-expanded={menu} aria-controls="kit-navigation" onClick={()=>setMenu(!menu)}>☰ Menu</button>
+ <div className="kit-breadcrumb"><span>Workspace</span><span>/</span><strong>{current[1]}</strong></div>
+ <div className="kit-header-actions"><WorkspaceSearchPanel/><AuthPanel/></div></header>
+ <main id="kit-main" tabIndex={-1}>
+ <div hidden={view!=="overview"&&view!=="pm-entry"}>
+ <div className="kit-welcome"><p className="kit-eyebrow">A LITTLE CONTEXT. A CLEARER DIRECTION.</p><h1>What are you trying<br className="hidden sm:block"/> to figure out<span>?</span></h1><p>Bring the question. Build on what your product already knows.</p></div>
+ <div className="kit-agent"><div className="kit-agent-mark" aria-hidden>✦</div><PmEntryPanel/></div>
+ {view==="overview"&&<WorkspaceOverview/>}
+ <details className="kit-onboarding"><summary>Getting started · your first useful outcome</summary><ActivationOnboardingPanel/></details>
+ </div>
+ {view!=="overview"&&view!=="pm-entry"&&<div className="kit-view-title"><p className="kit-eyebrow">{current[2]}</p><h1>{current[1]}</h1></div>}
+ {["discover","define","align"].includes(view)&&<div className="kit-journey" aria-label="Connected workflow"><a href="#discover" aria-current={view==="discover"?"step":undefined}>01 Discover</a><span>PM review →</span><a href="#define" aria-current={view==="define"?"step":undefined}>02 Define</a><span>PM review →</span><a href="#align" aria-current={view==="align"?"step":undefined}>03 Align</a><p>Review the evidence and approve the direction before continuing. Each workflow runs only when you submit it.</p></div>}
+ {Object.entries(panels).map(([id,Panel])=>visited.includes(id)&&<section className="kit-content" hidden={view!==id} key={id} aria-label={views.find(item=>item[0]===id)?.[1]}><Panel/></section>)}
+ {view==="activity"&&<WorkspaceOverview/>}
+ {view==="settings"&&<section className="kit-content"><h2>Your account</h2><p>Use the account control in the header to sign in or sign out.</p><a href="#privacy">Manage workspace privacy →</a></section>}
+ <footer className="kit-footer"><span>PM Kit</span><span>Context → Evidence → Decision → Artifact → Memory</span></footer>
+ </main></div></div>;
 }

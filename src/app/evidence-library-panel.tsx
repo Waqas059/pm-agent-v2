@@ -302,7 +302,7 @@ export default function EvidenceLibraryPanel() {
                   <button type="button" onClick={() => void deleteEvidence(item)} className="text-xs font-semibold text-[#9aa4b3] hover:text-[#b4534b]">Delete</button>
                 </div>
                 <h3 className="mt-4 text-sm font-semibold text-[#192235]">{item.title}</h3>
-                <p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-[#68748a]">{item.content}</p>
+                <p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-[#68748a]">{item.content}</p><details className="kit-record-detail"><summary>Inspect source</summary><p>{item.source_label}</p><pre>{JSON.stringify(item.source_locator, null, 2)}</pre><p>Evidence is the recorded source material; workflow conclusions remain interpretations for review.</p></details>
                 <div className="mt-4 flex flex-wrap items-center gap-2 text-xs text-[#8d98a9]">
                   <span className="font-semibold text-[#526075]">{item.source_label}</span>
                   {citation && <span className="rounded bg-[#f3f5f8] px-2 py-1 font-mono text-[10px] font-semibold text-[#68748a]">[{citation.citation_key}]</span>}
@@ -316,7 +316,7 @@ export default function EvidenceLibraryPanel() {
       )}
 
       {message && <p role="alert" aria-live="polite" className={`mt-4 text-xs ${messageTone === "error" ? "text-[#b4534b]" : "text-[#4d8c65]"}`}>{message}</p>}
-      <div className="mt-5 flex items-start gap-2 rounded-lg bg-[#f8f9fb] px-3 py-2.5 text-xs leading-5 text-[#8d98a9]"><span className="mt-0.5 text-[#53a977]">✓</span>Every evidence item must have a traceable source. AI interpretation and retrieval over indexed documents arrive in later tasks.</div>
+      <div className="mt-5 flex items-start gap-2 rounded-lg bg-[#f8f9fb] px-3 py-2.5 text-xs leading-5 text-[#8d98a9]"><span className="mt-0.5 text-[#53a977]">✓</span>Every evidence item must have a traceable source. Inspect the source before using a finding to make a decision.</div>
     </div>
   );
 }

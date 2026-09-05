@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 
 import Home from "./page";
@@ -10,10 +10,14 @@ describe("PM Agent product workspace", () => {
     expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent(
       "What are you trying to figure out?",
     );
-    expect(screen.getByRole("heading", { name: "Workflows built on your context" })).toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: "Reach your first useful PM outcome" })).toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: "Turn outcomes into measurable bets" })).toBeInTheDocument();
-    expect(screen.getByText("The production application is deployed on Vercel and available for authenticated UAT.")).toBeInTheDocument();
-    expect(screen.queryByText("Pending")).not.toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: "Turn outcomes into measurable bets" })).not.toBeInTheDocument();
+    await act(async () => { window.location.hash = "metrics"; window.dispatchEvent(new HashChangeEvent("hashchange")); });
+    await waitFor(() => expect(screen.getByRole("heading", { name: "Turn outcomes into measurable bets" })).toBeVisible());
+    fireEvent.change(screen.getByLabelText("Metric name"), { target: { value: "Activation" } });
+    await act(async () => { window.location.hash = "overview"; window.dispatchEvent(new HashChangeEvent("hashchange")); });
+    expect(screen.queryByRole("heading", { name: "Turn outcomes into measurable bets" })).not.toBeInTheDocument();
+    await act(async () => { window.location.hash = "metrics"; window.dispatchEvent(new HashChangeEvent("hashchange")); });
+    expect(screen.getByLabelText("Metric name")).toHaveValue("Activation");
+    await act(async () => { window.location.hash = ""; window.dispatchEvent(new HashChangeEvent("hashchange")); });
   });
 });
