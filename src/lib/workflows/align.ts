@@ -1,9 +1,10 @@
 import "server-only";
 
 import { runLangChainStructuredWorkflow } from "@/lib/langchain/structured-workflow";
+import type { TokenUsage } from "@/lib/openai/usage";
 import { alignOutputSchema, buildAlignInput, createAlignOutputParser, type AlignContextItem, type AlignEvidenceItem, type AlignOutput, type CommunicationFormat } from "./align-contract";
 
-export async function runAlignWorkflow({ format, request, contextItems, evidenceItems }: { format: CommunicationFormat; request: string; contextItems: AlignContextItem[]; evidenceItems: AlignEvidenceItem[] }): Promise<{ output: AlignOutput; id: string; model: string; status: string }> {
+export async function runAlignWorkflow({ format, request, contextItems, evidenceItems }: { format: CommunicationFormat; request: string; contextItems: AlignContextItem[]; evidenceItems: AlignEvidenceItem[] }): Promise<{ output: AlignOutput; id: string; model: string; status: string; usage?: TokenUsage | null }> {
   const allowedCitationKeys = new Set(evidenceItems.map((item) => item.citationKey));
   return runLangChainStructuredWorkflow({
     name: "align_communicate",

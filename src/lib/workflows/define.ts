@@ -1,6 +1,7 @@
 import "server-only";
 
 import { runLangChainStructuredWorkflow } from "@/lib/langchain/structured-workflow";
+import type { TokenUsage } from "@/lib/openai/usage";
 
 import {
   buildDefineInput,
@@ -19,7 +20,7 @@ export async function runDefineWorkflow({
   opportunity: string;
   contextItems: DefineContextItem[];
   evidenceItems: DefineEvidenceItem[];
-}): Promise<{ output: DefineOutput; id: string; model: string; status: string }> {
+}): Promise<{ output: DefineOutput; id: string; model: string; status: string; usage?: TokenUsage | null }> {
   const allowedCitationKeys = new Set(evidenceItems.map((item) => item.citationKey));
 
   return runLangChainStructuredWorkflow({
