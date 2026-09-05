@@ -16,6 +16,9 @@ Environment: `https://pm-agent-v2.vercel.app`
   query.
 - Observability loaded without exposing prompts, provider payloads, or keys.
 - Invalid short search input returned the expected validation message.
+- Read-only Supabase policy verification passed: RLS is enabled for
+  `workflow_runs`, `workflow_handoffs`, `decision_records`, and `assumptions`.
+- The `documents` storage bucket was verified as private.
 
 ## Intentionally not run
 
@@ -29,6 +32,6 @@ Environment: `https://pm-agent-v2.vercel.app`
 - Run one approved end-to-end AI workflow chain when the user is ready to spend
   tokens.
 - Verify signup/sign-out and auth redirect behavior in the production browser.
-- Review Supabase Auth redirect URLs, storage policies, retention, and deletion
-  decisions from the dashboard.
+- Review Supabase Auth redirect URLs, retention, and deletion decisions from the
+  dashboard. Storage privacy has been verified.
 - Decide whether to enable ongoing retention/deletion automation.
