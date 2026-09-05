@@ -27,6 +27,9 @@ Environment: `https://pm-agent-v2.vercel.app`
 - The activation onboarding guide is present in production and exposes links
   for context, source material, Discover, and outcome capture. Its checklist
   progress is local-only.
+- An invalid auth callback code redirected safely to the fixed app root with
+  `auth_error=confirmation`; the active authenticated session remained
+  available and no provider details were exposed.
 
 ## Controlled AI chain completed
 
@@ -53,7 +56,10 @@ Environment: `https://pm-agent-v2.vercel.app`
 
 ## Remaining before wider public use
 
-- Verify signup/sign-out behavior in the production browser.
+- Complete a deliberate signup/sign-in/sign-out cycle in the production
+  browser. The invalid-callback failure path is covered above; the active
+  session was intentionally not signed out during this remote run to avoid
+  disrupting access.
 - Review retention and deletion decisions from the dashboard. Storage privacy
   and authentication callback configuration have been verified.
 - Decide whether to enable ongoing retention/deletion automation.

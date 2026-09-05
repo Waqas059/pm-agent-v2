@@ -28,6 +28,9 @@ replace a full authenticated production test.
 - The linked Supabase security advisor returned one warning: leaked-password
   protection is disabled. The dashboard makes this control available only on
   the Pro plan and above; no billing or plan change was performed.
+- An invalid production auth callback was tested: it redirected to the fixed
+  app root with a generic `auth_error=confirmation` state, preserved the
+  existing authenticated session, and exposed no provider details.
 
 ## Still required before wider public use
 
@@ -35,7 +38,9 @@ replace a full authenticated production test.
   linked Supabase project, and its RLS/storage checks passed in the dashboard.
 - Before wider public use, either enable leaked-password protection after a
   plan decision or explicitly accept this Free-plan limitation for beta use.
-- Complete signup/sign-in, sign-out, and failure-state testing in production.
+- Complete a deliberate signup/sign-in/sign-out cycle in production. The
+  invalid-callback failure path has been verified; the active session was not
+  signed out during the remote run.
 - Decide and implement workspace deletion and retention automation.
 - Add live evaluation observations; the checked-in evaluation harness is
   intentionally offline and token-free.
