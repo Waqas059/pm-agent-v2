@@ -10,7 +10,7 @@ import EvidenceLibraryPanel from "./evidence-library-panel";
 import ProductContextPanel from "./product-context-panel";
 import PrioritizationPanel from "./prioritization-panel";
 import MetricsExperimentPanel from "./metrics-experiment-panel";
-import WorkspaceNav from "./workspace-nav";
+import WorkspaceNav, { MobileWorkspaceNav } from "./workspace-nav";
 import WorkspaceSearchPanel from "./workspace-search-panel";
 import UsagePanel from "./usage-panel";
 import PrivacyPanel from "./privacy-panel";
@@ -156,6 +156,7 @@ export default function Home() {
             <div className="flex items-center gap-3 lg:hidden">
               <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#192235] text-[10px] font-bold text-white">PM</span>
               <span className="text-sm font-semibold">PM Agent</span>
+              <MobileWorkspaceNav />
             </div>
             <div className="hidden items-center gap-2 text-sm text-[#8d98a9] lg:flex">
               <span>Product workspace</span>
