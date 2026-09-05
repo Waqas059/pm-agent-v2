@@ -47,6 +47,10 @@ The constrained PM entry point, indexed full-text retrieval, and privacy-aware
 workflow telemetry are also present. Telemetry does not store prompts, provider
 payloads, or credentials.
 
+Workflow telemetry now also stores provider-reported input, output, and total
+token counts, and surfaces total tokens in the observability panel. Pricing is
+not inferred until model-specific rates are deliberately configured.
+
 The beta usage cap is enforced server-side across Discover, Define, and Align;
 failed runs do not consume the cap, while active and successful runs are counted
 to prevent accidental unbounded provider usage. The usage panel reads that

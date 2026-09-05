@@ -342,6 +342,9 @@ export type Database = {
           input_chars: number | null;
           output_chars: number | null;
           tool_names: string[];
+          input_tokens: number | null;
+          output_tokens: number | null;
+          total_tokens: number | null;
         };
         Insert: {
           id?: string;
@@ -362,6 +365,9 @@ export type Database = {
           input_chars?: number | null;
           output_chars?: number | null;
           tool_names?: string[];
+          input_tokens?: number | null;
+          output_tokens?: number | null;
+          total_tokens?: number | null;
         };
         Update: {
           id?: string;
@@ -382,6 +388,9 @@ export type Database = {
           input_chars?: number | null;
           output_chars?: number | null;
           tool_names?: string[];
+          input_tokens?: number | null;
+          output_tokens?: number | null;
+          total_tokens?: number | null;
         };
         Relationships: [];
       };

@@ -2,6 +2,7 @@ import "server-only";
 
 import { getOpenAIClient } from "./client";
 import { getOpenAIConfig } from "./env";
+import { normalizeTokenUsage, type TokenUsage } from "./usage";
 
 export type CreateTextResponseRequest = {
   input: string;
@@ -15,6 +16,7 @@ export type TextResponseResult = {
   model: string;
   status: string;
   text: string;
+  usage?: TokenUsage | null;
 };
 
 export async function createTextResponse(
@@ -48,5 +50,6 @@ export async function createTextResponse(
     model: response.model,
     status: response.status ?? "unknown",
     text: response.output_text ?? "",
+    usage: normalizeTokenUsage(response.usage),
   };
 }

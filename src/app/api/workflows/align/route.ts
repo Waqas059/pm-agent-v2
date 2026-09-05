@@ -54,7 +54,7 @@ export async function POST(request: Request) {
     const result = await runAlignWorkflow({ format: format as CommunicationFormat, request: requestValue, contextItems: contextItems ?? [], evidenceItems });
     const completedAt = new Date().toISOString();
     await updateWorkflowStep(supabase, stepId, { status: "completed", output: result.output, completed_at: completedAt });
-    await updateWorkflowRun(supabase, runId, { status: "completed", output: result.output, completed_at: completedAt, provider: "openai_responses", model: result.model, duration_ms: Date.now() - workflowStartedAt, input_chars: requestValue.trim().length, output_chars: JSON.stringify(result.output).length, tool_names: ["retrieve_context", "retrieve_evidence", "align_communicate"] });
+    await updateWorkflowRun(supabase, runId, { status: "completed", output: result.output, completed_at: completedAt, provider: "openai_responses", model: result.model, duration_ms: Date.now() - workflowStartedAt, input_chars: requestValue.trim().length, output_chars: JSON.stringify(result.output).length, input_tokens: result.usage?.inputTokens ?? null, output_tokens: result.usage?.outputTokens ?? null, total_tokens: result.usage?.totalTokens ?? null, tool_names: ["retrieve_context", "retrieve_evidence", "align_communicate"] });
     return NextResponse.json({ result: { ...result, id: runId } });
   } catch (error) {
     if (runId) {

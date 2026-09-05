@@ -8,6 +8,7 @@ import {
   type StructuredOutputParser,
   validateStructuredWorkflowRequest,
 } from "./structured-output";
+import { normalizeTokenUsage, type TokenUsage } from "./usage";
 
 export type RunStructuredWorkflowRequest<T> = {
   name: string;
@@ -25,6 +26,7 @@ export type StructuredWorkflowResult<T> = {
   model: string;
   status: string;
   output: T;
+  usage?: TokenUsage | null;
 };
 
 export async function runStructuredWorkflow<T>(
@@ -65,5 +67,6 @@ export async function runStructuredWorkflow<T>(
     model: response.model,
     status: response.status,
     output: parseStructuredOutput(response.output_text, request.parse),
+    usage: normalizeTokenUsage(response.usage),
   };
 }
