@@ -22,6 +22,9 @@ authenticated production test or a Supabase dashboard review.
   workspaces after creation.
 - Production responses add baseline browser hardening headers for content type,
   framing, referrer, permissions, and HTTPS transport.
+- The production Supabase Site URL and
+  `https://pm-agent-v2.vercel.app/auth/callback` redirect URL were verified in
+  the project dashboard; the live callback route safely returns to the app.
 
 ## Still required before wider public use
 
@@ -31,8 +34,7 @@ authenticated production test or a Supabase dashboard review.
 - Complete authenticated production UAT across signup/sign-in, workspace
   creation, context, evidence, documents, workflows, artifacts, planning,
   metrics, privacy, feedback, sign-out, and failure states.
-- Recheck live Supabase RLS/storage behavior and authentication callback URLs
-  from the project dashboard.
+- Recheck live Supabase RLS/storage behavior from the project dashboard.
 - Decide and implement workspace deletion and retention automation.
 - Add live evaluation observations; the checked-in evaluation harness is
   intentionally offline and token-free.

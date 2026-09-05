@@ -19,6 +19,8 @@ Environment: `https://pm-agent-v2.vercel.app`
 - Read-only Supabase policy verification passed: RLS is enabled for
   `workflow_runs`, `workflow_handoffs`, `decision_records`, and `assumptions`.
 - The `documents` storage bucket was verified as private.
+- The production Site URL is configured in Supabase, and
+  `https://pm-agent-v2.vercel.app/auth/callback` is allowlisted.
 
 ## Controlled AI chain completed
 
@@ -36,14 +38,12 @@ Environment: `https://pm-agent-v2.vercel.app`
 
 ## Intentionally not run
 
-- Discover, Define, and Align AI calls were not executed, preserving the
-  account's token budget.
 - No document was uploaded, extracted, downloaded, or deleted during this
   pass.
 
 ## Remaining before wider public use
 
-- Verify signup/sign-out and auth redirect behavior in the production browser.
-- Review Supabase Auth redirect URLs, retention, and deletion decisions from the
-  dashboard. Storage privacy has been verified.
+- Verify signup/sign-out behavior in the production browser.
+- Review retention and deletion decisions from the dashboard. Storage privacy
+  and authentication callback configuration have been verified.
 - Decide whether to enable ongoing retention/deletion automation.
