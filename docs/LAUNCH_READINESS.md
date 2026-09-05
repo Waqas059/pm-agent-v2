@@ -19,6 +19,8 @@
 - The documents storage bucket is private.
 - A controlled Discover -> Define -> Align chain completed with three bounded AI
   runs, citation-backed outputs, approval handoffs, and one saved artifact.
+- The activation onboarding guide is deployed and was verified in an
+  authenticated production browser session.
 
 The activation onboarding guide is present on the workspace overview. It
 guides a new PM through context, source material, Discover, and capturing the

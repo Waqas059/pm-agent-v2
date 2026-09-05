@@ -21,6 +21,9 @@ Environment: `https://pm-agent-v2.vercel.app`
 - The `documents` storage bucket was verified as private.
 - The production Site URL is configured in Supabase, and
   `https://pm-agent-v2.vercel.app/auth/callback` is allowlisted.
+- The activation onboarding guide is present in production and exposes links
+  for context, source material, Discover, and outcome capture. Its checklist
+  progress is local-only.
 
 ## Controlled AI chain completed
 
