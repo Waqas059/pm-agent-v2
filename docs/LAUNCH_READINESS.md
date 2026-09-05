@@ -25,6 +25,10 @@
   citation-grounding, handoff-continuity, and artifact-persistence checks. The
   three observed latencies were 7,063 ms, 13,980 ms, and 6,670 ms; token and
   cost totals were unavailable for these older runs and are not inferred.
+- A subsequent single-call production Discover observation completed with the
+  expected structured sections, citation key, and explicit evidence
+  limitations. Define and Align were intentionally not run in that check, and
+  the observability panel still showed no token total.
 
 The activation onboarding guide is present on the workspace overview. It
 guides a new PM through context, source material, Discover, and capturing the

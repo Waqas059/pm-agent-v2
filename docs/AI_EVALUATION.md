@@ -45,3 +45,26 @@ production workspace. The observed checks were:
 This is an initial qualitative beta observation, not a statistically sufficient
 quality baseline. The offline harness remains the regression gate and makes no
 provider calls.
+
+## Additional bounded production observation
+
+Date: 2026-09-05
+Environment: `https://pm-agent-v2.vercel.app`
+
+One additional Discover-only run was completed with the question: “What
+recurring setup friction should we investigate before planning the next
+release?” The result:
+
+- completed successfully with the configured `gpt-5.6-luna` provider;
+- returned the expected synthesis, themes, pain points, opportunities, open
+  questions, and limitations sections;
+- cited the saved evidence key `CIT-BC29D6AA` and explicitly limited the
+  conclusion to the single UAT interview;
+- correctly identified missing quantitative setup-time, completion-rate,
+  drop-off, recurrence, and severity data;
+- did not start Define or Align, keeping this observation to one provider call;
+- the production observability panel continued to show `—` for token totals,
+  so token usage and cost are not inferred.
+
+This observation confirms bounded execution and evidence-aware behavior, but
+does not replace broader human review or the offline regression harness.
