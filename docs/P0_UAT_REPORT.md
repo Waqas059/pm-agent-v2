@@ -14,6 +14,9 @@ Environment: `https://pm-agent-v2.vercel.app`
   human-approval markers for workflow and write actions.
 - Indexed workspace search returned the saved evidence item for a matching
   query.
+- A synthetic text-based PDF (`pm-agent-uat-sample.pdf`) uploaded successfully,
+  extracted without an AI call, and appeared in workspace search for the
+  citation marker `CIT-PDF-UAT-001`.
 - Observability loaded without exposing prompts, provider payloads, or keys.
 - Invalid short search input returned the expected validation message.
 - Read-only Supabase policy verification passed: RLS is enabled for
@@ -39,14 +42,14 @@ Environment: `https://pm-agent-v2.vercel.app`
 - Three successful AI runs were recorded in the session meter; no additional
   workflow calls were made.
 
-## Intentionally not run
+## Controlled document test scope
 
-- No document was uploaded, downloaded, or deleted during this pass.
 - Extraction was attempted on the existing `WhatsApp to SMS Fallback_v3.docx`.
   The file has a legacy `.doc` binary signature despite its `.docx` name; the
   application now detects that mismatch and returns an actionable 422 message.
-  A real `.docx` or PDF should be uploaded for the successful extraction/search
-  path test.
+- The synthetic PDF was used only to validate the successful extraction and
+  search path. It remains in the private workspace for review; it was not
+  deleted automatically.
 
 ## Remaining before wider public use
 
@@ -54,5 +57,5 @@ Environment: `https://pm-agent-v2.vercel.app`
 - Review retention and deletion decisions from the dashboard. Storage privacy
   and authentication callback configuration have been verified.
 - Decide whether to enable ongoing retention/deletion automation.
-- Re-upload that source as a valid `.docx` or PDF and verify successful
-  extraction and document search.
+- If the WhatsApp source is needed in the workspace, save/export it as a valid
+  `.docx` or PDF and upload it separately.
