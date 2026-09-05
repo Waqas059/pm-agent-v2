@@ -36,4 +36,10 @@ Discover results expose explicit approval actions; approved handoffs are loaded
 into Define and Align as editable starting context. Decisions and assumptions
 are maintained by the human PM in the Decisions workspace section.
 
+The next P1 foundation is also present in code: a constrained PM entry point
+that proposes only approved internal tools, indexed full-text retrieval for
+context/evidence/extractions, and privacy-aware workflow telemetry for model,
+latency, size, and selected tool-chain metrics. It does not store prompts,
+provider payloads, or credentials.
+
 No deployment, GitHub push, account change, payment action, or external data sharing is performed by the local readiness checklist.

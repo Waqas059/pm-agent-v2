@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 
 const items = [
   { label: "Overview", href: "#overview" },
+  { label: "PM entry point", href: "#pm-entry" },
   { label: "Product context", href: "#context" },
   { label: "Documents", href: "#documents" },
   { label: "Evidence", href: "#evidence" },
@@ -11,6 +12,7 @@ const items = [
   { label: "Priorities", href: "#planning" },
   { label: "Metrics", href: "#metrics" },
   { label: "Usage & plan", href: "#usage" },
+  { label: "AI observability", href: "#observability" },
   { label: "Privacy", href: "#privacy" },
   { label: "Integrations", href: "#integrations" },
   { label: "Feedback", href: "#feedback" },

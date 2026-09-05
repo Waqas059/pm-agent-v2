@@ -18,10 +18,10 @@ export async function GET(request: Request) {
     if (!workspace) return errorResponse("Create a product workspace before searching.", 422);
     const term = `%${escapeLike(query)}%`;
     const [{ data: contextItems, error: contextError }, { data: evidenceItems, error: evidenceError }, { data: artifacts, error: artifactError }, { data: extractionItems, error: extractionError }] = await Promise.all([
-      supabase.from("context_items").select("id, category, title, content").eq("workspace_id", workspace.id).or(`title.ilike.${term},content.ilike.${term}`).order("updated_at", { ascending: false }).limit(8),
-      supabase.from("evidence_items").select("id, kind, title, content, source_label").eq("workspace_id", workspace.id).or(`title.ilike.${term},content.ilike.${term},source_label.ilike.${term}`).order("updated_at", { ascending: false }).limit(8),
+      supabase.from("context_items").select("id, category, title, content").eq("workspace_id", workspace.id).textSearch("search_vector", query, { type: "websearch", config: "simple" }).order("updated_at", { ascending: false }).limit(8),
+      supabase.from("evidence_items").select("id, kind, title, content, source_label").eq("workspace_id", workspace.id).textSearch("search_vector", query, { type: "websearch", config: "simple" }).order("updated_at", { ascending: false }).limit(8),
       supabase.from("artifacts").select("id, kind, title, source_workflow").eq("workspace_id", workspace.id).ilike("title", term).order("updated_at", { ascending: false }).limit(8),
-      supabase.from("document_extractions").select("document_id, extracted_text, extractor").eq("workspace_id", workspace.id).ilike("extracted_text", term).order("updated_at", { ascending: false }).limit(8),
+      supabase.from("document_extractions").select("document_id, extracted_text, extractor").eq("workspace_id", workspace.id).textSearch("search_vector", query, { type: "websearch", config: "simple" }).order("updated_at", { ascending: false }).limit(8),
     ]);
     if (contextError) throw contextError;
     if (evidenceError) throw evidenceError;

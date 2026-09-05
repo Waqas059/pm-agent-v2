@@ -75,6 +75,7 @@ export async function POST(request: Request) {
       return errorResponse("Add at least one citation-backed evidence item before running discovery.", 422);
     }
 
+    const workflowStartedAt = Date.now();
     const started = await startWorkflowRun(supabase, {
       workspaceId: workspace.id,
       workflowName: "discover_synthesize",
@@ -92,7 +93,7 @@ export async function POST(request: Request) {
 
     const completedAt = new Date().toISOString();
     await updateWorkflowStep(supabase, stepId, { status: "completed", output: result.output, completed_at: completedAt });
-    await updateWorkflowRun(supabase, runId, { status: "completed", output: result.output, completed_at: completedAt });
+    await updateWorkflowRun(supabase, runId, { status: "completed", output: result.output, completed_at: completedAt, provider: "openai_responses", model: result.model, duration_ms: Date.now() - workflowStartedAt, input_chars: questionValue.trim().length, output_chars: JSON.stringify(result.output).length, tool_names: ["retrieve_context", "retrieve_evidence", "discover_synthesize"] });
 
     return NextResponse.json({ result: { ...result, id: runId } });
   } catch (error) {

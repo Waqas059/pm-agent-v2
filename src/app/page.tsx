@@ -18,6 +18,8 @@ import IntegrationsPanel from "./integrations-panel";
 import FeedbackPanel from "./feedback-panel";
 import LaunchReadinessPanel from "./launch-readiness-panel";
 import DecisionAssumptionPanel from "./decision-assumption-panel";
+import PmEntryPanel from "./pm-entry-panel";
+import ObservabilityPanel from "./observability-panel";
 
 type IconName =
   | "activity"
@@ -203,6 +205,10 @@ export default function Home() {
               ))}
             </section>
 
+            <section id="pm-entry" aria-labelledby="pm-entry-heading" className="mt-8 rounded-2xl border border-[#e3e7ee] bg-white p-5 sm:p-7">
+              <PmEntryPanel />
+            </section>
+
             <div className="grid gap-6 xl:grid-cols-[minmax(0,1.45fr)_minmax(300px,0.8fr)]">
               <section id="context" aria-labelledby="context-heading" className="rounded-2xl border border-[#e3e7ee] bg-white p-5 sm:p-7">
                 <ProductContextPanel />
@@ -258,6 +264,10 @@ export default function Home() {
 
             <section id="usage" aria-labelledby="usage-heading" className="mt-8 rounded-2xl border border-[#e3e7ee] bg-white p-5 sm:p-7">
               <UsagePanel />
+            </section>
+
+            <section id="observability" aria-labelledby="observability-heading" className="mt-8 rounded-2xl border border-[#e3e7ee] bg-white p-5 sm:p-7">
+              <ObservabilityPanel />
             </section>
 
             <section id="privacy" aria-labelledby="privacy-heading" className="mt-8 rounded-2xl border border-[#e3e7ee] bg-white p-5 sm:p-7">

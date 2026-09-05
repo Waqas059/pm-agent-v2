@@ -18,6 +18,7 @@ export type Database = {
           description: string | null;
           created_at: string;
           updated_at: string;
+          search_vector: string | null;
         };
         Insert: {
           id?: string;
@@ -73,6 +74,7 @@ export type Database = {
           updated_by: string | null;
           created_at: string;
           updated_at: string;
+          search_vector: string | null;
         };
         Insert: {
           id?: string;
@@ -153,6 +155,7 @@ export type Database = {
           created_by: string;
           created_at: string;
           updated_at: string;
+          search_vector: string | null;
         };
         Insert: {
           id?: string;
@@ -333,6 +336,12 @@ export type Database = {
           completed_at: string | null;
           created_at: string;
           updated_at: string;
+          provider: "openai_responses";
+          model: string | null;
+          duration_ms: number | null;
+          input_chars: number | null;
+          output_chars: number | null;
+          tool_names: string[];
         };
         Insert: {
           id?: string;
@@ -347,6 +356,12 @@ export type Database = {
           completed_at?: string | null;
           created_at?: string;
           updated_at?: string;
+          provider?: "openai_responses";
+          model?: string | null;
+          duration_ms?: number | null;
+          input_chars?: number | null;
+          output_chars?: number | null;
+          tool_names?: string[];
         };
         Update: {
           id?: string;
@@ -361,6 +376,12 @@ export type Database = {
           completed_at?: string | null;
           created_at?: string;
           updated_at?: string;
+          provider?: "openai_responses";
+          model?: string | null;
+          duration_ms?: number | null;
+          input_chars?: number | null;
+          output_chars?: number | null;
+          tool_names?: string[];
         };
         Relationships: [];
       };

@@ -41,6 +41,7 @@ export async function POST(request: Request) {
       return citationKey ? [{ ...item, citationKey }] : [];
     });
     if (evidenceItems.length === 0) return errorResponse("Add at least one citation-backed evidence item before running communication.", 422);
+    const workflowStartedAt = Date.now();
     const started = await startWorkflowRun(supabase, {
       workspaceId: workspace.id,
       workflowName: "align_communicate",
@@ -53,7 +54,7 @@ export async function POST(request: Request) {
     const result = await runAlignWorkflow({ format: format as CommunicationFormat, request: requestValue, contextItems: contextItems ?? [], evidenceItems });
     const completedAt = new Date().toISOString();
     await updateWorkflowStep(supabase, stepId, { status: "completed", output: result.output, completed_at: completedAt });
-    await updateWorkflowRun(supabase, runId, { status: "completed", output: result.output, completed_at: completedAt });
+    await updateWorkflowRun(supabase, runId, { status: "completed", output: result.output, completed_at: completedAt, provider: "openai_responses", model: result.model, duration_ms: Date.now() - workflowStartedAt, input_chars: requestValue.trim().length, output_chars: JSON.stringify(result.output).length, tool_names: ["retrieve_context", "retrieve_evidence", "align_communicate"] });
     return NextResponse.json({ result: { ...result, id: runId } });
   } catch (error) {
     if (runId) {
