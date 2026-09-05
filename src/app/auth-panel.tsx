@@ -17,6 +17,7 @@ export default function AuthPanel() {
   const [isOpen, setIsOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [needsConfirmation, setNeedsConfirmation] = useState(false);
+  const [authError, setAuthError] = useState(false);
 
   useEffect(() => {
     let isMounted = true;
@@ -24,6 +25,16 @@ export default function AuthPanel() {
 
     try {
       const supabase = createClient();
+
+      const callbackError = new URLSearchParams(window.location.search).get("auth_error");
+      if (callbackError === "confirmation") {
+        window.setTimeout(() => {
+          if (!isMounted) return;
+          setAuthError(true);
+          setIsOpen(true);
+          setMessage("That confirmation link is invalid or expired. Request a new link or sign in again.");
+        }, 0);
+      }
 
       void supabase.auth.getUser().then(({ data }) => {
         if (!isMounted) return;
@@ -137,7 +148,8 @@ export default function AuthPanel() {
         <button type="button" onClick={handleSignOut} className="rounded-lg border border-[#e3e7ee] bg-white px-3 py-2 text-xs font-semibold text-[#526075] transition-colors hover:border-[#cbd3df] hover:text-[#192235]">
           Sign out
         </button>
-        {message ? <span className="sr-only" role="status">{message}</span> : null}
+        {authError ? <span className="max-w-64 rounded-lg border border-[#f0d4d0] bg-[#fff9f8] px-3 py-2 text-xs leading-5 text-[#a04c43]" role="alert">Confirmation link could not be completed. Your current session is still active.</span> : null}
+        {message && !authError ? <span className="sr-only" role="status">{message}</span> : null}
       </div>
     );
   }
