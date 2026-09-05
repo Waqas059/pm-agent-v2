@@ -60,6 +60,10 @@ export async function POST(_request: Request, context: { params: Promise<{ id: s
       },
     });
   } catch (error) {
+    if (error instanceof Error) {
+      console.error("Document extraction failed", { message: error.message, name: error.name });
+      return errorResponse(`Document extraction failed: ${error.message.slice(0, 240)}`, 502);
+    }
     if (error instanceof Error && error.message.includes("Legacy .doc files")) {
       return errorResponse(error.message, 422);
     }
