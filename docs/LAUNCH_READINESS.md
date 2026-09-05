@@ -71,6 +71,9 @@ rules are defined.
 ## Remaining before wider public use
 
 - Complete signup/sign-in, sign-out, and failure-state testing in production.
+- Resolve the Supabase advisor warning for leaked-password protection. The
+  control is unavailable on the current Free plan, so this requires either a
+  plan decision or an explicit beta-risk acceptance.
 - Implement owner-controlled full workspace deletion after the deletion contract
   and confirmation flow are defined.
 - Decide whether to enable any automatic retention job.
