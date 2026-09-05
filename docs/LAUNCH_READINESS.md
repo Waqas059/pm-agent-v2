@@ -86,7 +86,8 @@ rules are defined.
   plan decision or an explicit beta-risk acceptance.
 - Run the implemented owner-controlled deletion flow against a disposable
   workspace and verify storage cleanup, audit status, failure handling, and
-  post-deletion sign-out before production use.
+  post-deletion sign-out before production use. The read-only production
+  preview has already been verified; no real workspace was deleted.
 - Decide whether to enable any automatic retention job.
 - Continue collecting live evaluation observations after the token telemetry
   migration; the initial qualitative observation is recorded above and the

@@ -31,6 +31,9 @@ before wider public use. It is a design gate, not an execution command.
 - The documents bucket is private and document objects use workspace-scoped
   paths.
 - The guarded preview-and-confirmation flow is implemented in the application.
+- The production preview was verified read-only on 2026-09-05: it reported 12
+  database records and 2 private files for the current workspace; no deletion
+  request was submitted.
 - Full deletion still requires a disposable-workspace UAT before being treated
   as production-ready.
 - Automatic retention or purge is not enabled.
