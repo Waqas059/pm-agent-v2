@@ -49,7 +49,8 @@ payloads, or credentials.
 
 The beta usage cap is enforced server-side across Discover, Define, and Align;
 failed runs do not consume the cap, while active and successful runs are counted
-to prevent accidental unbounded provider usage.
+to prevent accidental unbounded provider usage. The usage panel reads that
+workspace-level count, with a browser-only fallback if the status request fails.
 
 Search now applies a deterministic, stable title-first reranking pass over the
 permission-filtered full-text results. It is covered by offline tests and does
