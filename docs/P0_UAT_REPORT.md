@@ -20,6 +20,20 @@ Environment: `https://pm-agent-v2.vercel.app`
   `workflow_runs`, `workflow_handoffs`, `decision_records`, and `assumptions`.
 - The `documents` storage bucket was verified as private.
 
+## Controlled AI chain completed
+
+- Discover completed with one focused request and returned a citation-backed
+  synthesis, themes, pain points, opportunities, open questions, and explicit
+  limitations.
+- The Discover result was approved for Define and Align.
+- Define completed with a reviewable product brief, acceptance criteria,
+  measurable success metrics, risks, and validation questions.
+- Align completed with a citation-backed executive update and a clear decision
+  ask: sponsor focused setup-flow validation before a larger commitment.
+- The final communication was saved as workspace artifact version 1.
+- Three successful AI runs were recorded in the session meter; no additional
+  workflow calls were made.
+
 ## Intentionally not run
 
 - Discover, Define, and Align AI calls were not executed, preserving the
@@ -29,8 +43,6 @@ Environment: `https://pm-agent-v2.vercel.app`
 
 ## Remaining before wider public use
 
-- Run one approved end-to-end AI workflow chain when the user is ready to spend
-  tokens.
 - Verify signup/sign-out and auth redirect behavior in the production browser.
 - Review Supabase Auth redirect URLs, retention, and deletion decisions from the
   dashboard. Storage privacy has been verified.
