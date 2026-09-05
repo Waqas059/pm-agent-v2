@@ -592,6 +592,42 @@ export type Database = {
         };
         Relationships: [];
       };
+      workspace_deletion_operations: {
+        Row: {
+          id: string;
+          workspace_id: string;
+          requested_by: string;
+          status: "started" | "completed" | "failed";
+          record_counts: Json;
+          storage_object_count: number;
+          failure_reason: string | null;
+          started_at: string;
+          completed_at: string | null;
+        };
+        Insert: {
+          id?: string;
+          workspace_id: string;
+          requested_by: string;
+          status: "started" | "completed" | "failed";
+          record_counts?: Json;
+          storage_object_count?: number;
+          failure_reason?: string | null;
+          started_at?: string;
+          completed_at?: string | null;
+        };
+        Update: {
+          id?: string;
+          workspace_id?: string;
+          requested_by?: string;
+          status?: "started" | "completed" | "failed";
+          record_counts?: Json;
+          storage_object_count?: number;
+          failure_reason?: string | null;
+          started_at?: string;
+          completed_at?: string | null;
+        };
+        Relationships: [];
+      };
     };
     Views: Record<string, never>;
     Functions: Record<string, never>;
