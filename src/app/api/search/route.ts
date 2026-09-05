@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { rankSearchResults, type SearchCandidate } from "@/lib/search/rank";
 
 const MAX_QUERY_LENGTH = 120;
 function errorResponse(message: string, status: number) { return NextResponse.json({ error: message }, { status }); }
@@ -33,11 +34,12 @@ export async function GET(request: Request) {
       : { data: [], error: null };
     if (extractionDocumentsError) throw extractionDocumentsError;
     const documentNames = new Map((extractionDocuments ?? []).map((document) => [document.id, document.original_name]));
-    return NextResponse.json({ results: [
+    const results: SearchCandidate[] = [
       ...(contextItems ?? []).map((item) => ({ id: item.id, type: "Context", title: item.title, detail: `${item.category} · ${item.content.slice(0, 140)}`, href: "#context" })),
       ...(evidenceItems ?? []).map((item) => ({ id: item.id, type: "Evidence", title: item.title, detail: `${item.source_label} · ${item.content.slice(0, 140)}`, href: "#evidence" })),
       ...(artifacts ?? []).map((item) => ({ id: item.id, type: "Artifact", title: item.title, detail: `${item.source_workflow === "define_specify" ? "Product brief" : "Communication message"} · Saved output`, href: "#artifacts" })),
       ...(extractionItems ?? []).map((item) => ({ id: item.document_id, type: "Document", title: documentNames.get(item.document_id) ?? "Extracted document", detail: `${item.extractor} · ${item.extracted_text.slice(0, 140)}`, href: "#documents" })),
-    ] });
+    ];
+    return NextResponse.json({ results: rankSearchResults(results, query) });
   } catch { return errorResponse("Workspace search could not be completed.", 502); }
 }
