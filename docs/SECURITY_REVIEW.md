@@ -25,6 +25,8 @@ authenticated production test or a Supabase dashboard review.
 - The production Supabase Site URL and
   `https://pm-agent-v2.vercel.app/auth/callback` redirect URL were verified in
   the project dashboard; the live callback route safely returns to the app.
+- The beta retention policy is documented in `docs/RETENTION_POLICY.md`:
+  deletion is manual and scoped, and no automatic purge is enabled.
 
 ## Still required before wider public use
 
@@ -35,6 +37,7 @@ authenticated production test or a Supabase dashboard review.
   creation, context, evidence, documents, workflows, artifacts, planning,
   metrics, privacy, feedback, sign-out, and failure states.
 - Recheck live Supabase RLS/storage behavior from the project dashboard.
-- Decide and implement workspace deletion and retention automation.
+- Implement owner-controlled full workspace deletion and any approved retention
+  automation after the retention period and exception rules are defined.
 - Add live evaluation observations; the checked-in evaluation harness is
   intentionally offline and token-free.

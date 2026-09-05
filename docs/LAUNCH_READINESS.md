@@ -43,3 +43,10 @@ latency, size, and selected tool-chain metrics. It does not store prompts,
 provider payloads, or credentials.
 
 No deployment, GitHub push, account change, payment action, or external data sharing is performed by the local readiness checklist.
+
+## Retention policy
+
+The current beta policy is documented in `docs/RETENTION_POLICY.md`. Data is
+retained by default, deletion is explicit and workspace-scoped, and no
+automatic purge or full-workspace deletion flow is enabled until the retention
+period and exception rules are approved.
