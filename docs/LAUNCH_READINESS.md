@@ -47,6 +47,11 @@ The constrained PM entry point, indexed full-text retrieval, and privacy-aware
 workflow telemetry are also present. Telemetry does not store prompts, provider
 payloads, or credentials.
 
+Search now applies a deterministic, stable title-first reranking pass over the
+permission-filtered full-text results. It is covered by offline tests and does
+not claim semantic similarity; embeddings or model-assisted reranking remain
+optional follow-up work if evaluation justifies them.
+
 ## Retention policy
 
 The beta policy is documented in `docs/RETENTION_POLICY.md`. Data is retained
