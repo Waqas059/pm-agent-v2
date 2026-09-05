@@ -3,6 +3,8 @@ import { NextResponse } from "next/server";
 import { extractDocument } from "@/lib/documents/extract";
 import { createClient } from "@/lib/supabase/server";
 
+export const runtime = "nodejs";
+
 function errorResponse(message: string, status: number) {
   return NextResponse.json({ error: message }, { status });
 }

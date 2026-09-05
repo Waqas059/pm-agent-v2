@@ -1,6 +1,9 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // These parsers rely on Node.js server APIs and should not be bundled into
+  // the browser/edge-oriented server graph used by the deployment build.
+  serverExternalPackages: ["pdf-parse", "mammoth"],
   async headers() {
     return [
       {
