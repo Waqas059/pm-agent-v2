@@ -30,6 +30,8 @@ before wider public use. It is a design gate, not an execution command.
   controls.
 - The documents bucket is private and document objects use workspace-scoped
   paths.
-- Full-workspace deletion is not enabled yet.
+- The guarded preview-and-confirmation flow is implemented in the application.
+- Full deletion still requires a disposable-workspace UAT before being treated
+  as production-ready.
 - Automatic retention or purge is not enabled.
 - No production data was changed while preparing this checklist.

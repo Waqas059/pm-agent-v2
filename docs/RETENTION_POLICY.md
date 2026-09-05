@@ -23,7 +23,8 @@ Status: documented beta policy; automatic retention is not enabled.
   claiming success.
 - Full workspace deletion is owner-only, requires an explicit confirmation, and
   must remove workspace-scoped records and private files as one auditable
-  operation. This flow is not enabled yet.
+  operation. The guarded preview-and-confirmation flow is implemented; it must
+  be exercised only against a disposable workspace before production use.
 
 ## Full-deletion implementation contract
 
@@ -42,9 +43,9 @@ The future owner-controlled deletion flow must follow this sequence:
    completed. The UI must never claim success after a partial failure.
 6. On success, clear the session and return the user to the signed-out state.
 
-The implementation remains disabled until this contract is implemented and
-tested against a disposable workspace. No production workspace is deleted by
-documentation or readiness checks.
+The implementation is guarded by this contract and remains unverified until it
+is tested against a disposable workspace. No production workspace is deleted
+by documentation, deployment, or readiness checks.
 
 ## Future retention decision
 

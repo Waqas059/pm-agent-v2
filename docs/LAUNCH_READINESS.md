@@ -80,8 +80,9 @@ rules are defined.
 - Resolve the Supabase advisor warning for leaked-password protection. The
   control is unavailable on the current Free plan, so this requires either a
   plan decision or an explicit beta-risk acceptance.
-- Implement owner-controlled full workspace deletion after the deletion contract
-  and confirmation flow are defined.
+- Run the implemented owner-controlled deletion flow against a disposable
+  workspace and verify storage cleanup, audit status, failure handling, and
+  post-deletion sign-out before production use.
 - Decide whether to enable any automatic retention job.
 - Continue collecting live evaluation observations after the token telemetry
   migration; the initial qualitative observation is recorded above and the
