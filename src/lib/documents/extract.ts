@@ -72,11 +72,9 @@ export async function extractDocument(buffer: Buffer, mimeType: string, original
   }
 
   if (mimeType === "application/pdf" || lowerName.endsWith(".pdf")) {
-    // Vercel server functions use pdfjs' fake-worker path. Preloading the
-    // bundled worker makes that path deterministic when package files are
-    // externalized from the deployment bundle.
-    const pdfWorker = await import("pdfjs-dist/legacy/build/pdf.worker.mjs");
-    (globalThis as typeof globalThis & { pdfjsWorker?: unknown }).pdfjsWorker ??= pdfWorker;
+    // Bootstrap the official Node worker. It also provides DOMMatrix and the
+    // other canvas globals that pdfjs expects in serverless runtimes.
+    await import("pdf-parse/worker");
     const { PDFParse } = await import("pdf-parse");
     const parser = new PDFParse({ data: buffer });
     try {
