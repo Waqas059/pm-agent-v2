@@ -63,8 +63,9 @@ release?” The result:
 - correctly identified missing quantitative setup-time, completion-rate,
   drop-off, recurrence, and severity data;
 - did not start Define or Align, keeping this observation to one provider call;
-- the production observability panel continued to show `—` for token totals,
-  so token usage and cost are not inferred.
+- observed latency: 9,060 ms;
+- provider-reported total tokens: 789; estimated cost remains unavailable
+  because model-specific pricing is not configured.
 
 This observation confirms bounded execution and evidence-aware behavior, but
 does not replace broader human review or the offline regression harness.
