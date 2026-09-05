@@ -25,6 +25,27 @@ Status: documented beta policy; automatic retention is not enabled.
   must remove workspace-scoped records and private files as one auditable
   operation. This flow is not enabled yet.
 
+## Full-deletion implementation contract
+
+The future owner-controlled deletion flow must follow this sequence:
+
+1. Show a read-only preview for the selected workspace, including record and
+   private-file counts.
+2. Require an authenticated workspace owner and exact confirmation text that
+   includes the workspace name. A generic confirm button is insufficient.
+3. Create an auditable deletion operation before removing data. The operation
+   records the requesting user, workspace, start time, item counts, final
+   status, and a safe failure reason; it never records file contents.
+4. Remove private storage objects using workspace-scoped paths, then delete the
+   workspace root so database cascades remove its related records.
+5. Report failure explicitly if either storage or database cleanup cannot be
+   completed. The UI must never claim success after a partial failure.
+6. On success, clear the session and return the user to the signed-out state.
+
+The implementation remains disabled until this contract is implemented and
+tested against a disposable workspace. No production workspace is deleted by
+documentation or readiness checks.
+
 ## Future retention decision
 
 Before enabling automatic retention, the product owner must define the period,
