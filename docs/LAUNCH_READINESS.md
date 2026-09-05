@@ -7,53 +7,54 @@
 - `npm run typecheck` passes.
 - `npm run build` passes.
 - `/api/health` returns `200` with a minimal status payload.
-- Authenticated browser smoke tests cover context, workflows, artifacts, planning, metrics, usage, privacy, integrations, and beta feedback.
+- Authenticated browser smoke tests cover context, workflows, artifacts, planning,
+  metrics, usage, privacy, integrations, and beta feedback.
 
-The activation onboarding guide is present on the workspace overview. It
-guides a new PM through context, source material, Discover, and capturing the
-first outcome. Checklist progress is local-only and does not create, update,
-or delete workspace data.
+## Verified in production
 
-## Still requires an explicit release decision
-
-- Review and push the local branch to GitHub.
-- Choose and configure the production host.
-- Add production-only server secrets through the host's secret manager.
-- Recheck Supabase Auth redirect URLs, RLS policies, storage policies, and retention decisions in production.
-- Run final authenticated UAT against the deployed URL.
-- Run a fresh browser smoke test for the activation checklist and its section
-  links on the deployed URL.
+- The application is deployed at `https://pm-agent-v2.vercel.app`.
+- Supabase Site URL and the production auth callback are configured and the live
+  callback route returns safely to the application.
+- RLS is enabled for workflow runs, handoffs, decisions, and assumptions.
+- The documents storage bucket is private.
+- A controlled Discover -> Define -> Align chain completed with three bounded AI
+  runs, citation-backed outputs, approval handoffs, and one saved artifact.
 
 ## Workflow persistence foundation
 
 `20260904040000_workflow_runs.sql` adds workspace-scoped `workflow_runs` and
 `workflow_run_steps` tables for resumable long-chain execution. The tables are
 protected by authenticated workspace-member RLS and store structured JSON state
-without logging provider credentials. Discover, Define, and Align now create a
-run and step record, then persist completed or failed outcomes. The P1 control
-layer now includes human-approved Discover handoffs into Define or Align,
-durable decision records, and a workspace-scoped assumption registry.
-Automatic resume and richer artifact lineage remain follow-up work.
+without logging provider credentials. Discover, Define, and Align create a run
+and step record, then persist completed or failed outcomes.
 
 ## P1 workflow controls
 
 Migration `20260905010000_handoffs_decisions_assumptions.sql` adds
-RLS-protected `workflow_handoffs`, `decision_records`, and `assumptions` tables.
-Discover results expose explicit approval actions; approved handoffs are loaded
-into Define and Align as editable starting context. Decisions and assumptions
-are maintained by the human PM in the Decisions workspace section.
+RLS-protected `workflow_handoffs`, `decision_records`, and `assumptions`
+tables. Discover results expose explicit approval actions; approved handoffs are
+loaded into Define and Align as editable starting context. Decisions and
+assumptions are maintained by the human PM.
 
-The next P1 foundation is also present in code: a constrained PM entry point
-that proposes only approved internal tools, indexed full-text retrieval for
-context/evidence/extractions, and privacy-aware workflow telemetry for model,
-latency, size, and selected tool-chain metrics. It does not store prompts,
-provider payloads, or credentials.
-
-No deployment, GitHub push, account change, payment action, or external data sharing is performed by the local readiness checklist.
+The constrained PM entry point, indexed full-text retrieval, and privacy-aware
+workflow telemetry are also present. Telemetry does not store prompts, provider
+payloads, or credentials.
 
 ## Retention policy
 
-The current beta policy is documented in `docs/RETENTION_POLICY.md`. Data is
-retained by default, deletion is explicit and workspace-scoped, and no
-automatic purge or full-workspace deletion flow is enabled until the retention
-period and exception rules are approved.
+The beta policy is documented in `docs/RETENTION_POLICY.md`. Data is retained
+by default, deletion is explicit and workspace-scoped, and no automatic purge or
+full-workspace deletion flow is enabled until retention periods and exception
+rules are defined.
+
+## Remaining before wider public use
+
+- Complete signup/sign-in, sign-out, and failure-state testing in production.
+- Implement owner-controlled full workspace deletion after the deletion contract
+  and confirmation flow are defined.
+- Decide whether to enable any automatic retention job.
+- Add live evaluation observations; the checked-in evaluation harness remains
+  offline and token-free.
+
+No secrets, passwords, payment actions, or destructive deletions are performed by
+this readiness checklist.
