@@ -20,6 +20,11 @@
 - A controlled Discover -> Define -> Align chain completed with three bounded AI
   runs, citation-backed outputs, approval handoffs, and one saved artifact.
 
+The activation onboarding guide is present on the workspace overview. It
+guides a new PM through context, source material, Discover, and capturing the
+first outcome. Checklist progress is local-only and does not create, update,
+or delete workspace data.
+
 ## Workflow persistence foundation
 
 `20260904040000_workflow_runs.sql` adds workspace-scoped `workflow_runs` and
