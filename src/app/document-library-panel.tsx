@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import type { ChangeEvent } from "react";
 
+import { isLegacyWordContainer } from "@/lib/documents/file-signature";
 import { createClient } from "@/lib/supabase/client";
 import type { Database } from "@/lib/supabase/database.types";
 
@@ -159,6 +160,13 @@ export default function DocumentLibraryPanel() {
 
     if (file.size === 0 || file.size > MAX_FILE_SIZE) {
       setMessage("Files must be larger than 0 bytes and no larger than 6 MB.");
+      setMessageTone("error");
+      return;
+    }
+
+    const fileHeader = new Uint8Array(await file.slice(0, 8).arrayBuffer());
+    if (extension === ".doc" || isLegacyWordContainer(fileHeader)) {
+      setMessage("Legacy .doc files are not supported. Save the file as .docx or PDF and upload it again.");
       setMessageTone("error");
       return;
     }

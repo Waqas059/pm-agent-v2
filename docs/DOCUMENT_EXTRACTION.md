@@ -14,6 +14,10 @@ the binary container signature as well as the filename and MIME type, so a
 legacy `.doc` renamed to `.docx` is rejected safely instead of producing a
 generic parser failure.
 
+The upload control performs the same extension and file-signature check before
+writing to private Storage, so unsupported legacy Word files are rejected
+before an unusable document record is created.
+
 Each successful extraction stores normalized text and line locators containing the line number and exact start/end offsets. The workspace search endpoint searches extracted text alongside context, evidence, and artifacts. No AI provider is called during extraction.
 
 The extraction table is tenant-scoped with authenticated workspace-member RLS. The client receives only extraction metadata after a successful run; extracted text remains behind the authenticated workspace search and database policies.
