@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 
 import { runAlignWorkflow } from "@/lib/workflows/align";
 import { communicationFormats, type CommunicationFormat } from "@/lib/workflows/align-contract";
-import { startWorkflowRun, updateWorkflowRun, updateWorkflowStep } from "@/lib/workflows/runs";
+import { startWorkflowRun, updateWorkflowRun, updateWorkflowStep, WorkflowUsageLimitError } from "@/lib/workflows/runs";
 import { createClient } from "@/lib/supabase/server";
 
 const MAX_REQUEST_LENGTH = 2_000;
@@ -65,6 +65,7 @@ export async function POST(request: Request) {
         await updateWorkflowRun(supabase, runId, { status: "failed", error_message: "The communication workflow failed.", completed_at: failedAt }).catch(() => undefined);
       }
     }
+    if (error instanceof WorkflowUsageLimitError) return errorResponse(error.message, 429);
     const message = error instanceof Error ? error.message : "The communication workflow could not be completed.";
     if (message.startsWith("Supabase is not configured")) return errorResponse("Connect Supabase before running a communication workflow.", 503);
     if (message.startsWith("OpenAI is not configured")) return errorResponse("Configure the server-side OpenAI settings before running a communication workflow.", 503);

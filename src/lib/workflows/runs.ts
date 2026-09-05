@@ -25,6 +25,19 @@ export const workflowStepKeys: readonly WorkflowStepKey[] = [
   "artifact_persist",
 ];
 
+export const SERVER_WORKFLOW_RUN_LIMIT = 10;
+
+export class WorkflowUsageLimitError extends Error {
+  constructor() {
+    super(`The beta workspace limit of ${SERVER_WORKFLOW_RUN_LIMIT} active or successful AI runs has been reached.`);
+    this.name = "WorkflowUsageLimitError";
+  }
+}
+
+export function hasReachedWorkflowRunLimit(runCount: number | null | undefined) {
+  return typeof runCount === "number" && runCount >= SERVER_WORKFLOW_RUN_LIMIT;
+}
+
 export function isWorkflowName(value: string): value is WorkflowName {
   return workflowNames.includes(value as WorkflowName);
 }
@@ -81,6 +94,14 @@ export async function startWorkflowRun(
     userId: string;
   },
 ) {
+  const { count, error: countError } = await supabase
+    .from("workflow_runs")
+    .select("id", { count: "exact", head: true })
+    .eq("workspace_id", input.workspaceId)
+    .in("status", ["running", "completed"]);
+  if (countError) throw countError;
+  if (hasReachedWorkflowRunLimit(count)) throw new WorkflowUsageLimitError();
+
   const run = await createWorkflowRun(supabase, {
     workspace_id: input.workspaceId,
     workflow_name: input.workflowName,
