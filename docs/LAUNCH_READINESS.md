@@ -21,6 +21,10 @@
   runs, citation-backed outputs, approval handoffs, and one saved artifact.
 - The activation onboarding guide is deployed and was verified in an
   authenticated production browser session.
+- A bounded production Discover → Define → Align observation passed schema,
+  citation-grounding, handoff-continuity, and artifact-persistence checks. The
+  three observed latencies were 7,063 ms, 13,980 ms, and 6,670 ms; token and
+  cost totals were unavailable for these older runs and are not inferred.
 
 The activation onboarding guide is present on the workspace overview. It
 guides a new PM through context, source material, Discover, and capturing the
@@ -70,15 +74,18 @@ rules are defined.
 
 ## Remaining before wider public use
 
-- Complete signup/sign-in, sign-out, and failure-state testing in production.
+- Complete a deliberate signup/sign-in/sign-out cycle in production. The
+  invalid-callback failure path has been verified; the active session was not
+  signed out during the remote run.
 - Resolve the Supabase advisor warning for leaked-password protection. The
   control is unavailable on the current Free plan, so this requires either a
   plan decision or an explicit beta-risk acceptance.
 - Implement owner-controlled full workspace deletion after the deletion contract
   and confirmation flow are defined.
 - Decide whether to enable any automatic retention job.
-- Add live evaluation observations; the checked-in evaluation harness remains
-  offline and token-free.
+- Continue collecting live evaluation observations after the token telemetry
+  migration; the initial qualitative observation is recorded above and the
+  checked-in regression harness remains offline and token-free.
 
 No secrets, passwords, payment actions, or destructive deletions are performed by
 this readiness checklist.
