@@ -17,9 +17,25 @@ Environment: `https://pm-agent-v2.vercel.app`
   runs. This is an expected beta guardrail, not an auth or handoff failure.
 - Signup was not repeated because the account is an existing production user;
   a separate disposable signup account is still required for that test.
-- Workspace deletion and post-delete cleanup were not attempted because no
-  disposable workspace was available; the active workspace was protected from
-  destructive testing.
+- Destructive deletion and post-delete recovery are documented in the dedicated
+  UAT section below; no further deletion was attempted after recreation.
+
+## Destructive deletion and recovery UAT — 2026-09-09
+
+- The deletion preview identified `Product workspace` with 42 database records
+  and 2 private files.
+- The exact confirmation `DELETE Product workspace` was submitted by the
+  authenticated owner after explicit operator authorization.
+- The application cleared the session after deletion.
+- Signed-out Search showed no workspace data and the header returned to
+  `Sign in`.
+- A fresh `Product workspace` was recreated through Product context.
+- The recreated workspace deletion preview reported 0 database records and 0
+  private files, confirming a clean recovery workspace.
+- The standalone authenticated smoke harness was invoked but correctly stopped
+  because runtime-only `UAT_SUPABASE_URL`, `UAT_SUPABASE_PUBLISHABLE_KEY`,
+  `UAT_EMAIL`, and `UAT_PASSWORD` variables were not configured. Browser
+  session tokens were not extracted or reused outside the browser.
 
 ## Passed without an AI call
 
@@ -74,13 +90,11 @@ Environment: `https://pm-agent-v2.vercel.app`
 
 ## Remaining before wider public use
 
-- Complete a deliberate signup/sign-in/sign-out cycle in the production
-  browser. The invalid-callback failure path is covered above; the active
-  session was intentionally not signed out during this remote run to avoid
-  disrupting access.
-- Review retention and deletion decisions from the dashboard. Storage privacy
-  and authentication callback configuration have been verified.
-- Decide whether to enable ongoing retention/deletion automation.
+- Complete a deliberate signup cycle with a separate disposable account. The
+  sign-in/sign-out cycle and fresh browser session propagation passed for the
+  existing beta account.
+- Retention and deletion decisions are recorded; automatic retention remains
+  disabled for beta.
 - If the WhatsApp source is needed in the workspace, save/export it as a valid
   `.docx` or PDF and upload it separately.
 
