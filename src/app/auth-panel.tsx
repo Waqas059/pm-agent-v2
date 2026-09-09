@@ -3,11 +3,13 @@
 import { FormEvent, useEffect, useRef, useState } from "react";
 
 import { createClient } from "@/lib/supabase/client";
+import { authenticatedFetch } from "@/lib/supabase/auth-fetch";
 
 type AuthMode = "sign_in" | "sign_up";
 type AuthStatus = "loading" | "signed_out" | "signed_in" | "not_configured";
+type AuthPanelProps = { triggerLabel?: string };
 
-export default function AuthPanel() {
+export default function AuthPanel({ triggerLabel = "Sign in" }: AuthPanelProps) {
   const [status, setStatus] = useState<AuthStatus>("loading");
   const [mode, setMode] = useState<AuthMode>("sign_in");
   const [email, setEmail] = useState("");
@@ -18,6 +20,7 @@ export default function AuthPanel() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [needsConfirmation, setNeedsConfirmation] = useState(false);
   const [authError, setAuthError] = useState(false);
+  const [isBetaAdmin, setIsBetaAdmin] = useState(false);
   const authTriggerRef = useRef<HTMLButtonElement>(null);
   const authDialogRef = useRef<HTMLDivElement>(null);
   const emailInputRef = useRef<HTMLInputElement>(null);
@@ -80,18 +83,22 @@ export default function AuthPanel() {
         if (!isMounted) return;
         setUserEmail(data.session?.user.email ?? null);
         setStatus(data.session ? "signed_in" : "signed_out");
+        if (data.session) void authenticatedFetch("/api/admin/beta/access", { cache: "no-store" }).then(async (response) => response.ok ? await response.json() as { isAdmin?: boolean } : null).then((payload) => { if (isMounted) setIsBetaAdmin(payload?.isAdmin === true); }).catch(() => undefined);
       });
 
       const authState = supabase.auth.onAuthStateChange((_event, session) => {
         if (!isMounted) return;
         setUserEmail(session?.user.email ?? null);
         setStatus(session?.user ? "signed_in" : "signed_out");
+        if (!session?.user) setIsBetaAdmin(false);
+        if (session?.user) void authenticatedFetch("/api/admin/beta/access", { cache: "no-store" }).then(async (response) => response.ok ? await response.json() as { isAdmin?: boolean } : null).then((payload) => { if (isMounted) setIsBetaAdmin(payload?.isAdmin === true); }).catch(() => undefined);
       });
       subscription = authState.data.subscription;
 
       const invalidateSession = () => {
         if (!isMounted) return;
         setUserEmail(null);
+        setIsBetaAdmin(false);
         setStatus("signed_out");
         setIsOpen(false);
       };
@@ -204,6 +211,7 @@ export default function AuthPanel() {
         <button type="button" onClick={handleSignOut} className="min-h-11 rounded-lg border border-[#e3e7ee] bg-white px-3 py-2 text-xs font-semibold text-[#526075] transition-colors hover:border-[#cbd3df] hover:text-[#192235]">
           Sign out
         </button>
+        {isBetaAdmin && <a href="/admin/beta" className="min-h-11 inline-flex items-center rounded-lg border border-[#e3e7ee] bg-white px-3 py-2 text-xs font-semibold text-[#526075] transition-colors hover:border-[#cbd3df] hover:text-[#192235]">Beta admin</a>}
         {authError ? <span className="max-w-64 rounded-lg border border-[#f0d4d0] bg-[#fff9f8] px-3 py-2 text-xs leading-5 text-[#a04c43]" role="alert">Confirmation link could not be completed. Your current session is still active.</span> : null}
         {message && !authError ? <span className="sr-only" role="status">{message}</span> : null}
       </div>
@@ -213,7 +221,7 @@ export default function AuthPanel() {
   return (
     <div className="relative">
       <button ref={authTriggerRef} type="button" onClick={() => setIsOpen((open) => !open)} aria-expanded={isOpen} aria-controls="auth-dialog" className="min-h-11 rounded-lg bg-[#192235] px-3.5 py-2 text-xs font-semibold text-white transition-colors hover:bg-[#303d59]">
-        Sign in
+        {triggerLabel}
       </button>
       {isOpen ? (
         <div ref={authDialogRef} id="auth-dialog" role="dialog" aria-modal="true" aria-labelledby="auth-dialog-title" className="absolute right-0 top-12 z-20 w-[min(22rem,calc(100vw-2.5rem))] rounded-2xl border border-[#e3e7ee] bg-white p-5 shadow-[0_14px_40px_rgba(25,34,53,0.14)]">

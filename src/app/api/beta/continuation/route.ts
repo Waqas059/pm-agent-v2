@@ -13,6 +13,11 @@ export async function POST() {
     const usage = await getBetaUsage(supabase);
     if (!participant || !usage?.registered) return NextResponse.json({ error: "A beta participant record is required." }, { status: 422 });
     const { data, error } = await supabase.from("beta_continuation_requests").insert({ participant_id: participant.id, allowance_at_request: usage.allowance ?? 0, used_at_request: usage.used }).select("id,status").single();
+    if (error?.code === "23505") {
+      const { data: existing, error: existingError } = await supabase.from("beta_continuation_requests").select("id,status").eq("participant_id", participant.id).eq("status", "new").maybeSingle();
+      if (existingError || !existing) throw existingError ?? Error("Existing continuation request could not be loaded.");
+      return NextResponse.json({ request: existing, existing: true }, { status: 200 });
+    }
     if (error) throw error;
     const { data: workspace } = await supabase.from("workspaces").select("id").order("created_at", { ascending: true }).limit(1).maybeSingle();
     if (workspace) void recordProductEvent(supabase, { workspaceId: workspace.id, userId: userData.user.id, eventName: "beta_access_requested", surface: "beta_limit" });

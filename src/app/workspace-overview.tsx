@@ -59,8 +59,11 @@ function personLabel(email: string | undefined, metadata: unknown) {
     const fullName = (metadata as Record<string, unknown>).full_name;
     if (typeof fullName === "string" && fullName.trim()) return fullName.trim();
   }
-  const localPart = email?.split("@")[0]?.replace(/[._-]+/g, " ").trim();
-  return localPart ? localPart.replace(/\b\w/g, (letter) => letter.toUpperCase()) : "there";
+  if (metadata && typeof metadata === "object" && !Array.isArray(metadata)) {
+    const firstName = (metadata as Record<string, unknown>).first_name;
+    if (typeof firstName === "string" && firstName.trim()) return firstName.trim();
+  }
+  return "there";
 }
 
 export default function WorkspaceOverview() {
@@ -153,7 +156,7 @@ export default function WorkspaceOverview() {
 
   return (
     <section className="pm-home" aria-label="Bootstrap PM home workspace">
-      <header className="pm-home-header"><div><p className="pm-eyebrow">WORKSPACE</p><h1>{data?.greeting ?? "Good morning"}, {data?.greetingName ?? "there"}</h1><p className="pm-page-description">Your focused place to move a product question toward a decision.</p></div></header>
+      <header className="pm-home-header"><div><p className="pm-eyebrow">WORKSPACE</p><h1>{data?.greeting ?? "Welcome"}{data?.greetingName ? `, ${data.greetingName}` : ""}</h1><p className="pm-page-description">Your focused place to move a product question toward a decision.</p></div></header>
 
       <section className="pm-ask-surface" aria-labelledby="pm-ask-heading">
         <div><p className="pm-eyebrow">START HERE</p><h2 id="pm-ask-heading">Ask Bootstrap PM</h2></div>

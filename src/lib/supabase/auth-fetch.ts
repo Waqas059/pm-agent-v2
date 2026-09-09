@@ -31,6 +31,19 @@ export async function authenticatedFetch(input: RequestInfo | URL, init: Request
     return fetch(input, { ...init, headers: requestHeaders });
   }
 
+  async function observeBetaUsage(response: Response) {
+    if (typeof window === "undefined") return response;
+    const contentType = response.headers.get("content-type") ?? "";
+    if (!contentType.includes("application/json")) return response;
+    try {
+      const payload = await response.clone().json() as { betaUsage?: unknown };
+      if (payload.betaUsage && typeof payload.betaUsage === "object") window.dispatchEvent(new CustomEvent("pm-agent:beta-usage", { detail: payload.betaUsage }));
+    } catch {
+      // Non-JSON or incomplete responses do not affect the original request.
+    }
+    return response;
+  }
+
   if (!hasExplicitAuthorization) {
     const { data } = await supabase.auth.getSession();
     if (data.session?.access_token) {
@@ -39,14 +52,14 @@ export async function authenticatedFetch(input: RequestInfo | URL, init: Request
   }
 
   const response = await requestWithSession(headers.get("Authorization")?.replace(/^Bearer\s+/i, ""));
-  if (hasExplicitAuthorization || response.status !== 401) return response;
+  if (hasExplicitAuthorization || response.status !== 401) return observeBetaUsage(response);
 
   const { data: refreshed } = await supabase.auth.refreshSession();
   if (!refreshed.session?.access_token) {
     await clearInvalidSession(supabase);
-    return response;
+    return observeBetaUsage(response);
   }
   const retriedResponse = await requestWithSession(refreshed.session.access_token);
   if (retriedResponse.status === 401) await clearInvalidSession(supabase);
-  return retriedResponse;
+  return observeBetaUsage(retriedResponse);
 }

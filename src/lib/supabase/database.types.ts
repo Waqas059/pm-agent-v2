@@ -690,7 +690,12 @@ export type Database = {
       };
     };
     Views: Record<string, never>;
-    Functions: Record<string, never>;
+    Functions: {
+      admin_grant_beta_continuation: {
+        Args: { request_id: string; custom_allowance?: number | null; grant_amount?: number };
+        Returns: { participant_id: string; request_allowance: number }[];
+      };
+    };
     Enums: {
       document_status: "uploaded" | "processing" | "ready" | "failed";
       artifact_kind: "product_brief" | "communication_message";

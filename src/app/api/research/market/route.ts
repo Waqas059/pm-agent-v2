@@ -3,11 +3,11 @@ import { NextResponse } from "next/server";
 import { runMarketResearch } from "@/lib/research/market";
 import { recordProductEvent } from "@/lib/analytics";
 import { createClient, getAuthenticatedUser } from "@/lib/supabase/server";
-import { BetaUsageLimitError, finalizeBetaRequest, reserveBetaRequest } from "@/lib/beta/server";
+import { BetaUsageLimitError, finalizeBetaRequest, getBetaUsage, reserveBetaRequest } from "@/lib/beta/server";
 
 export const runtime = "nodejs";
 
-function errorResponse(message: string, status: number) { return NextResponse.json({ error: message }, { status }); }
+function errorResponse(message: string, status: number, payload: Record<string, unknown> = {}) { return NextResponse.json({ error: message, ...payload }, { status }); }
 
 export async function POST(request: Request) {
   const startedAt = Date.now();
@@ -31,12 +31,13 @@ export async function POST(request: Request) {
     const result = await runMarketResearch(question);
     void recordProductEvent(supabase, { workspaceId: workspace.id, userId: userData.user.id, eventName: "market_research_completed", surface: "market_research", properties: { sourceCount: result.output.sources.length, findingCount: result.output.findings.length, latencyMs: Date.now() - startedAt } });
     await finalizeBetaRequest(supabase, betaReservationId, true);
-    return NextResponse.json({ result, evidenceType: "external_web_evidence", persisted: false });
+    const betaUsage = await getBetaUsage(supabase);
+    return NextResponse.json({ result, evidenceType: "external_web_evidence", persisted: false, betaUsage });
   } catch (error) {
     if (betaReservationId && analyticsContext) await finalizeBetaRequest(analyticsContext.supabase, betaReservationId, false).catch(() => undefined);
     if (analyticsContext) void recordProductEvent(analyticsContext.supabase, { workspaceId: analyticsContext.workspaceId, userId: analyticsContext.userId, eventName: "market_research_failed", surface: "market_research", properties: { latencyMs: Date.now() - startedAt } });
     const message = error instanceof Error ? error.message : "Market research could not be completed.";
-    if (error instanceof BetaUsageLimitError) return errorResponse(error.message, 429);
+    if (error instanceof BetaUsageLimitError) return errorResponse(error.message, 429, { betaUsage: analyticsContext ? await getBetaUsage(analyticsContext.supabase) : null });
     if (message.startsWith("OpenAI is not configured")) return errorResponse("Configure the server-side OpenAI settings before running market research.", 503);
     if (message.includes("no verified external sources") || message.includes("unverified URL")) return errorResponse("The external research result could not be verified against retrieved source citations. Try a narrower question.", 502);
     return errorResponse("Market research could not be completed. Try a narrower question or retry.", 502);

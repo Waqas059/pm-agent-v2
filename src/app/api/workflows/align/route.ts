@@ -2,13 +2,13 @@ import { NextResponse } from "next/server";
 
 import { recordProductEvent } from "@/lib/analytics";
 import { runAlignWorkflow } from "@/lib/workflows/align";
-import { BetaUsageLimitError, finalizeBetaRequest, reserveBetaRequest } from "@/lib/beta/server";
+import { BetaUsageLimitError, finalizeBetaRequest, getBetaUsage, reserveBetaRequest } from "@/lib/beta/server";
 import { communicationFormats, type CommunicationFormat } from "@/lib/workflows/align-contract";
 import { startWorkflowRun, updateWorkflowRun, updateWorkflowStep, WorkflowUsageLimitError } from "@/lib/workflows/runs";
 import { createClient, getAuthenticatedUser } from "@/lib/supabase/server";
 
 const MAX_REQUEST_LENGTH = 2_000;
-function errorResponse(message: string, status: number) { return NextResponse.json({ error: message }, { status }); }
+function errorResponse(message: string, status: number, payload: Record<string, unknown> = {}) { return NextResponse.json({ error: message, ...payload }, { status }); }
 
 export async function POST(request: Request) {
   let body: unknown;
@@ -48,7 +48,8 @@ export async function POST(request: Request) {
       return citationKey ? [{ ...item, citationKey }] : [];
     });
     if (evidenceItems.length === 0) return errorResponse("Add at least one citation-backed evidence item before running communication.", 422);
-    betaReservationId = (await reserveBetaRequest(supabase, "align"))?.id ?? null;
+    const betaReservation = await reserveBetaRequest(supabase, "align");
+    betaReservationId = betaReservation?.id ?? null;
     const workflowStartedAt = Date.now();
     const started = await startWorkflowRun(supabase, {
       workspaceId: workspace.id,
@@ -56,6 +57,7 @@ export async function POST(request: Request) {
       stepKey: "align",
       runInput: { format: format as CommunicationFormat, request: requestValue.trim() },
       userId: userData.user.id,
+      usageLimit: betaReservation?.registered ? null : undefined,
     });
     runId = started.run.id;
     stepId = started.step.id;
@@ -66,7 +68,8 @@ export async function POST(request: Request) {
     await updateWorkflowRun(supabase, runId, { status: "completed", output: result.output, completed_at: completedAt, provider: "openai_responses", model: result.model, duration_ms: Date.now() - workflowStartedAt, input_chars: requestValue.trim().length, output_chars: JSON.stringify(result.output).length, input_tokens: result.usage?.inputTokens ?? null, output_tokens: result.usage?.outputTokens ?? null, total_tokens: result.usage?.totalTokens ?? null, tool_names: ["retrieve_context", "retrieve_evidence", "align_communicate"] });
     void recordProductEvent(supabase, { workspaceId: workspace.id, userId: userData.user.id, eventName: "workflow_completed", surface: "align", workflowName: "align_communicate", properties: { duration_ms: Date.now() - workflowStartedAt } });
     await finalizeBetaRequest(supabase, betaReservationId, true);
-    return NextResponse.json({ result: { ...result, id: runId } });
+    const betaUsage = await getBetaUsage(supabase);
+    return NextResponse.json({ result: { ...result, id: runId }, betaUsage });
   } catch (error) {
     if (betaReservationId) {
       const betaClient = await createClient().catch(() => null);
@@ -81,7 +84,11 @@ export async function POST(request: Request) {
         if (workspaceId && userId) void recordProductEvent(supabase, { workspaceId, userId, eventName: "workflow_failed", surface: "align", workflowName: "align_communicate" });
       }
     }
-    if (error instanceof WorkflowUsageLimitError || error instanceof BetaUsageLimitError) return errorResponse(error.message, 429);
+    if (error instanceof BetaUsageLimitError) {
+      const usageClient = await createClient().catch(() => null);
+      return errorResponse(error.message, 429, { betaUsage: usageClient ? await getBetaUsage(usageClient) : null });
+    }
+    if (error instanceof WorkflowUsageLimitError) return errorResponse(error.message, 429);
     const message = error instanceof Error ? error.message : "The communication workflow could not be completed.";
     if (message.startsWith("Supabase is not configured")) return errorResponse("Connect Supabase before running a communication workflow.", 503);
     if (message.startsWith("OpenAI is not configured")) return errorResponse("Configure the server-side OpenAI settings before running a communication workflow.", 503);

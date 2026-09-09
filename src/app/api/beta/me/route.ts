@@ -17,13 +17,16 @@ export async function GET(request: Request) {
     if (code) {
       await (supabase as unknown as { rpc: (name: string, args: Record<string, unknown>) => Promise<unknown> }).rpc("record_my_beta_country", { detected_code: code, detected_name: countryName(code) });
     }
-    const displayName = participant?.preferred_name || participant?.full_name || data.user.user_metadata?.full_name || data.user.email?.split("@")[0] || "there";
+    const metadata = data.user.user_metadata && typeof data.user.user_metadata === "object" ? data.user.user_metadata as Record<string, unknown> : {};
+    const profileName = typeof metadata.full_name === "string" && metadata.full_name.trim() ? metadata.full_name.trim() : typeof metadata.first_name === "string" && metadata.first_name.trim() ? metadata.first_name.trim() : null;
+    const displayName = participant?.preferred_name || participant?.full_name || profileName;
     return NextResponse.json({
       accessMode: betaConfig.accessMode,
       participant: participant ? { ...participant, country_code: code || participant.country_code, country_name: countryName(code || participant.country_code) } : null,
       greeting: greetingForCountry(code || participant?.country_code || null),
       displayName,
       usage: usage ? { used: usage.used, allowance: usage.allowance, remaining: usage.remaining, registered: usage.registered } : { used: 0, allowance: null, remaining: null, registered: false },
+      betaUsage: usage ? { used: usage.used, allowance: usage.allowance, remaining: usage.remaining, registered: usage.registered } : null,
       contact: betaConfig.contact,
     });
   } catch {

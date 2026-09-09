@@ -24,10 +24,11 @@ import ActivationOnboardingPanel from "./activation-onboarding-panel";
 import PmEntryPanel from "./pm-entry-panel";
 import WorkspaceOverview from "./workspace-overview";
 import ProductWorkScreen from "./product-work-screen";
-import BetaRegistrationPanel from "./beta-registration-panel";
-import BetaAdminLink from "./beta-admin-link";
 import UiIcon, { type IconName } from "./ui-icons";
 import { PageHeader } from "./workspace-primitives";
+import PublicLandingPage from "./public-landing-page";
+import { createClient } from "@/lib/supabase/client";
+import BetaAllowanceController from "./beta-allowance-controller";
 
 type ViewDefinition = readonly [id: string, label: string, group: string, icon: IconName];
 
@@ -72,7 +73,7 @@ function isProductWorkView(view: string): view is ProductWorkView {
   return productWorkViews.includes(view as ProductWorkView);
 }
 
-export default function Home() {
+function WorkspaceShell() {
   const [view, setView] = useState("overview");
   const [focusTarget, setFocusTarget] = useState<"discover-question" | null>(null);
   const [menu, setMenu] = useState(false);
@@ -136,6 +137,7 @@ export default function Home() {
 
   return (
     <div className="kit">
+      <BetaAllowanceController />
       <a className="kit-skip" href="#kit-main" onClick={(event) => { event.preventDefault(); document.getElementById("kit-main")?.focus(); }}>Skip to content</a>
 
       <aside className={`kit-sidebar ${menu ? "is-open" : ""}`} id="kit-navigation" aria-label="Primary workspace navigation">
@@ -186,10 +188,31 @@ export default function Home() {
             <section className="kit-content" hidden={view !== id} key={id} aria-label={views.find((item) => item[0] === id)?.[1]}><Panel /></section>
           ))}
           {view === "activity" && <WorkspaceOverview />}
-          {view === "settings" && <section className="pm-page pm-settings-page"><PageHeader eyebrow="WORKSPACE SETTINGS" title="Settings" description="Manage account access, workspace controls, and product operations." /><div className="pm-settings-account"><div><p className="pm-eyebrow">ACCOUNT</p><h2>Authentication and access</h2><p>Use the account control in the header to sign in or sign out. Workspace data remains protected by Supabase.</p></div><UiIcon name="user" size={22} /></div><BetaRegistrationPanel /><div className="pm-settings-links"><a href="#privacy"><span><UiIcon name="shield" size={17} /></span><strong>Privacy and deletion</strong><small>Review workspace privacy and deletion controls.</small><UiIcon name="chevron-right" size={15} /></a><a href="#integrations"><span><UiIcon name="plug" size={17} /></span><strong>Integrations</strong><small>Review connected product systems and future connections.</small><UiIcon name="chevron-right" size={15} /></a><a href="#usage"><span><UiIcon name="gauge" size={17} /></span><strong>Usage</strong><small>Inspect current workspace usage instrumentation.</small><UiIcon name="chevron-right" size={15} /></a><a href="#observability"><span><UiIcon name="activity" size={17} /></span><strong>AI performance</strong><small>Review operational AI metadata and run health.</small><UiIcon name="chevron-right" size={15} /></a><a href="#feedback"><span><UiIcon name="message" size={17} /></span><strong>Feedback</strong><small>Share what would make this workspace more useful.</small><UiIcon name="chevron-right" size={15} /></a><BetaAdminLink /></div></section>}
+          {view === "settings" && <section className="pm-page pm-settings-page"><PageHeader eyebrow="WORKSPACE SETTINGS" title="Settings" description="Manage account access, workspace controls, and product operations." /><div className="pm-settings-account"><div><p className="pm-eyebrow">ACCOUNT</p><h2>Authentication and access</h2><p>Use the account control in the header to sign in or sign out. Workspace data remains protected by Supabase.</p></div><UiIcon name="user" size={22} /></div><div className="pm-settings-links"><a href="#privacy"><span><UiIcon name="shield" size={17} /></span><strong>Privacy and deletion</strong><small>Review workspace privacy and deletion controls.</small><UiIcon name="chevron-right" size={15} /></a><a href="#integrations"><span><UiIcon name="plug" size={17} /></span><strong>Integrations</strong><small>Review connected product systems and future connections.</small><UiIcon name="chevron-right" size={15} /></a><a href="#usage"><span><UiIcon name="gauge" size={17} /></span><strong>Usage</strong><small>Inspect current workspace usage instrumentation.</small><UiIcon name="chevron-right" size={15} /></a><a href="#observability"><span><UiIcon name="activity" size={17} /></span><strong>AI performance</strong><small>Review operational AI metadata and run health.</small><UiIcon name="chevron-right" size={15} /></a><a href="#feedback"><span><UiIcon name="message" size={17} /></span><strong>Feedback</strong><small>Share what would make this workspace more useful.</small><UiIcon name="chevron-right" size={15} /></a></div></section>}
           <footer className="kit-footer"><span>PM Kit</span><span>Context → Evidence → Decision → Artifact → Memory</span></footer>
         </main>
       </div>
     </div>
   );
+}
+
+export default function Home() {
+  const [authReady, setAuthReady] = useState(false);
+  const [signedIn, setSignedIn] = useState(false);
+
+  useEffect(() => {
+    let active = true;
+    try {
+      const supabase = createClient();
+      void supabase.auth.getSession().then(({ data }) => { if (active) { setSignedIn(Boolean(data.session)); setAuthReady(true); } });
+      const { data: subscription } = supabase.auth.onAuthStateChange((_event, session) => { if (active) { setSignedIn(Boolean(session)); setAuthReady(true); } });
+      return () => { active = false; subscription.subscription.unsubscribe(); };
+    } catch {
+      window.setTimeout(() => setAuthReady(true), 0);
+      return () => { active = false; };
+    }
+  }, []);
+
+  if (!authReady) return <main className="public-landing-loading" aria-busy="true"><span className="pm-loading-line pm-loading-line-wide" /><span className="pm-loading-line" /><p>Loading Bootstrap PM…</p></main>;
+  return signedIn ? <WorkspaceShell /> : <PublicLandingPage />;
 }

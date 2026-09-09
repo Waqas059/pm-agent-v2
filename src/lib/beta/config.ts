@@ -9,10 +9,10 @@ export const betaConfig = {
   defaultAllowance: 10,
   adminEmails: configuredAdminEmails.length ? configuredAdminEmails : ["waxas.arshad@gmail.com"],
   contact: {
-    name: process.env.BETA_CONTACT_NAME?.trim() || "Bootstrap PM beta team",
-    phone: process.env.BETA_CONTACT_PHONE?.trim() || "",
-    email: process.env.BETA_CONTACT_EMAIL?.trim() || "",
-    handle: process.env.BETA_CONTACT_HANDLE?.trim() || "",
+    name: process.env.BETA_CONTACT_NAME?.trim() || "Waqas Arshad",
+    phone: process.env.BETA_CONTACT_PHONE?.trim() || "+92345809536",
+    email: process.env.BETA_CONTACT_EMAIL?.trim() || "waxas.arshad@gmail.com",
+    handle: process.env.BETA_CONTACT_HANDLE?.trim() || "waxas.arshad",
   },
 };
 

@@ -92,6 +92,7 @@ export async function startWorkflowRun(
     stepKey: WorkflowStepKey;
     runInput: Database["public"]["Tables"]["workflow_runs"]["Insert"]["input"];
     userId: string;
+    usageLimit?: number | null;
   },
 ) {
   const { count, error: countError } = await supabase
@@ -100,7 +101,7 @@ export async function startWorkflowRun(
     .eq("workspace_id", input.workspaceId)
     .in("status", ["running", "completed"]);
   if (countError) throw countError;
-  if (hasReachedWorkflowRunLimit(count)) throw new WorkflowUsageLimitError();
+  if (input.usageLimit !== null && hasReachedWorkflowRunLimit(input.usageLimit ?? count)) throw new WorkflowUsageLimitError();
 
   const run = await createWorkflowRun(supabase, {
     workspace_id: input.workspaceId,
