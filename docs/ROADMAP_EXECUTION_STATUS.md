@@ -40,7 +40,11 @@ Status: substantially implemented; final external verification remains.
 - [ ] Disposable-workspace deletion UAT, including post-delete sign-out
 - [x] Record a beta-risk mitigation for Supabase leaked-password protection
 - [ ] Resolve the leaked-password protection limitation before wider public use
-- [ ] Final deployed production smoke test after the next release
+- [x] Final deployed production smoke test after release `105f0b653dd0`
+
+The post-release production smoke passed against `https://pm-agent-v2.vercel.app`
+after release `105f0b653dd0`: health marker, public shell, protected API denial,
+and invalid callback safety all passed.
 
 Estimated completion: 85–90%.
 
