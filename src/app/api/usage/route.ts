@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { SERVER_WORKFLOW_RUN_LIMIT } from "@/lib/workflows/runs";
+import { getBetaUsage } from "@/lib/beta/server";
 import { createClient, getAuthenticatedUser } from "@/lib/supabase/server";
 
 function errorResponse(message: string, status: number) {
@@ -22,6 +23,11 @@ export async function GET() {
     if (workspaceError) throw workspaceError;
     if (!workspace) return errorResponse("Create a product workspace before reading usage.", 422);
 
+    const betaUsage = await getBetaUsage(supabase);
+    if (betaUsage?.registered) {
+      return NextResponse.json({ used: betaUsage.used, limit: betaUsage.allowance ?? SERVER_WORKFLOW_RUN_LIMIT, registered: true, remaining: betaUsage.remaining });
+    }
+
     const { count, error: countError } = await supabase
       .from("workflow_runs")
       .select("id", { count: "exact", head: true })
@@ -29,7 +35,7 @@ export async function GET() {
       .in("status", ["running", "completed"]);
     if (countError) throw countError;
 
-    return NextResponse.json({ used: count ?? 0, limit: SERVER_WORKFLOW_RUN_LIMIT });
+    return NextResponse.json({ used: count ?? 0, limit: SERVER_WORKFLOW_RUN_LIMIT, registered: false, remaining: Math.max(SERVER_WORKFLOW_RUN_LIMIT - (count ?? 0), 0) });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Workspace usage could not be read.";
     if (message.startsWith("Supabase is not configured")) return errorResponse("Connect Supabase before reading workspace usage.", 503);

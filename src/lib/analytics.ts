@@ -17,7 +17,10 @@ export type ProductEventName =
   | "market_research_completed"
   | "market_research_failed"
   | "onboarding_started"
-  | "onboarding_completed";
+  | "onboarding_completed"
+  | "beta_feedback_submitted"
+  | "beta_access_requested"
+  | "beta_contact_clicked";
 
 type SupabaseClient = Awaited<ReturnType<typeof import("./supabase/server").createClient>>;
 

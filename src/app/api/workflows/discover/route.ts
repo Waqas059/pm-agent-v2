@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 
 import { recordProductEvent } from "@/lib/analytics";
 import { runDiscoverWorkflow } from "@/lib/workflows/discover";
+import { BetaUsageLimitError, finalizeBetaRequest, reserveBetaRequest } from "@/lib/beta/server";
 import { startWorkflowRun, updateWorkflowRun, updateWorkflowStep, WorkflowUsageLimitError } from "@/lib/workflows/runs";
 import { createClient, getAuthenticatedUser } from "@/lib/supabase/server";
 
@@ -17,6 +18,7 @@ export async function POST(request: Request) {
   let stepId: string | null = null;
   let workspaceId: string | null = null;
   let userId: string | null = null;
+  let betaReservationId: string | null = null;
 
   try {
     body = await request.json();
@@ -80,6 +82,7 @@ export async function POST(request: Request) {
       return errorResponse("Add at least one citation-backed evidence item before running discovery.", 422);
     }
 
+    betaReservationId = (await reserveBetaRequest(supabase, "discover"))?.id ?? null;
     const workflowStartedAt = Date.now();
     const started = await startWorkflowRun(supabase, {
       workspaceId: workspace.id,
@@ -101,9 +104,14 @@ export async function POST(request: Request) {
     await updateWorkflowStep(supabase, stepId, { status: "completed", output: result.output, completed_at: completedAt });
     await updateWorkflowRun(supabase, runId, { status: "completed", output: result.output, completed_at: completedAt, provider: "openai_responses", model: result.model, duration_ms: Date.now() - workflowStartedAt, input_chars: questionValue.trim().length, output_chars: JSON.stringify(result.output).length, input_tokens: result.usage?.inputTokens ?? null, output_tokens: result.usage?.outputTokens ?? null, total_tokens: result.usage?.totalTokens ?? null, tool_names: ["retrieve_context", "retrieve_evidence", "discover_synthesize"] });
     void recordProductEvent(supabase, { workspaceId: workspace.id, userId: userData.user.id, eventName: "workflow_completed", surface: "discover", workflowName: "discover_synthesize", properties: { duration_ms: Date.now() - workflowStartedAt } });
+    await finalizeBetaRequest(supabase, betaReservationId, true);
 
     return NextResponse.json({ result: { ...result, id: runId } });
   } catch (error) {
+    if (betaReservationId) {
+      const betaClient = await createClient().catch(() => null);
+      if (betaClient) await finalizeBetaRequest(betaClient, betaReservationId, false).catch(() => undefined);
+    }
     if (runId) {
       const supabase = await createClient().catch(() => null);
       if (supabase) {
@@ -113,7 +121,7 @@ export async function POST(request: Request) {
         if (workspaceId && userId) void recordProductEvent(supabase, { workspaceId, userId, eventName: "workflow_failed", surface: "discover", workflowName: "discover_synthesize" });
       }
     }
-    if (error instanceof WorkflowUsageLimitError) return errorResponse(error.message, 429);
+    if (error instanceof WorkflowUsageLimitError || error instanceof BetaUsageLimitError) return errorResponse(error.message, 429);
     const message = error instanceof Error ? error.message : "The discovery workflow could not be completed.";
     if (message.startsWith("Supabase is not configured")) {
       return errorResponse("Connect Supabase before running a discovery workflow.", 503);

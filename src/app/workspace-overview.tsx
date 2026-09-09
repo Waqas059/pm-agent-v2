@@ -12,6 +12,7 @@ type WorkflowRun = { id: string; workflow_name: string; status: string; input: u
 type Snapshot = {
   name: string;
   greetingName: string;
+  greeting: string;
   context: number;
   documents: number;
   evidence: number;
@@ -99,6 +100,8 @@ export default function WorkspaceOverview() {
           return;
         }
         void authenticatedFetch("/api/analytics", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ eventName: "workspace_viewed", surface: "home" }) }).catch(() => undefined);
+        const betaResponse = await authenticatedFetch(`/api/beta/me?locale=${encodeURIComponent(window.navigator.language)}`, { cache: "no-store" }).catch(() => null);
+        const betaPayload = betaResponse?.ok ? await betaResponse.json() as { greeting?: string; displayName?: string } : null;
 
         const [context, documents, evidence, decisions, assumptions, artifacts, runs, evidenceItems] = await Promise.all([
           db.from("context_items").select("id", { count: "exact", head: true }).eq("workspace_id", workspace.id),
@@ -115,7 +118,8 @@ export default function WorkspaceOverview() {
         if (active) {
           setData({
             name: workspace.name,
-            greetingName: personLabel(auth.user.email, auth.user.user_metadata),
+            greetingName: betaPayload?.displayName || personLabel(auth.user.email, auth.user.user_metadata),
+            greeting: betaPayload?.greeting || "Welcome",
             context: context.count ?? 0,
             documents: documents.count ?? 0,
             evidence: evidence.count ?? 0,
@@ -149,7 +153,7 @@ export default function WorkspaceOverview() {
 
   return (
     <section className="pm-home" aria-label="Bootstrap PM home workspace">
-      <header className="pm-home-header"><div><p className="pm-eyebrow">WORKSPACE</p><h1>Good morning, {data?.greetingName ?? "there"}</h1><p className="pm-page-description">Your focused place to move a product question toward a decision.</p></div></header>
+      <header className="pm-home-header"><div><p className="pm-eyebrow">WORKSPACE</p><h1>{data?.greeting ?? "Good morning"}, {data?.greetingName ?? "there"}</h1><p className="pm-page-description">Your focused place to move a product question toward a decision.</p></div></header>
 
       <section className="pm-ask-surface" aria-labelledby="pm-ask-heading">
         <div><p className="pm-eyebrow">START HERE</p><h2 id="pm-ask-heading">Ask Bootstrap PM</h2></div>

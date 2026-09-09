@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { runMarketResearch } from "@/lib/research/market";
 import { recordProductEvent } from "@/lib/analytics";
 import { createClient, getAuthenticatedUser } from "@/lib/supabase/server";
+import { BetaUsageLimitError, finalizeBetaRequest, reserveBetaRequest } from "@/lib/beta/server";
 
 export const runtime = "nodejs";
 
@@ -11,6 +12,7 @@ function errorResponse(message: string, status: number) { return NextResponse.js
 export async function POST(request: Request) {
   const startedAt = Date.now();
   let analyticsContext: { supabase: Awaited<ReturnType<typeof createClient>>; workspaceId: string; userId: string } | null = null;
+  let betaReservationId: string | null = null;
   let body: unknown;
   try { body = await request.json(); } catch { return errorResponse("Provide a valid JSON request.", 400); }
   if (typeof body !== "object" || body === null || Array.isArray(body)) return errorResponse("A market research question is required.", 400);
@@ -25,12 +27,16 @@ export async function POST(request: Request) {
     if (workspaceError) throw workspaceError;
     if (!workspace) return errorResponse("Create a product workspace before running market research.", 422);
     analyticsContext = { supabase, workspaceId: workspace.id, userId: userData.user.id };
+    betaReservationId = (await reserveBetaRequest(supabase, "market_research"))?.id ?? null;
     const result = await runMarketResearch(question);
     void recordProductEvent(supabase, { workspaceId: workspace.id, userId: userData.user.id, eventName: "market_research_completed", surface: "market_research", properties: { sourceCount: result.output.sources.length, findingCount: result.output.findings.length, latencyMs: Date.now() - startedAt } });
+    await finalizeBetaRequest(supabase, betaReservationId, true);
     return NextResponse.json({ result, evidenceType: "external_web_evidence", persisted: false });
   } catch (error) {
+    if (betaReservationId && analyticsContext) await finalizeBetaRequest(analyticsContext.supabase, betaReservationId, false).catch(() => undefined);
     if (analyticsContext) void recordProductEvent(analyticsContext.supabase, { workspaceId: analyticsContext.workspaceId, userId: analyticsContext.userId, eventName: "market_research_failed", surface: "market_research", properties: { latencyMs: Date.now() - startedAt } });
     const message = error instanceof Error ? error.message : "Market research could not be completed.";
+    if (error instanceof BetaUsageLimitError) return errorResponse(error.message, 429);
     if (message.startsWith("OpenAI is not configured")) return errorResponse("Configure the server-side OpenAI settings before running market research.", 503);
     if (message.includes("no verified external sources") || message.includes("unverified URL")) return errorResponse("The external research result could not be verified against retrieved source citations. Try a narrower question.", 502);
     return errorResponse("Market research could not be completed. Try a narrower question or retry.", 502);

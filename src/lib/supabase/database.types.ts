@@ -327,7 +327,7 @@ export type Database = {
           id: string;
           workspace_id: string;
           user_id: string;
-          event_name: "workspace_viewed" | "workflow_started" | "workflow_completed" | "workflow_failed" | "artifact_created" | "artifact_version_created" | "artifact_exported" | "evidence_citation_inspected" | "decision_created" | "assumption_created" | "document_uploaded" | "document_extraction_completed" | "document_extraction_failed" | "market_research_completed" | "market_research_failed" | "onboarding_started" | "onboarding_completed";
+          event_name: "workspace_viewed" | "workflow_started" | "workflow_completed" | "workflow_failed" | "artifact_created" | "artifact_version_created" | "artifact_exported" | "evidence_citation_inspected" | "decision_created" | "assumption_created" | "document_uploaded" | "document_extraction_completed" | "document_extraction_failed" | "market_research_completed" | "market_research_failed" | "onboarding_started" | "onboarding_completed" | "beta_feedback_submitted" | "beta_access_requested" | "beta_contact_clicked";
           surface: string;
           workflow_name: string | null;
           properties: Json;
@@ -337,7 +337,7 @@ export type Database = {
           id?: string;
           workspace_id: string;
           user_id: string;
-          event_name: "workspace_viewed" | "workflow_started" | "workflow_completed" | "workflow_failed" | "artifact_created" | "artifact_version_created" | "artifact_exported" | "evidence_citation_inspected" | "decision_created" | "assumption_created" | "document_uploaded" | "document_extraction_completed" | "document_extraction_failed" | "market_research_completed" | "market_research_failed" | "onboarding_started" | "onboarding_completed";
+          event_name: "workspace_viewed" | "workflow_started" | "workflow_completed" | "workflow_failed" | "artifact_created" | "artifact_version_created" | "artifact_exported" | "evidence_citation_inspected" | "decision_created" | "assumption_created" | "document_uploaded" | "document_extraction_completed" | "document_extraction_failed" | "market_research_completed" | "market_research_failed" | "onboarding_started" | "onboarding_completed" | "beta_feedback_submitted" | "beta_access_requested" | "beta_contact_clicked";
           surface: string;
           workflow_name?: string | null;
           properties?: Json;
@@ -347,7 +347,7 @@ export type Database = {
           id?: string;
           workspace_id?: string;
           user_id?: string;
-          event_name?: "workspace_viewed" | "workflow_started" | "workflow_completed" | "workflow_failed" | "artifact_created" | "artifact_version_created" | "artifact_exported" | "evidence_citation_inspected" | "decision_created" | "assumption_created" | "document_uploaded" | "document_extraction_completed" | "document_extraction_failed" | "onboarding_started" | "onboarding_completed";
+          event_name?: "workspace_viewed" | "workflow_started" | "workflow_completed" | "workflow_failed" | "artifact_created" | "artifact_version_created" | "artifact_exported" | "evidence_citation_inspected" | "decision_created" | "assumption_created" | "document_uploaded" | "document_extraction_completed" | "document_extraction_failed" | "onboarding_started" | "onboarding_completed" | "beta_feedback_submitted" | "beta_access_requested" | "beta_contact_clicked";
           surface?: string;
           workflow_name?: string | null;
           properties?: Json;
@@ -626,6 +626,30 @@ export type Database = {
           created_at?: string;
           updated_at?: string;
         };
+        Relationships: [];
+      };
+      beta_participants: {
+        Row: { id: string; full_name: string; preferred_name: string | null; email: string; status: "invited" | "active" | "paused" | "declined"; request_allowance: number; country_code: string | null; country_name: string | null; country_first_detected_at: string | null; country_last_detected_at: string | null; auth_user_id: string | null; created_at: string; updated_at: string };
+        Insert: { id?: string; full_name: string; preferred_name?: string | null; email: string; status?: "invited" | "active" | "paused" | "declined"; request_allowance?: number; country_code?: string | null; country_name?: string | null; country_first_detected_at?: string | null; country_last_detected_at?: string | null; auth_user_id?: string | null; created_at?: string; updated_at?: string };
+        Update: { id?: string; full_name?: string; preferred_name?: string | null; email?: string; status?: "invited" | "active" | "paused" | "declined"; request_allowance?: number; country_code?: string | null; country_name?: string | null; country_first_detected_at?: string | null; country_last_detected_at?: string | null; auth_user_id?: string | null; created_at?: string; updated_at?: string };
+        Relationships: [];
+      };
+      beta_request_reservations: {
+        Row: { id: string; participant_id: string; operation: "discover" | "define" | "align" | "pm_assistant" | "ai_artifact" | "market_research"; request_key: string; status: "reserved" | "succeeded" | "released"; created_at: string; finalized_at: string | null };
+        Insert: { id?: string; participant_id: string; operation: "discover" | "define" | "align" | "pm_assistant" | "ai_artifact" | "market_research"; request_key: string; status?: "reserved" | "succeeded" | "released"; created_at?: string; finalized_at?: string | null };
+        Update: { id?: string; participant_id?: string; operation?: "discover" | "define" | "align" | "pm_assistant" | "ai_artifact" | "market_research"; request_key?: string; status?: "reserved" | "succeeded" | "released"; created_at?: string; finalized_at?: string | null };
+        Relationships: [];
+      };
+      beta_continuation_requests: {
+        Row: { id: string; participant_id: string; requested_at: string; status: "new" | "approved" | "declined"; allowance_at_request: number; used_at_request: number; reviewed_at: string | null; admin_note: string | null };
+        Insert: { id?: string; participant_id: string; requested_at?: string; status?: "new" | "approved" | "declined"; allowance_at_request: number; used_at_request: number; reviewed_at?: string | null; admin_note?: string | null };
+        Update: { id?: string; participant_id?: string; requested_at?: string; status?: "new" | "approved" | "declined"; allowance_at_request?: number; used_at_request?: number; reviewed_at?: string | null; admin_note?: string | null };
+        Relationships: [];
+      };
+      beta_feedback: {
+        Row: { id: string; participant_id: string; usefulness_rating: number; would_use_again: boolean; feedback_text: string; wants_continued_access: boolean; status: "new" | "reviewed" | "follow_up"; created_at: string };
+        Insert: { id?: string; participant_id: string; usefulness_rating: number; would_use_again: boolean; feedback_text?: string; wants_continued_access?: boolean; status?: "new" | "reviewed" | "follow_up"; created_at?: string };
+        Update: { id?: string; participant_id?: string; usefulness_rating?: number; would_use_again?: boolean; feedback_text?: string; wants_continued_access?: boolean; status?: "new" | "reviewed" | "follow_up"; created_at?: string };
         Relationships: [];
       };
       workspace_deletion_operations: {
