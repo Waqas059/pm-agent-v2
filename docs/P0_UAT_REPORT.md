@@ -1,7 +1,25 @@
 # P0 production UAT report
 
-Date: 2026-09-05
+Date: 2026-09-09
 Environment: `https://pm-agent-v2.vercel.app`
+
+## Latest live browser UAT — 2026-09-09
+
+- The previously authenticated session was signed out successfully.
+- The same beta account signed in again through the production UI, and the
+  workspace, saved work queue, evidence, and navigation loaded after the fresh
+  session was established.
+- The existing Discover handoff loaded with its saved evidence and citations.
+- Define completed from the approved Discover handoff and returned a reviewable
+  cited product brief with scope, acceptance criteria, metrics, and risks.
+- Align loaded its approved Discover summary and decision inputs, but its AI
+  draft was blocked by the configured beta limit of 10 active or successful AI
+  runs. This is an expected beta guardrail, not an auth or handoff failure.
+- Signup was not repeated because the account is an existing production user;
+  a separate disposable signup account is still required for that test.
+- Workspace deletion and post-delete cleanup were not attempted because no
+  disposable workspace was available; the active workspace was protected from
+  destructive testing.
 
 ## Passed without an AI call
 
