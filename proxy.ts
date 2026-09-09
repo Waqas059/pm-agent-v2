@@ -9,7 +9,9 @@ export async function proxy(request: NextRequest) {
 
   try {
     const { url, publishableKey } = getSupabaseConfig();
+    const authorization = request.headers.get("authorization");
     const supabase = createServerClient<Database>(url, publishableKey, {
+      global: authorization ? { headers: { Authorization: authorization } } : undefined,
       cookies: {
         getAll() {
           return request.cookies.getAll();

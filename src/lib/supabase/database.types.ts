@@ -322,6 +322,39 @@ export type Database = {
         };
         Relationships: [];
       };
+      product_events: {
+        Row: {
+          id: string;
+          workspace_id: string;
+          user_id: string;
+          event_name: "workspace_viewed" | "workflow_started" | "workflow_completed" | "workflow_failed" | "artifact_created" | "artifact_version_created" | "artifact_exported" | "evidence_citation_inspected" | "decision_created" | "assumption_created" | "document_uploaded" | "document_extraction_completed" | "document_extraction_failed" | "market_research_completed" | "market_research_failed" | "onboarding_started" | "onboarding_completed";
+          surface: string;
+          workflow_name: string | null;
+          properties: Json;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          workspace_id: string;
+          user_id: string;
+          event_name: "workspace_viewed" | "workflow_started" | "workflow_completed" | "workflow_failed" | "artifact_created" | "artifact_version_created" | "artifact_exported" | "evidence_citation_inspected" | "decision_created" | "assumption_created" | "document_uploaded" | "document_extraction_completed" | "document_extraction_failed" | "market_research_completed" | "market_research_failed" | "onboarding_started" | "onboarding_completed";
+          surface: string;
+          workflow_name?: string | null;
+          properties?: Json;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          workspace_id?: string;
+          user_id?: string;
+          event_name?: "workspace_viewed" | "workflow_started" | "workflow_completed" | "workflow_failed" | "artifact_created" | "artifact_version_created" | "artifact_exported" | "evidence_citation_inspected" | "decision_created" | "assumption_created" | "document_uploaded" | "document_extraction_completed" | "document_extraction_failed" | "onboarding_started" | "onboarding_completed";
+          surface?: string;
+          workflow_name?: string | null;
+          properties?: Json;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
       workflow_runs: {
         Row: {
           id: string;
@@ -450,7 +483,8 @@ export type Database = {
           id: string;
           workspace_id: string;
           source_run_id: string | null;
-          source_workflow: "discover_synthesize";
+          source_workflow: "discover_synthesize" | "define_specify";
+          source_artifact_id: string | null;
           target_workflow: "define_specify" | "align_communicate";
           status: "approved" | "rejected" | "consumed";
           payload: Json;
@@ -464,7 +498,8 @@ export type Database = {
           id?: string;
           workspace_id: string;
           source_run_id?: string | null;
-          source_workflow: "discover_synthesize";
+          source_workflow: "discover_synthesize" | "define_specify";
+          source_artifact_id?: string | null;
           target_workflow: "define_specify" | "align_communicate";
           status?: "approved" | "rejected" | "consumed";
           payload: Json;
@@ -478,7 +513,8 @@ export type Database = {
           id?: string;
           workspace_id?: string;
           source_run_id?: string | null;
-          source_workflow?: "discover_synthesize";
+          source_workflow?: "discover_synthesize" | "define_specify";
+          source_artifact_id?: string | null;
           target_workflow?: "define_specify" | "align_communicate";
           status?: "approved" | "rejected" | "consumed";
           payload?: Json;

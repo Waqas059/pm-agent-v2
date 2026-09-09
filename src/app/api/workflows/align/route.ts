@@ -1,9 +1,10 @@
 import { NextResponse } from "next/server";
 
+import { recordProductEvent } from "@/lib/analytics";
 import { runAlignWorkflow } from "@/lib/workflows/align";
 import { communicationFormats, type CommunicationFormat } from "@/lib/workflows/align-contract";
 import { startWorkflowRun, updateWorkflowRun, updateWorkflowStep, WorkflowUsageLimitError } from "@/lib/workflows/runs";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, getAuthenticatedUser } from "@/lib/supabase/server";
 
 const MAX_REQUEST_LENGTH = 2_000;
 function errorResponse(message: string, status: number) { return NextResponse.json({ error: message }, { status }); }
@@ -12,6 +13,8 @@ export async function POST(request: Request) {
   let body: unknown;
   let runId: string | null = null;
   let stepId: string | null = null;
+  let workspaceId: string | null = null;
+  let userId: string | null = null;
   try { body = await request.json(); } catch { return errorResponse("Provide a valid JSON request.", 400); }
   if (typeof body !== "object" || body === null || Array.isArray(body)) return errorResponse("A communication request is required.", 400);
   const values = body as Record<string, unknown>;
@@ -22,11 +25,13 @@ export async function POST(request: Request) {
 
   try {
     const supabase = await createClient();
-    const { data: userData, error: userError } = await supabase.auth.getUser();
+    const { data: userData, error: userError } = await getAuthenticatedUser(supabase);
     if (userError || !userData.user) return errorResponse("Sign in before running a communication workflow.", 401);
+    userId = userData.user.id;
     const { data: workspace, error: workspaceError } = await supabase.from("workspaces").select("id").order("created_at", { ascending: true }).limit(1).maybeSingle();
     if (workspaceError) throw workspaceError;
     if (!workspace) return errorResponse("Create a product workspace before running communication.", 422);
+    workspaceId = workspace.id;
     const [{ data: contextItems, error: contextError }, { data: evidenceRows, error: evidenceError }, { data: citationRows, error: citationError }] = await Promise.all([
       supabase.from("context_items").select("category, title, content").eq("workspace_id", workspace.id).order("updated_at", { ascending: false }),
       supabase.from("evidence_items").select("id, kind, title, content, source_label").eq("workspace_id", workspace.id).order("created_at", { ascending: false }),
@@ -51,10 +56,12 @@ export async function POST(request: Request) {
     });
     runId = started.run.id;
     stepId = started.step.id;
+    void recordProductEvent(supabase, { workspaceId: workspace.id, userId: userData.user.id, eventName: "workflow_started", surface: "align", workflowName: "align_communicate" });
     const result = await runAlignWorkflow({ format: format as CommunicationFormat, request: requestValue, contextItems: contextItems ?? [], evidenceItems });
     const completedAt = new Date().toISOString();
     await updateWorkflowStep(supabase, stepId, { status: "completed", output: result.output, completed_at: completedAt });
     await updateWorkflowRun(supabase, runId, { status: "completed", output: result.output, completed_at: completedAt, provider: "openai_responses", model: result.model, duration_ms: Date.now() - workflowStartedAt, input_chars: requestValue.trim().length, output_chars: JSON.stringify(result.output).length, input_tokens: result.usage?.inputTokens ?? null, output_tokens: result.usage?.outputTokens ?? null, total_tokens: result.usage?.totalTokens ?? null, tool_names: ["retrieve_context", "retrieve_evidence", "align_communicate"] });
+    void recordProductEvent(supabase, { workspaceId: workspace.id, userId: userData.user.id, eventName: "workflow_completed", surface: "align", workflowName: "align_communicate", properties: { duration_ms: Date.now() - workflowStartedAt } });
     return NextResponse.json({ result: { ...result, id: runId } });
   } catch (error) {
     if (runId) {
@@ -63,6 +70,7 @@ export async function POST(request: Request) {
         const failedAt = new Date().toISOString();
         if (stepId) await updateWorkflowStep(supabase, stepId, { status: "failed", error_message: "The communication step failed.", completed_at: failedAt }).catch(() => undefined);
         await updateWorkflowRun(supabase, runId, { status: "failed", error_message: "The communication workflow failed.", completed_at: failedAt }).catch(() => undefined);
+        if (workspaceId && userId) void recordProductEvent(supabase, { workspaceId, userId, eventName: "workflow_failed", surface: "align", workflowName: "align_communicate" });
       }
     }
     if (error instanceof WorkflowUsageLimitError) return errorResponse(error.message, 429);

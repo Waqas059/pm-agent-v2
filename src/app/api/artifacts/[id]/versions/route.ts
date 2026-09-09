@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
+import { recordProductEvent } from "@/lib/analytics";
+import { createClient, getAuthenticatedUser } from "@/lib/supabase/server";
 import type { Json } from "@/lib/supabase/database.types";
 
 function errorResponse(message: string, status: number) { return NextResponse.json({ error: message }, { status }); }
@@ -12,7 +13,7 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
   if (JSON.stringify(body.content).length > 100_000) return errorResponse("This artifact version is too large to save.", 422);
   try {
     const supabase = await createClient();
-    const { data: userData, error: userError } = await supabase.auth.getUser();
+    const { data: userData, error: userError } = await getAuthenticatedUser(supabase);
     if (userError || !userData.user) return errorResponse("Sign in before saving an artifact version.", 401);
     const { id } = await context.params;
     const { data: artifact, error: artifactError } = await supabase.from("artifacts").select("id, workspace_id, title").eq("id", id).maybeSingle();
@@ -25,6 +26,13 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
     if (versionError) throw versionError;
     const { error: updateError } = await supabase.from("artifacts").update({ title: artifact.title }).eq("id", id);
     if (updateError) throw updateError;
+    void recordProductEvent(supabase, {
+      workspaceId: artifact.workspace_id,
+      userId: userData.user.id,
+      eventName: "artifact_version_created",
+      surface: "artifacts",
+      properties: { version: nextVersion },
+    });
     return NextResponse.json({ version });
   } catch { return errorResponse("The artifact version could not be saved.", 502); }
 }

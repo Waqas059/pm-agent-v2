@@ -10,12 +10,13 @@ export type DocumentLocator = {
   startOffset: number;
   endOffset: number;
   label: string;
+  page?: number;
 };
 
 export type DocumentExtraction = {
   text: string;
   locators: DocumentLocator[];
-  extractor: "plain_text" | "json" | "csv" | "docx_mammoth" | "pdf_parse";
+  extractor: "plain_text" | "json" | "csv" | "docx_mammoth" | "pdf_parse" | "openai_vision_ocr";
   pageCount?: number;
 };
 

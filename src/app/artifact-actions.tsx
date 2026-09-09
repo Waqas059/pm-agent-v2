@@ -1,10 +1,11 @@
 "use client";
 
 import { useState } from "react";
+import { authenticatedFetch } from "@/lib/supabase/auth-fetch";
 
-type Props = { kind: "product_brief" | "communication_message"; sourceWorkflow: "define_specify" | "align_communicate"; title: string; content: unknown };
+type Props = { kind: "product_brief" | "communication_message"; sourceWorkflow: "define_specify" | "align_communicate"; title: string; content: unknown; onSaved?: (artifactId: string) => void };
 
-export default function ArtifactActions({ kind, sourceWorkflow, title, content }: Props) {
+export default function ArtifactActions({ kind, sourceWorkflow, title, content, onSaved }: Props) {
   const [artifactId, setArtifactId] = useState<string | null>(null);
   const [version, setVersion] = useState(0);
   const [message, setMessage] = useState("");
@@ -15,10 +16,12 @@ export default function ArtifactActions({ kind, sourceWorkflow, title, content }
     try {
       const endpoint = artifactId ? `/api/artifacts/${artifactId}/versions` : "/api/artifacts";
       const body = artifactId ? { content } : { kind, sourceWorkflow, title, content };
-      const response = await fetch(endpoint, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+      const response = await authenticatedFetch(endpoint, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
       const payload = await response.json() as { artifact?: { id: string; version: { version: number } }; version?: { version: number }; error?: string };
       if (!response.ok) throw new Error(payload.error || "The artifact could not be saved.");
+      const savedArtifactId = payload.artifact?.id ?? artifactId;
       if (payload.artifact) { setArtifactId(payload.artifact.id); setVersion(payload.artifact.version.version); }
+      if (savedArtifactId) onSaved?.(savedArtifactId);
       if (payload.version) setVersion(payload.version.version);
       setMessage("Saved to workspace history.");
       window.dispatchEvent(new Event("artifacts:changed"));

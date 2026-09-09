@@ -1,6 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  allowedDevOrigins: ["127.0.0.1"],
   // These parsers rely on Node.js server APIs and should not be bundled into
   // the browser/edge-oriented server graph used by the deployment build.
   serverExternalPackages: ["pdf-parse", "mammoth"],

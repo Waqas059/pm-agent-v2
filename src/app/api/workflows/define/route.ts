@@ -1,8 +1,9 @@
 import { NextResponse } from "next/server";
 
+import { recordProductEvent } from "@/lib/analytics";
 import { runDefineWorkflow } from "@/lib/workflows/define";
 import { startWorkflowRun, updateWorkflowRun, updateWorkflowStep, WorkflowUsageLimitError } from "@/lib/workflows/runs";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, getAuthenticatedUser } from "@/lib/supabase/server";
 
 const MAX_OPPORTUNITY_LENGTH = 2_000;
 
@@ -14,6 +15,8 @@ export async function POST(request: Request) {
   let body: unknown;
   let runId: string | null = null;
   let stepId: string | null = null;
+  let workspaceId: string | null = null;
+  let userId: string | null = null;
 
   try {
     body = await request.json();
@@ -32,8 +35,9 @@ export async function POST(request: Request) {
 
   try {
     const supabase = await createClient();
-    const { data: userData, error: userError } = await supabase.auth.getUser();
+    const { data: userData, error: userError } = await getAuthenticatedUser(supabase);
     if (userError || !userData.user) return errorResponse("Sign in before running a definition workflow.", 401);
+    userId = userData.user.id;
 
     const { data: workspace, error: workspaceError } = await supabase
       .from("workspaces")
@@ -43,6 +47,7 @@ export async function POST(request: Request) {
       .maybeSingle();
     if (workspaceError) throw workspaceError;
     if (!workspace) return errorResponse("Create a product workspace before running definition.", 422);
+    workspaceId = workspace.id;
 
     const [{ data: contextItems, error: contextError }, { data: evidenceRows, error: evidenceError }, { data: citationRows, error: citationError }] = await Promise.all([
       supabase
@@ -85,6 +90,7 @@ export async function POST(request: Request) {
     });
     runId = started.run.id;
     stepId = started.step.id;
+    void recordProductEvent(supabase, { workspaceId: workspace.id, userId: userData.user.id, eventName: "workflow_started", surface: "define", workflowName: "define_specify" });
     const result = await runDefineWorkflow({
       opportunity: opportunityValue,
       contextItems: contextItems ?? [],
@@ -94,6 +100,7 @@ export async function POST(request: Request) {
     const completedAt = new Date().toISOString();
     await updateWorkflowStep(supabase, stepId, { status: "completed", output: result.output, completed_at: completedAt });
     await updateWorkflowRun(supabase, runId, { status: "completed", output: result.output, completed_at: completedAt, provider: "openai_responses", model: result.model, duration_ms: Date.now() - workflowStartedAt, input_chars: opportunityValue.trim().length, output_chars: JSON.stringify(result.output).length, input_tokens: result.usage?.inputTokens ?? null, output_tokens: result.usage?.outputTokens ?? null, total_tokens: result.usage?.totalTokens ?? null, tool_names: ["retrieve_context", "retrieve_evidence", "define_specify"] });
+    void recordProductEvent(supabase, { workspaceId: workspace.id, userId: userData.user.id, eventName: "workflow_completed", surface: "define", workflowName: "define_specify", properties: { duration_ms: Date.now() - workflowStartedAt } });
 
     return NextResponse.json({ result: { ...result, id: runId } });
   } catch (error) {
@@ -103,6 +110,7 @@ export async function POST(request: Request) {
         const failedAt = new Date().toISOString();
         if (stepId) await updateWorkflowStep(supabase, stepId, { status: "failed", error_message: "The definition step failed.", completed_at: failedAt }).catch(() => undefined);
         await updateWorkflowRun(supabase, runId, { status: "failed", error_message: "The definition workflow failed.", completed_at: failedAt }).catch(() => undefined);
+        if (workspaceId && userId) void recordProductEvent(supabase, { workspaceId, userId, eventName: "workflow_failed", surface: "define", workflowName: "define_specify" });
       }
     }
     if (error instanceof WorkflowUsageLimitError) return errorResponse(error.message, 429);

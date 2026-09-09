@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { SERVER_WORKFLOW_RUN_LIMIT } from "@/lib/workflows/runs";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, getAuthenticatedUser } from "@/lib/supabase/server";
 
 function errorResponse(message: string, status: number) {
   return NextResponse.json({ error: message }, { status });
@@ -10,7 +10,7 @@ function errorResponse(message: string, status: number) {
 export async function GET() {
   try {
     const supabase = await createClient();
-    const { data: userData, error: userError } = await supabase.auth.getUser();
+    const { data: userData, error: userError } = await getAuthenticatedUser(supabase);
     if (userError || !userData.user) return errorResponse("Sign in before reading workspace usage.", 401);
 
     const { data: workspace, error: workspaceError } = await supabase

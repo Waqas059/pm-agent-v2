@@ -2,10 +2,12 @@
 import CitationChip from "./citation-chip";
 
 import { useEffect, useState } from "react";
+import { authenticatedFetch } from "@/lib/supabase/auth-fetch";
 import { recordSessionAiRun } from "@/lib/usage";
 
 import type { DefineOutput } from "@/lib/workflows/define-contract";
 import ArtifactActions from "./artifact-actions";
+import { NextBestAction } from "./workspace-primitives";
 
 type WorkflowResult = {
   id: string;
@@ -19,6 +21,8 @@ export default function DefineWorkflowPanel() {
   const [result, setResult] = useState<WorkflowResult | null>(null);
   const [message, setMessage] = useState("");
   const [isRunning, setIsRunning] = useState(false);
+  const [savedArtifactId, setSavedArtifactId] = useState<string | null>(null);
+  const [handoffMessage, setHandoffMessage] = useState("");
   const [handoffRevision, setHandoffRevision] = useState(0);
   useEffect(() => {
     const refresh = () => setHandoffRevision(value => value + 1);
@@ -28,7 +32,7 @@ export default function DefineWorkflowPanel() {
 
   useEffect(() => {
     let active = true;
-    void fetch("/api/workflows/handoffs?target=define_specify")
+      void authenticatedFetch("/api/workflows/handoffs?target=define_specify")
       .then((response) => response.json() as Promise<{ handoff?: { payload?: { discovery?: { opportunities?: Array<{ title?: string }> } } } | null }>)
       .then((payload) => {
         const title = payload.handoff?.payload?.discovery?.opportunities?.[0]?.title;
@@ -41,16 +45,17 @@ export default function DefineWorkflowPanel() {
     return () => { active = false; };
   }, [opportunity, handoffRevision]);
 
-  async function runWorkflow(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
+  async function executeWorkflow() {
     if (!opportunity.trim()) return;
 
     setIsRunning(true);
     setMessage("");
     setResult(null);
+    setSavedArtifactId(null);
+    setHandoffMessage("");
 
     try {
-      const response = await fetch("/api/workflows/define", {
+      const response = await authenticatedFetch("/api/workflows/define", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ opportunity: opportunity.trim() }),
@@ -66,18 +71,38 @@ export default function DefineWorkflowPanel() {
     }
   }
 
-  return (
-    <div>
-      <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-start">
-        <div>
-          <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#8c5fba]">Workflow 02 · Define &amp; specify</p>
-          <h2 id="define-heading" className="mt-2 text-2xl font-semibold tracking-[-0.04em] text-[#192235]">Turn an opportunity into a buildable brief</h2>
-          <p className="mt-2 max-w-2xl text-sm leading-6 text-[#68748a]">Start with a validated opportunity. The workflow reuses your saved context and citation-backed evidence to draft a reviewable product brief.</p>
-        </div>
-        <span className="inline-flex w-fit items-center gap-2 rounded-full border border-[#e2d3f0] bg-[#fbf8ff] px-3 py-2 text-xs font-semibold text-[#8c5fba]"><span className="h-2 w-2 rounded-full bg-[#a06bd8]" />Ready</span>
-      </div>
+  function runWorkflow(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    void executeWorkflow();
+  }
 
-      <form onSubmit={runWorkflow} className="mt-6 rounded-xl border border-[#e2d3f0] bg-[#fbf8ff] p-4 sm:p-5">
+  async function approveForAlign() {
+    if (!result || !savedArtifactId) return;
+    setHandoffMessage("");
+    try {
+      const response = await authenticatedFetch("/api/workflows/handoffs", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          sourceRunId: result.id,
+          sourceArtifactId: savedArtifactId,
+          targetWorkflow: "align_communicate",
+          payload: { define: result.output },
+        }),
+      });
+      const payload = (await response.json()) as { error?: string };
+      if (!response.ok) throw new Error(payload.error || "The Define brief could not be approved for Align.");
+      setHandoffMessage("Saved Define brief approved for Align.");
+      window.dispatchEvent(new Event("pm-handoff-approved"));
+    } catch (error) {
+      setHandoffMessage(error instanceof Error ? error.message : "The Define brief could not be approved for Align.");
+    }
+  }
+
+  return (
+    <div className="pm-stage-workflow">
+      <section className="pm-stage-preview" aria-label="Define stage overview"><div><p className="pm-eyebrow">WHAT DEFINE PRODUCES</p><h3>Turn an approved opportunity into a reviewable brief.</h3></div><div className="pm-stage-preview-list"><span>Problem</span><span>Target user</span><span>Success outcome</span></div></section>
+      <details className="pm-progressive-form pm-stage-form"><summary><span>Open Define inputs</span><small>Review the opportunity before creating a brief.</small></summary><form onSubmit={runWorkflow} className="pm-inline-form">
         <label htmlFor="define-opportunity" className="grid gap-2 text-xs font-semibold text-[#526075]">
           What opportunity should we define?
           <textarea id="define-opportunity" required maxLength={2000} rows={3} value={opportunity} onChange={(event) => setOpportunity(event.target.value)} placeholder="For example: Shorten and streamline the setup flow." className="resize-y rounded-lg border border-[#d8dee8] bg-white px-3.5 py-3 text-sm font-normal leading-6 text-[#192235] outline-none placeholder:text-[#a0a9b8] focus:border-[#8c5fba] focus:ring-2 focus:ring-[#eee4f7]" />
@@ -86,10 +111,10 @@ export default function DefineWorkflowPanel() {
           <p className="text-xs leading-5 text-[#8d98a9]">This drafts a specification for review. It does not save a permanent artifact yet.</p>
           <button type="submit" disabled={isRunning || !opportunity.trim()} className="inline-flex items-center justify-center rounded-lg bg-[#8c5fba] px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[#754aa6] disabled:cursor-not-allowed disabled:opacity-50">{isRunning ? "Defining…" : "Create brief"}</button>
         </div>
-      </form>
+      </form></details>
 
       {isRunning && <p role="status" aria-live="polite" className="kit-notice">Working on your request using saved context and evidence. The result will be ready for your review when the workflow completes.</p>}
-      {message && <div role="alert" className="mt-4 rounded-lg border border-[#f0d4d0] bg-[#fff9f8] px-4 py-3 text-sm leading-6 text-[#a04c43]">{message}</div>}
+      {message && <div role="alert" className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-[#f0d4d0] bg-[#fff9f8] px-4 py-3 text-sm leading-6 text-[#a04c43]"><span>{message}</span><button type="button" onClick={() => void executeWorkflow()} disabled={isRunning || !opportunity.trim()} className="min-h-11 rounded-lg border border-[#d9aaa0] bg-white px-3 py-2 text-xs font-semibold text-[#8e4038] transition-colors hover:border-[#b9786d] disabled:cursor-not-allowed disabled:opacity-50">Retry</button></div>}
 
       {result && (
         <div className="mt-6 space-y-5">
@@ -102,7 +127,12 @@ export default function DefineWorkflowPanel() {
           <section className="rounded-xl border border-[#e3e7ee] bg-white p-5"><h3 className="text-base font-semibold text-[#192235]">Risks</h3><div className="mt-4 grid gap-3 lg:grid-cols-2">{result.output.risks.map((risk) => <article key={risk.title} className="rounded-lg border border-[#e3e7ee] p-4"><h4 className="text-sm font-semibold text-[#192235]">{risk.title}</h4><p className="mt-2 text-sm leading-6 text-[#68748a]">{risk.description}</p><p className="mt-3 text-xs font-semibold uppercase tracking-[0.12em] text-[#8d98a9]">Mitigation</p><p className="mt-2 text-sm leading-6 text-[#68748a]">{risk.mitigation}</p><Citations keys={risk.citationKeys} /></article>)}</div>{result.output.risks.length === 0 && <p className="mt-3 text-sm text-[#9aa4b3]">No risks returned.</p>}</section>
           <div className="grid gap-5 lg:grid-cols-2"><StringSection title="Open questions" items={result.output.openQuestions} /><StringSection title="Limitations" items={result.output.limitations} /></div>
           <p className="text-xs leading-5 text-[#8d98a9]">Run {result.id} · {result.model} · Review required.</p>
-          <ArtifactActions kind="product_brief" sourceWorkflow="define_specify" title={`Product brief: ${result.output.productBrief.problemStatement.slice(0, 240)}`} content={result.output} />
+          <NextBestAction action="Review the brief before carrying it into Align." href="#align">The result remains a draft until you approve the next step.</NextBestAction>
+          <div className="flex flex-wrap items-center gap-3">
+            <ArtifactActions kind="product_brief" sourceWorkflow="define_specify" title={`Product brief: ${result.output.productBrief.problemStatement.slice(0, 240)}`} content={result.output} onSaved={setSavedArtifactId} />
+            {savedArtifactId && <button type="button" onClick={() => void approveForAlign()} className="rounded-lg border border-[#d8c8ed] bg-white px-3 py-2 text-xs font-semibold text-[#754aa6] transition-colors hover:bg-[#faf7fd]">Approve saved brief for Align →</button>}
+          </div>
+          {handoffMessage && <p role="status" className="text-xs leading-5 text-[#4d8c65]">{handoffMessage}</p>}
         </div>
       )}
     </div>

@@ -5,6 +5,7 @@ import type { ChangeEvent } from "react";
 
 import { isLegacyWordContainer } from "@/lib/documents/file-signature";
 import { createClient } from "@/lib/supabase/client";
+import { authenticatedFetch } from "@/lib/supabase/auth-fetch";
 import type { Database } from "@/lib/supabase/database.types";
 
 type DocumentRecord = Database["public"]["Tables"]["documents"]["Row"];
@@ -12,11 +13,15 @@ type PanelStatus = "loading" | "ready" | "signed_out" | "not_configured" | "no_w
 
 const BUCKET_NAME = "documents";
 const MAX_FILE_SIZE = 6 * 1024 * 1024;
-const allowedExtensions = [".pdf", ".doc", ".docx", ".txt", ".md", ".csv", ".json"];
+const allowedExtensions = [".pdf", ".doc", ".docx", ".png", ".jpg", ".jpeg", ".webp", ".txt", ".md", ".csv", ".json"];
 const mimeByExtension: Record<string, string> = {
   ".pdf": "application/pdf",
   ".doc": "application/msword",
   ".docx": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  ".png": "image/png",
+  ".jpg": "image/jpeg",
+  ".jpeg": "image/jpeg",
+  ".webp": "image/webp",
   ".txt": "text/plain",
   ".md": "text/markdown",
   ".csv": "text/csv",
@@ -130,7 +135,7 @@ export default function DocumentLibraryPanel() {
     setMessage("");
 
     try {
-      const response = await fetch(`/api/documents/${document.id}/extract`, { method: "POST" });
+      const response = await authenticatedFetch(`/api/documents/${document.id}/extract`, { method: "POST" });
       const payload = (await response.json()) as { error?: string; extraction?: { characters: number; locatorCount: number } };
       if (!response.ok || !payload.extraction) throw new Error(payload.error || "Unable to extract this document.");
 
@@ -266,7 +271,7 @@ export default function DocumentLibraryPanel() {
           <h2 id="documents-heading" className="mt-2 text-2xl font-semibold tracking-[-0.04em] text-[#192235]">Product documents</h2>
           <p className="mt-2 max-w-xl text-sm leading-6 text-[#68748a]">Keep research notes and product documents together. Files stay private to workspace members.</p>
         </div>
-        <label className={`inline-flex w-fit cursor-pointer items-center gap-2 rounded-lg bg-[#5269d8] px-3.5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[#435ac6] ${isUploading ? "cursor-wait opacity-60" : ""}`}>
+        <label className={`inline-flex min-h-11 w-fit cursor-pointer items-center gap-2 rounded-lg bg-[#5269d8] px-3.5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[#435ac6] ${isUploading ? "cursor-wait opacity-60" : ""}`}>
           <span className="text-lg leading-none">+</span>
           {isUploading ? "Uploading…" : "Upload document"}
           <input type="file" className="sr-only" accept={allowedExtensions.join(",")} onChange={(event) => void handleFileChange(event)} disabled={isUploading} />
@@ -277,11 +282,11 @@ export default function DocumentLibraryPanel() {
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <p className="text-sm font-semibold text-[#526075]">Upload a source file</p>
-            <p className="mt-1 text-xs leading-5 text-[#8d98a9]">PDF, Word, Markdown, text, CSV, or JSON · maximum 6 MB</p>
+          <p className="mt-1 text-xs leading-5 text-[#8d98a9]">PDF, Word, image, Markdown, text, CSV, or JSON · maximum 6 MB</p>
           </div>
           <p className="text-xs font-semibold text-[#8d98a9]">{documentCountLabel}</p>
         </div>
-        <p className="mt-4 flex items-start gap-2 text-xs leading-5 text-[#9aa4b3]"><span className="mt-0.5 text-[#53a977]">✓</span>Text extraction runs without an AI call for PDF, DOCX, Markdown, text, CSV, and JSON. Legacy .doc files should be saved as .docx or PDF first.</p>
+        <p className="mt-4 flex items-start gap-2 text-xs leading-5 text-[#9aa4b3]"><span className="mt-0.5 text-[#53a977]">✓</span>Text extraction runs without an AI call for PDF, DOCX, Markdown, text, CSV, and JSON. Scanned PDFs and PNG/JPEG/WebP images use source-preserving OCR when server-side AI is configured.</p>
       </div>
 
       {documents.length === 0 ? (
@@ -302,11 +307,11 @@ export default function DocumentLibraryPanel() {
                 </div>
               </div>
               <div className="flex items-center gap-4 pl-[52px] text-xs font-semibold text-[#8d98a9] sm:pl-0">
-                <button type="button" onClick={() => void extractDocument(document)} disabled={extractionStatus[document.id] === "extracting"} className="hover:text-[#5269d8] disabled:cursor-wait disabled:opacity-60">
-                  {extractionStatus[document.id] === "extracting" ? "Extracting…" : extractionStatus[document.id] === "ready" ? "Text ready" : "Extract text"}
+                <button type="button" onClick={() => void extractDocument(document)} disabled={extractionStatus[document.id] === "extracting"} className="min-h-11 px-1 hover:text-[#5269d8] disabled:cursor-wait disabled:opacity-60">
+                  {extractionStatus[document.id] === "extracting" ? "Extracting…" : extractionStatus[document.id] === "ready" ? "Re-extract" : "Extract text"}
                 </button>
-                <button type="button" onClick={() => void downloadDocument(document)} className="hover:text-[#5269d8]">Download</button>
-                <button type="button" onClick={() => void deleteDocument(document)} className="hover:text-[#b4534b]">Delete</button>
+                <button type="button" onClick={() => void downloadDocument(document)} className="min-h-11 px-1 hover:text-[#5269d8]">Download</button>
+                <button type="button" onClick={() => void deleteDocument(document)} className="min-h-11 px-1 hover:text-[#b4534b]">Delete</button>
               </div>
             </article>
           ))}

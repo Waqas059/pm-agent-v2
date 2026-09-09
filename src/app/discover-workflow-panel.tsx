@@ -2,6 +2,7 @@
 import CitationChip from "./citation-chip";
 
 import { useState } from "react";
+import { authenticatedFetch } from "@/lib/supabase/auth-fetch";
 import { recordSessionAiRun } from "@/lib/usage";
 
 import type { DiscoverOutput } from "@/lib/workflows/discover-contract";
@@ -13,7 +14,7 @@ type WorkflowResult = {
   output: DiscoverOutput;
 };
 
-export default function DiscoverWorkflowPanel() {
+export default function DiscoverWorkflowPanel({ compact = false }: { compact?: boolean }) {
   const [question, setQuestion] = useState("");
   const [result, setResult] = useState<WorkflowResult | null>(null);
   const [message, setMessage] = useState("");
@@ -23,7 +24,7 @@ export default function DiscoverWorkflowPanel() {
   async function approveHandoff(targetWorkflow: "define_specify" | "align_communicate") {
     if (!result) return;
     setHandoffMessage("");
-    const response = await fetch("/api/workflows/handoffs", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ sourceRunId: result.id, targetWorkflow, payload: { discovery: result.output } }) });
+    const response = await authenticatedFetch("/api/workflows/handoffs", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ sourceRunId: result.id, targetWorkflow, payload: { discovery: result.output } }) });
     const payload = await response.json() as { error?: string };
     if (response.ok) {
       window.dispatchEvent(new Event("pm-handoff-approved"));
@@ -32,8 +33,7 @@ export default function DiscoverWorkflowPanel() {
     setHandoffMessage(response.ok ? `Approved for ${targetWorkflow === "define_specify" ? "Define" : "Align"}.` : payload.error || "The handoff could not be approved.");
   }
 
-  async function runWorkflow(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
+  async function executeWorkflow() {
     if (!question.trim()) return;
 
     setIsRunning(true);
@@ -41,7 +41,7 @@ export default function DiscoverWorkflowPanel() {
     setResult(null);
 
     try {
-      const response = await fetch("/api/workflows/discover", {
+      const response = await authenticatedFetch("/api/workflows/discover", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ question: question.trim() }),
@@ -57,36 +57,28 @@ export default function DiscoverWorkflowPanel() {
     }
   }
 
-  return (
-    <div>
-      <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-start">
-        <div>
-          <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#5269d8]">Workflow 01 · Discover &amp; synthesize</p>
-          <h2 id="discover-heading" className="mt-2 text-2xl font-semibold tracking-[-0.04em] text-[#192235]">Find the signal in your evidence</h2>
-          <p className="mt-2 max-w-2xl text-sm leading-6 text-[#68748a]">Ask a focused discovery question. The workflow combines your saved product context and citation-backed evidence into reviewable themes, pain points, opportunities, and open questions.</p>
-        </div>
-        <span className="inline-flex w-fit items-center gap-2 rounded-full border border-[#cfe5d6] bg-[#f5fbf6] px-3 py-2 text-xs font-semibold text-[#4d8c65]"><span className="h-2 w-2 rounded-full bg-[#53b67b]" />Ready</span>
-      </div>
+  function runWorkflow(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    void executeWorkflow();
+  }
 
-      <form onSubmit={runWorkflow} className="mt-6 rounded-xl border border-[#cdd6f6] bg-[#f8f9ff] p-4 sm:p-5">
-        <label htmlFor="discover-question" className="grid gap-2 text-xs font-semibold text-[#526075]">
-          What do you want to discover?
-          <textarea id="discover-question" required maxLength={2000} rows={3} value={question} onChange={(event) => setQuestion(event.target.value)} placeholder="For example: What recurring friction should we investigate before planning the next release?" className="resize-y rounded-lg border border-[#d8dee8] bg-white px-3.5 py-3 text-sm font-normal leading-6 text-[#192235] outline-none placeholder:text-[#a0a9b8] focus:border-[#5269d8] focus:ring-2 focus:ring-[#dfe4ff]" />
-        </label>
-        <div className="mt-4 flex flex-col items-start justify-between gap-3 sm:flex-row sm:items-center">
-          <p className="text-xs leading-5 text-[#8d98a9]">Only evidence with a saved citation can support findings. Review the result before sharing it.</p>
-          <button type="submit" disabled={isRunning || !question.trim()} className="inline-flex items-center justify-center rounded-lg bg-[#5269d8] px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[#435ac6] disabled:cursor-not-allowed disabled:opacity-50">{isRunning ? "Synthesizing…" : "Run discovery"}</button>
-        </div>
-      </form>
+  const questionForm = <form onSubmit={runWorkflow}>
+    <label htmlFor="discover-question">Discovery question<textarea id="discover-question" required maxLength={2000} rows={2} value={question} onChange={(event) => setQuestion(event.target.value)} placeholder="For example: Which steps in setup create the most friction for new customers?" /></label>
+    <div className="discover-question-actions"><p>Only saved citations can support findings.</p><button type="submit" disabled={isRunning || !question.trim()}>{isRunning ? "Synthesizing…" : "Run discovery"}</button></div>
+  </form>;
+
+  return (
+    <div className="product-workflow-panel discover-workflow-panel">
+      {compact ? <details className="discover-question-editor discover-question-editor-compact"><summary><span>Edit discovery question</span><span className="discover-ready-state"><span />{isRunning ? "Synthesizing" : "Ready"}</span></summary>{questionForm}</details> : <section className="discover-question-editor" aria-labelledby="discover-heading"><div className="discover-surface-heading"><div><p className="product-work-panel-kicker">DISCOVERY QUESTION</p><h2 id="discover-heading">What are we trying to understand?</h2></div><span className="discover-ready-state"><span />{isRunning ? "Synthesizing" : "Ready"}</span></div><p className="discover-surface-description">Write the question that should guide the evidence review. Bootstrap PM will return source-backed themes, pain points, opportunities, and gaps for your review.</p>{questionForm}</section>}
 
       {isRunning && <p role="status" aria-live="polite" className="kit-notice">Working on your request using saved context and evidence. The result will be ready for your review when the workflow completes.</p>}
-      {message && <div role="alert" className="mt-4 rounded-lg border border-[#f0d4d0] bg-[#fff9f8] px-4 py-3 text-sm leading-6 text-[#a04c43]">{message}</div>}
+      {message && <div role="alert" className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-[#f0d4d0] bg-[#fff9f8] px-4 py-3 text-sm leading-6 text-[#a04c43]"><span>{message}</span><button type="button" onClick={() => void executeWorkflow()} disabled={isRunning || !question.trim()} className="min-h-11 rounded-lg border border-[#d9aaa0] bg-white px-3 py-2 text-xs font-semibold text-[#8e4038] transition-colors hover:border-[#b9786d] disabled:cursor-not-allowed disabled:opacity-50">Retry</button></div>}
 
       {result && (
-        <div className="mt-6 space-y-5">
-          <div className="rounded-xl border border-[#d8dee8] bg-white p-5">
-            <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#8d98a9]">Synthesis</p>
-            <p className="mt-3 text-sm leading-7 text-[#526075]">{result.output.executiveSummary}</p>
+        <div className="discover-result">
+          <div className="discover-synthesis">
+            <p className="product-work-panel-kicker">AI SYNTHESIS</p>
+            <p>{result.output.executiveSummary}</p>
           </div>
           <FindingGroup title="Themes" items={result.output.themes} accent="bg-[#eef1ff] text-[#5269d8]" />
           <FindingGroup title="Pain points" items={result.output.painPoints} accent="bg-[#fff1ed] text-[#b5654b]" />

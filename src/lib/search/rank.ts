@@ -17,19 +17,27 @@ function scoreCandidate(candidate: SearchCandidate, query: string) {
   const detail = normalize(candidate.detail);
   let score = 0;
 
-  if (normalizedQuery && title.includes(normalizedQuery)) score += 8;
-  if (normalizedQuery && title.startsWith(normalizedQuery)) score += 2;
+  if (normalizedQuery && title.includes(normalizedQuery)) score += 10;
+  if (normalizedQuery && title.startsWith(normalizedQuery)) score += 3;
   for (const term of terms) {
-    if (title.includes(term)) score += 4;
+    if (title.includes(term)) score += 5;
+    if (title.split(" ").some((word) => word.startsWith(term))) score += 2;
     if (detail.includes(term)) score += 1;
   }
+
+  const type = normalize(candidate.type);
+  if (type === "evidence") score += 2;
+  if (type === "context") score += 1;
+  if (type === "artifact" && /\b(brief|decision|spec)\b/.test(title)) score += 1;
+
   return score;
 }
 
 /**
- * Ranks already permission-filtered search results without making claims about
- * semantic similarity. Stable ordering keeps equally relevant results
- * predictable while evaluation can later justify a stronger reranker.
+ * Ranks already permission-filtered search results with transparent lexical
+ * signals: phrase matches, title/token-prefix matches, detail matches, and
+ * small source-type boosts. This is intentionally not semantic similarity.
+ * Stable ordering keeps equally relevant results predictable.
  */
 export function rankSearchResults(candidates: readonly SearchCandidate[], query: string) {
   return candidates

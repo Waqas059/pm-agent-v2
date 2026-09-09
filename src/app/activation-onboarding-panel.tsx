@@ -1,6 +1,8 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState, useSyncExternalStore } from "react";
+import { useEffect } from "react";
+import { authenticatedFetch } from "@/lib/supabase/auth-fetch";
 
 type OnboardingStep = {
   id: string;
@@ -11,6 +13,9 @@ type OnboardingStep = {
 };
 
 const STORAGE_KEY = "pm-agent.activation-onboarding.v1";
+const PROGRESS_EVENT = "pm-agent.activation-progress";
+const EMPTY_PROGRESS: string[] = [];
+let cachedProgress: string[] | null = null;
 
 const steps: OnboardingStep[] = [
   {
@@ -44,25 +49,51 @@ const steps: OnboardingStep[] = [
 ];
 
 function readProgress(): string[] {
+  if (cachedProgress) return cachedProgress;
   try {
     const stored = window.localStorage.getItem(STORAGE_KEY);
     const parsed = stored ? JSON.parse(stored) as unknown : [];
-    return Array.isArray(parsed) && parsed.every((value) => typeof value === "string") ? parsed : [];
+    cachedProgress = Array.isArray(parsed) && parsed.every((value) => typeof value === "string") ? parsed : [];
   } catch {
-    return [];
+    cachedProgress = [];
   }
+  return cachedProgress;
+}
+
+function subscribeProgress(onChange: () => void) {
+  const notify = () => {
+    cachedProgress = null;
+    onChange();
+  };
+  window.addEventListener("storage", notify);
+  window.addEventListener(PROGRESS_EVENT, notify);
+  return () => {
+    window.removeEventListener("storage", notify);
+    window.removeEventListener(PROGRESS_EVENT, notify);
+  };
+}
+
+function writeProgress(next: string[]) {
+  cachedProgress = next;
+  window.localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+  window.dispatchEvent(new Event(PROGRESS_EVENT));
 }
 
 export default function ActivationOnboardingPanel() {
-  const [completed, setCompleted] = useState<string[]>(() => typeof window === "undefined" ? [] : readProgress());
+  const completed = useSyncExternalStore(subscribeProgress, readProgress, () => EMPTY_PROGRESS);
   const [isDismissed, setIsDismissed] = useState(false);
-
-  useEffect(() => {
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(completed));
-  }, [completed]);
 
   const completedCount = useMemo(() => steps.filter((step) => completed.includes(step.id)).length, [completed]);
   const progressLabel = `${completedCount} of ${steps.length} complete`;
+
+  useEffect(() => {
+    void authenticatedFetch("/api/analytics", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ eventName: "onboarding_started", surface: "activation_guide" }) }).catch(() => undefined);
+  }, []);
+
+  useEffect(() => {
+    if (completedCount !== steps.length) return;
+    void authenticatedFetch("/api/analytics", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ eventName: "onboarding_completed", surface: "activation_guide" }) }).catch(() => undefined);
+  }, [completedCount]);
 
   if (isDismissed) {
     return (
@@ -73,11 +104,11 @@ export default function ActivationOnboardingPanel() {
   }
 
   function toggleStep(id: string) {
-    setCompleted((current) => current.includes(id) ? current.filter((item) => item !== id) : [...current, id]);
+    writeProgress(completed.includes(id) ? completed.filter((item) => item !== id) : [...completed, id]);
   }
 
   function resetProgress() {
-    setCompleted([]);
+    writeProgress([]);
   }
 
   return (
@@ -90,7 +121,7 @@ export default function ActivationOnboardingPanel() {
         </div>
         <div className="flex shrink-0 items-center gap-3">
           <span className="rounded-full border border-[#cdd6f6] bg-white px-3 py-2 text-xs font-semibold text-[#5269d8]">{progressLabel}</span>
-          <button type="button" onClick={() => setIsDismissed(true)} className="text-xs font-semibold text-[#68748a] hover:text-[#192235]">Hide</button>
+          <button type="button" onClick={() => setIsDismissed(true)} className="inline-flex min-h-11 items-center text-xs font-semibold text-[#68748a] hover:text-[#192235]">Hide</button>
         </div>
       </div>
 
@@ -101,11 +132,11 @@ export default function ActivationOnboardingPanel() {
             <article key={step.id} className={`pm-card p-4 ${isComplete ? "border-[#bfe0c8] bg-[#f5fbf6]" : ""}`}>
               <div className="flex items-center justify-between gap-3">
                 <span className={`flex h-7 w-7 items-center justify-center rounded-full text-xs font-bold ${isComplete ? "bg-[#d9f0df] text-[#3c8752]" : "bg-[#eef1ff] text-[#5269d8]"}`}>{isComplete ? "✓" : index + 1}</span>
-                <button type="button" onClick={() => toggleStep(step.id)} className="text-[11px] font-semibold text-[#68748a] hover:text-[#192235]">{isComplete ? "Undo" : "Mark done"}</button>
+                <button type="button" onClick={() => toggleStep(step.id)} className="inline-flex min-h-11 items-center text-[11px] font-semibold text-[#68748a] hover:text-[#192235]">{isComplete ? "Undo" : "Mark done"}</button>
               </div>
               <h3 className="mt-4 text-sm font-semibold text-[#192235]">{step.label}</h3>
               <p className="mt-2 min-h-16 text-xs leading-5 text-[#68748a]">{step.description}</p>
-              <a href={step.href} className="mt-4 inline-flex items-center gap-2 text-xs font-semibold text-[#5269d8] hover:text-[#435ac6]">{step.action} <span aria-hidden>→</span></a>
+              <a href={step.href} className="mt-4 inline-flex min-h-11 items-center gap-2 text-xs font-semibold text-[#5269d8] hover:text-[#435ac6]">{step.action} <span aria-hidden>→</span></a>
             </article>
           );
         })}
@@ -113,7 +144,7 @@ export default function ActivationOnboardingPanel() {
 
       <div className="mt-5 flex flex-wrap items-center justify-between gap-3 border-t border-[#dfe4ff] pt-4">
         <p className="text-xs text-[#7d88a2]">Start with context and one trustworthy source. You can come back to this guide anytime.</p>
-        <button type="button" onClick={resetProgress} disabled={completed.length === 0} className="text-xs font-semibold text-[#8d98a9] hover:text-[#b4534b] disabled:cursor-not-allowed disabled:opacity-50">Reset checklist</button>
+        <button type="button" onClick={resetProgress} disabled={completed.length === 0} className="inline-flex min-h-11 items-center text-xs font-semibold text-[#8d98a9] hover:text-[#b4534b] disabled:cursor-not-allowed disabled:opacity-50">Reset checklist</button>
       </div>
     </section>
   );

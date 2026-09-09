@@ -16,6 +16,10 @@ replace a full authenticated production test.
   only Supabase public configuration.
 - OpenAI Responses calls use `store: false`, and the app does not log prompts,
   model output, or credentials.
+- Document extraction failures log only the error class; provider/file-specific
+  error messages are not written to server logs.
+- Market-research provider telemetry stores only source/finding counts and
+  latency; prompts, citations, and provider payloads are not stored in events.
 - The auth callback exchanges a supplied code for a session and redirects to a
   fixed same-application root URL; provider details are not returned to users.
 - Workflow-run and step identity guards prevent moving durable state between
@@ -31,6 +35,9 @@ replace a full authenticated production test.
 - An invalid production auth callback was tested: it redirected to the fixed
   app root with a generic `auth_error=confirmation` state, preserved the
   existing authenticated session, and exposed no provider details.
+- A local browser session mismatch was reproduced and corrected: after a
+  protected request and refresh retry both return 401, the local session is
+  cleared and the header returns to the signed-out state.
 
 ## Still required before wider public use
 

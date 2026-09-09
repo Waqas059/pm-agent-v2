@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
-import { createClient } from "@/lib/supabase/server";
+import { recordProductEvent } from "@/lib/analytics";
+import { createClient, getAuthenticatedUser, isSupabaseUnavailable } from "@/lib/supabase/server";
 import type { Database, Json } from "@/lib/supabase/database.types";
 
 type ArtifactKind = Database["public"]["Enums"]["artifact_kind"];
@@ -13,8 +14,9 @@ function isRecord(value: unknown): value is Record<string, unknown> { return typ
 
 async function getWorkspace() {
   const supabase = await createClient();
-  const { data: userData, error: userError } = await supabase.auth.getUser();
-  if (userError || !userData.user) return { supabase, user: null, workspace: null, response: errorResponse("Sign in before managing artifacts.", 401) };
+  const { data: userData, error: userError } = await getAuthenticatedUser(supabase);
+  if (userError) return { supabase, user: null, workspace: null, response: errorResponse(isSupabaseUnavailable(userError) ? "Workspace authentication is temporarily unavailable. Retry in a moment." : "Sign in before managing artifacts.", isSupabaseUnavailable(userError) ? 503 : 401) };
+  if (!userData.user) return { supabase, user: null, workspace: null, response: errorResponse("Sign in before managing artifacts.", 401) };
   const { data: workspace, error } = await supabase.from("workspaces").select("id").order("created_at", { ascending: true }).limit(1).maybeSingle();
   if (error) throw error;
   if (!workspace) return { supabase, user: userData.user, workspace: null, response: errorResponse("Create a product workspace before saving artifacts.", 422) };
@@ -53,6 +55,7 @@ export async function POST(request: Request) {
     if (error) throw error;
     const { data: version, error: versionError } = await supabase.from("artifact_versions").insert({ artifact_id: artifact.id, workspace_id: workspace!.id, version: 1, content: content as Json, created_by: user!.id }).select("id, artifact_id, version, created_at").single();
     if (versionError) { await supabase.from("artifacts").delete().eq("id", artifact.id); throw versionError; }
+    void recordProductEvent(supabase, { workspaceId: workspace!.id, userId: user!.id, eventName: "artifact_created", surface: "artifacts", workflowName: sourceWorkflow as string });
     return NextResponse.json({ artifact: { ...artifact, version } }, { status: 201 });
   } catch { return errorResponse("The artifact could not be saved.", 502); }
 }

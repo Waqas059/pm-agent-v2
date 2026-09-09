@@ -65,3 +65,12 @@ Environment: `https://pm-agent-v2.vercel.app`
 - Decide whether to enable ongoing retention/deletion automation.
 - If the WhatsApp source is needed in the workspace, save/export it as a valid
   `.docx` or PDF and upload it separately.
+
+## Reproducible authenticated smoke
+
+The repository includes `npm run smoke:authenticated`, a read-only harness that
+signs in through Supabase using runtime-only `UAT_*` environment variables and
+checks the authenticated health, search, artifacts, usage, analytics, and
+workspace-deletion-preview endpoints. It never logs the access token and never
+submits a destructive request. The harness is ready, but its production run
+still requires an authorized UAT account.

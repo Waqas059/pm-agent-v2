@@ -28,4 +28,14 @@ describe("workspace search ranking", () => {
 
     expect(ranked.map((item) => item.id)).toEqual(["first", "second"]);
   });
+
+  it("uses source type and token-prefix signals without hiding detail-only evidence", () => {
+    const ranked = rankSearchResults([
+      { ...candidate("artifact", "Setup brief", "A short note."), type: "Artifact" },
+      { ...candidate("evidence", "Setup observation", "A source-backed note."), type: "Evidence" },
+      { ...candidate("context", "Product context", "The setup experience matters."), type: "Context" },
+    ], "setup");
+
+    expect(ranked.map((item) => item.id)).toEqual(["evidence", "artifact", "context"]);
+  });
 });

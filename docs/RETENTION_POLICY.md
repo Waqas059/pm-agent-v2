@@ -13,6 +13,9 @@ Status: documented beta policy; automatic retention is not enabled.
   safe input/output sizes, and selected tool names.
 - There is no scheduled expiry job, background purge, or automatic full-workspace
   deletion.
+- The retention policy guard is fail-closed: automatic retention cannot run
+  unless it is explicitly enabled, approved, internally consistent, and names
+  the affected record classes and failure policy.
 
 ## Deletion rules
 

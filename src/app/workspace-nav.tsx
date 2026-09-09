@@ -23,6 +23,7 @@ const groups = [
     label: "Think & decide",
     items: [
       { label: "Discover", href: "#discover", short: "D" },
+      { label: "Market research", href: "#research", short: "R" },
       { label: "Priorities", href: "#planning", short: "P" },
       { label: "Decisions & assumptions", href: "#decisions", short: "D" },
     ],

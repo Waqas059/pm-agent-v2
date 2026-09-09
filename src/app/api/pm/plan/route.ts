@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { planPmRequest } from "@/lib/pm-tools/catalog";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, getAuthenticatedUser } from "@/lib/supabase/server";
 
 const MAX_REQUEST_LENGTH = 2_000;
 
@@ -13,7 +13,7 @@ export async function POST(request: Request) {
 
   try {
     const supabase = await createClient();
-    const { data: userData, error: userError } = await supabase.auth.getUser();
+    const { data: userData, error: userError } = await getAuthenticatedUser(supabase);
     if (userError || !userData.user) return NextResponse.json({ error: "Sign in before using the PM entry point." }, { status: 401 });
     const { data: workspace, error } = await supabase.from("workspaces").select("id").order("created_at", { ascending: true }).limit(1).maybeSingle();
     if (error) throw error;

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-import { createClient } from "@/lib/supabase/server";
+import { createClient, getAuthenticatedUser } from "@/lib/supabase/server";
 
 const BUCKET_NAME = "documents";
 const STORAGE_DELETE_BATCH_SIZE = 100;
@@ -24,7 +24,7 @@ async function getOwnerWorkspace(supabase: Awaited<ReturnType<typeof createClien
 }
 
 async function getWorkspaceCounts(supabase: Awaited<ReturnType<typeof createClient>>, workspaceId: string) {
-  const [context, documents, evidence, citations, artifacts, runs, handoffs, decisions, assumptions] = await Promise.all([
+  const [context, documents, evidence, citations, artifacts, runs, handoffs, decisions, assumptions, productEvents] = await Promise.all([
     supabase.from("context_items").select("id", { count: "exact", head: true }).eq("workspace_id", workspaceId),
     supabase.from("documents").select("id, storage_path", { count: "exact" }).eq("workspace_id", workspaceId),
     supabase.from("evidence_items").select("id", { count: "exact", head: true }).eq("workspace_id", workspaceId),
@@ -34,9 +34,10 @@ async function getWorkspaceCounts(supabase: Awaited<ReturnType<typeof createClie
     supabase.from("workflow_handoffs").select("id", { count: "exact", head: true }).eq("workspace_id", workspaceId),
     supabase.from("decision_records").select("id", { count: "exact", head: true }).eq("workspace_id", workspaceId),
     supabase.from("assumptions").select("id", { count: "exact", head: true }).eq("workspace_id", workspaceId),
+    supabase.from("product_events").select("id", { count: "exact", head: true }).eq("workspace_id", workspaceId),
   ]);
 
-  const result = [context, documents, evidence, citations, artifacts, runs, handoffs, decisions, assumptions];
+  const result = [context, documents, evidence, citations, artifacts, runs, handoffs, decisions, assumptions, productEvents];
   const failed = result.find((item) => item.error);
   if (failed?.error) throw failed.error;
 
@@ -51,6 +52,7 @@ async function getWorkspaceCounts(supabase: Awaited<ReturnType<typeof createClie
       workflow_handoffs: handoffs.count ?? 0,
       decision_records: decisions.count ?? 0,
       assumptions: assumptions.count ?? 0,
+      product_events: productEvents.count ?? 0,
     },
     storagePaths: (documents.data ?? []).map((document) => document.storage_path),
   };
@@ -59,18 +61,28 @@ async function getWorkspaceCounts(supabase: Awaited<ReturnType<typeof createClie
 export async function GET() {
   try {
     const supabase = await createClient();
-    const { data: userData, error: userError } = await supabase.auth.getUser();
+    const { data: userData, error: userError } = await getAuthenticatedUser(supabase);
     if (userError || !userData.user) return errorResponse("Sign in before reviewing workspace deletion.", 401);
 
     const workspace = await getOwnerWorkspace(supabase, userData.user.id);
     if (!workspace) return errorResponse("Only a workspace owner can review workspace deletion.", 403);
 
-    const { counts, storagePaths } = await getWorkspaceCounts(supabase, workspace.id);
+    const [{ counts, storagePaths }, { data: operations, error: operationsError }] = await Promise.all([
+      getWorkspaceCounts(supabase, workspace.id),
+      supabase
+        .from("workspace_deletion_operations")
+        .select("id,status,started_at,completed_at,failure_reason")
+        .eq("workspace_id", workspace.id)
+        .order("started_at", { ascending: false })
+        .limit(5),
+    ]);
+    if (operationsError) throw operationsError;
     return NextResponse.json({
       workspace: { id: workspace.id, name: workspace.name },
       counts,
       storageObjectCount: storagePaths.length,
       confirmationText: `DELETE ${workspace.name}`,
+      recentOperations: operations ?? [],
     });
   } catch {
     return errorResponse("The workspace deletion preview could not be loaded.", 502);
@@ -99,7 +111,7 @@ export async function DELETE(request: Request) {
   let operationId: string | null = null;
   try {
     const supabase = await createClient();
-    const { data: userData, error: userError } = await supabase.auth.getUser();
+    const { data: userData, error: userError } = await getAuthenticatedUser(supabase);
     if (userError || !userData.user) return errorResponse("Sign in before deleting a workspace.", 401);
 
     const workspace = await getOwnerWorkspace(supabase, userData.user.id, workspaceId);

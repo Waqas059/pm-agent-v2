@@ -256,7 +256,7 @@ export default function ProductContextPanel() {
           <h2 id="context-heading" className="mt-2 text-2xl font-semibold tracking-[-0.04em] text-[#192235]">Build your product context</h2>
           <p className="mt-2 max-w-xl text-sm leading-6 text-[#68748a]">Capture the facts your team returns to, so future PM work starts with shared understanding.</p>
         </div>
-        <button type="button" onClick={startCreate} className="inline-flex w-fit items-center gap-2 rounded-lg bg-[#5269d8] px-3.5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[#435ac6]">
+        <button type="button" onClick={startCreate} className="inline-flex min-h-11 w-fit items-center gap-2 rounded-lg bg-[#5269d8] px-3.5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[#435ac6]">
           <span className="text-lg leading-none">+</span>
           Add context
         </button>
