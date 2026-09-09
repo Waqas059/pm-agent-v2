@@ -129,6 +129,11 @@ public-launch complete until the remaining P0 UAT and security gates are
 verified. The broader master roadmap remains intentionally deferred where the
 beta decisions above say not to build yet.
 
+Product validation execution is documented in
+`docs/PRODUCT_VALIDATION_PLAN.md`. Existing analytics provide the measurement
+foundation, but no live cohort results are claimed until real Product Managers
+complete the protocol and the proposed gates are measured.
+
 ## Explicit completion gates
 
 These gates are intentionally visible rather than being represented as fake
