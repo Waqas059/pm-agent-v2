@@ -29,6 +29,7 @@ import { PageHeader } from "./workspace-primitives";
 import PublicLandingPage from "./public-landing-page";
 import { createClient } from "@/lib/supabase/client";
 import BetaAllowanceController from "./beta-allowance-controller";
+import BetaProfileGate from "./beta-profile-gate";
 
 type ViewDefinition = readonly [id: string, label: string, group: string, icon: IconName];
 
@@ -214,5 +215,5 @@ export default function Home() {
   }, []);
 
   if (!authReady) return <main className="public-landing-loading" aria-busy="true"><span className="pm-loading-line pm-loading-line-wide" /><span className="pm-loading-line" /><p>Loading Bootstrap PM…</p></main>;
-  return signedIn ? <WorkspaceShell /> : <PublicLandingPage />;
+  return signedIn ? <BetaProfileGate><WorkspaceShell /></BetaProfileGate> : <PublicLandingPage />;
 }

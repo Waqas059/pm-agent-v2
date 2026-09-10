@@ -27,4 +27,13 @@ describe("AuthPanel", () => {
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
     await waitFor(() => expect(trigger).toHaveFocus());
   });
+
+  it("opens new beta registrants in create-account mode with the email prefilled", async () => {
+    render(<AuthPanel initialEmail="new@example.com" initialMode="sign_up" openOnMount />);
+    const dialog = await screen.findByRole("dialog", { name: "Create your account" });
+    expect(dialog).toBeVisible();
+    expect(screen.getByLabelText("Email")).toHaveValue("new@example.com");
+    expect(screen.getByRole("button", { name: "Create account" })).toBeVisible();
+    expect(screen.getByRole("button", { name: "Already have an account? Sign in" })).toBeVisible();
+  });
 });

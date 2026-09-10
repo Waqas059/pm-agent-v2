@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 import { runMarketResearch } from "@/lib/research/market";
 import { recordProductEvent } from "@/lib/analytics";
 import { createClient, getAuthenticatedUser } from "@/lib/supabase/server";
-import { BetaUsageLimitError, finalizeBetaRequest, getBetaUsage, reserveBetaRequest } from "@/lib/beta/server";
+import { BetaUsageLimitError, BetaUsageUnavailableError, finalizeBetaRequest, getBetaUsage, reserveBetaRequest } from "@/lib/beta/server";
 
 export const runtime = "nodejs";
 
@@ -38,6 +38,7 @@ export async function POST(request: Request) {
     if (analyticsContext) void recordProductEvent(analyticsContext.supabase, { workspaceId: analyticsContext.workspaceId, userId: analyticsContext.userId, eventName: "market_research_failed", surface: "market_research", properties: { latencyMs: Date.now() - startedAt } });
     const message = error instanceof Error ? error.message : "Market research could not be completed.";
     if (error instanceof BetaUsageLimitError) return errorResponse(error.message, 429, { betaUsage: analyticsContext ? await getBetaUsage(analyticsContext.supabase) : null });
+    if (error instanceof BetaUsageUnavailableError) return errorResponse(error.message, 503);
     if (message.startsWith("OpenAI is not configured")) return errorResponse("Configure the server-side OpenAI settings before running market research.", 503);
     if (message.includes("no verified external sources") || message.includes("unverified URL")) return errorResponse("The external research result could not be verified against retrieved source citations. Try a narrower question.", 502);
     return errorResponse("Market research could not be completed. Try a narrower question or retry.", 502);

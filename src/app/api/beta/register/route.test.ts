@@ -18,9 +18,13 @@ const adminMock = vi.hoisted(() => {
 
 vi.mock("@/lib/supabase/admin", () => ({ createAdminClient: adminMock.createAdminClient }));
 
-import { POST } from "./route";
+import { POST, resetBetaRegistrationRateLimitForTests } from "./route";
 
 describe("beta registration endpoint", () => {
+  it("resets isolated rate-limit state between focused cases", () => {
+    resetBetaRegistrationRateLimitForTests();
+  });
+
   it("creates a server-controlled participant from only name and email", async () => {
     const response = await POST(new Request("http://localhost/api/beta/register", {
       method: "POST",
@@ -37,7 +41,7 @@ describe("beta registration endpoint", () => {
       email: "ahmed@example.com",
       status: "registered",
       request_allowance: 10,
-    } });
+    }, created: true });
   });
 
   it("rejects incomplete registration without touching Supabase", async () => {
@@ -50,5 +54,16 @@ describe("beta registration endpoint", () => {
 
     expect(response.status).toBe(400);
     expect(adminMock.insert).not.toHaveBeenCalled();
+  });
+
+  it("limits repeated valid attempts from one source without storing the raw source", async () => {
+    resetBetaRegistrationRateLimitForTests();
+    const headers = { "Content-Type": "application/json", "x-forwarded-for": "203.0.113.42" };
+    for (let attempt = 0; attempt < 5; attempt += 1) {
+      const response = await POST(new Request("http://localhost/api/beta/register", { method: "POST", headers, body: JSON.stringify({ name: "Test User", email: `test-${attempt}@example.com` }) }));
+      expect(response.status).toBe(201);
+    }
+    const blocked = await POST(new Request("http://localhost/api/beta/register", { method: "POST", headers, body: JSON.stringify({ name: "Test User", email: "test-blocked@example.com" }) }));
+    expect(blocked.status).toBe(429);
   });
 });

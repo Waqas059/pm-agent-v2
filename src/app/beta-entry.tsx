@@ -11,6 +11,7 @@ export default function BetaEntry({ triggerLabel = "Use Bootstrap PM" }: BetaEnt
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [registeredEmail, setRegisteredEmail] = useState<string | null>(null);
+  const [registrationMode, setRegistrationMode] = useState<"sign_in" | "sign_up">("sign_up");
   const [message, setMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const triggerRef = useRef<HTMLButtonElement>(null);
@@ -58,10 +59,11 @@ export default function BetaEntry({ triggerLabel = "Use Bootstrap PM" }: BetaEnt
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name: name.trim(), email: email.trim() }),
       });
-      const payload = await response.json() as { participant?: { email?: string }; error?: string };
+      const payload = await response.json() as { participant?: { email?: string }; created?: boolean; error?: string };
       if (!response.ok) throw Error(payload.error || "We could not start your Bootstrap PM access.");
       const savedEmail = payload.participant?.email || email.trim().toLowerCase();
       setRegisteredEmail(savedEmail);
+      setRegistrationMode(payload.created === false ? "sign_in" : "sign_up");
       setIsOpen(false);
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "We could not start your Bootstrap PM access.");
@@ -71,7 +73,7 @@ export default function BetaEntry({ triggerLabel = "Use Bootstrap PM" }: BetaEnt
   }
 
   if (registeredEmail) {
-    return <div className="beta-entry-auth"><p className="beta-entry-auth-note" role="status">Registration saved. Continue with your account.</p><AuthPanel triggerLabel="Continue to workspace" initialEmail={registeredEmail} openOnMount /></div>;
+    return <div className="beta-entry-auth"><p className="beta-entry-auth-note" role="status">Registration saved. Continue with your account.</p><AuthPanel triggerLabel="Continue to workspace" initialEmail={registeredEmail} initialMode={registrationMode} openOnMount /></div>;
   }
 
   return <div className="beta-entry">

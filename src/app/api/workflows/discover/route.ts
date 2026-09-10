@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 
 import { recordProductEvent } from "@/lib/analytics";
 import { runDiscoverWorkflow } from "@/lib/workflows/discover";
-import { BetaUsageLimitError, finalizeBetaRequest, getBetaUsage, reserveBetaRequest } from "@/lib/beta/server";
+import { BetaUsageLimitError, BetaUsageUnavailableError, finalizeBetaRequest, getBetaUsage, reserveBetaRequest } from "@/lib/beta/server";
 import { startWorkflowRun, updateWorkflowRun, updateWorkflowStep, WorkflowUsageLimitError } from "@/lib/workflows/runs";
 import { createClient, getAuthenticatedUser } from "@/lib/supabase/server";
 
@@ -127,6 +127,7 @@ export async function POST(request: Request) {
       const usageClient = await createClient().catch(() => null);
       return errorResponse(error.message, 429, { betaUsage: usageClient ? await getBetaUsage(usageClient) : null });
     }
+    if (error instanceof BetaUsageUnavailableError) return errorResponse(error.message, 503);
     if (error instanceof WorkflowUsageLimitError) return errorResponse(error.message, 429);
     const message = error instanceof Error ? error.message : "The discovery workflow could not be completed.";
     if (message.startsWith("Supabase is not configured")) {

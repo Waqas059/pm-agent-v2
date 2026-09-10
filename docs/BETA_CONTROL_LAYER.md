@@ -15,6 +15,11 @@ Supabase workspace behavior, workflow contracts, or saved drafts.
 - Signed-in users see the existing PM workspace. The participant is matched
   automatically by normalized auth email, promoted from `registered` to
   `active` on product entry, and the PM is never asked to repeat their name.
+- A signed-in account without a participant record sees a short profile-completion
+  screen instead of the workspace. It derives the email from the authenticated
+  session, keeps that email read-only, and creates the participant with the
+  default allowance after the user supplies a name. The configured Super Admin
+  is exempt so operations access and the existing workspace remain available.
 - The Super Admin portal is `/admin/beta`. Access is server-authorized by the
   signed-in email in `BETA_SUPER_ADMIN_EMAILS` and its analytics are limited to
   name, email, country, usage, engagement, feedback, continuation requests,
@@ -24,8 +29,9 @@ Supabase workspace behavior, workflow contracts, or saved drafts.
 ## Access and identity
 
 Keep `BETA_ACCESS_MODE=observe` while the final identity/access experience is
-being decided. Observe mode records participants without blocking other
-signed-in users. The public registration route accepts only Name + Email and
+being decided. Observe mode keeps final allowlist authentication deferred while
+the signed-in profile gate connects an account to the beta participant registry.
+The public registration route accepts only Name + Email and
 creates records through a server-only Supabase admin client; the browser cannot
 choose allowance, status, country, or auth identity. The route is duplicate
 safe by normalized email. The legacy `register_beta_participant` function
@@ -35,8 +41,16 @@ lock migration.
 
 Country greeting detection is deterministic: trusted Vercel country header,
 then browser locale, then neutral copy. It does not use raw IP, GPS, an LLM, or
-email guessing. The name precedence is preferred name, full-name first token,
-profile first name, then no name; the UI must never render `undefined`.
+email guessing. The shared `resolveDisplayFirstName` helper applies the name
+precedence: preferred name, first token of full name, first token of profile
+name, then no name. The UI must never render `undefined` or infer a name from
+an email address.
+
+New public registrations open the existing Supabase auth panel in Create account
+mode with the normalized email prefilled. Duplicate registrations use Sign in
+mode. The registration endpoint enforces strict input and body-size validation,
+is idempotent by normalized email, and applies a short-lived per-source limit
+using an HMAC key held only in the server runtime; no raw IP is persisted.
 
 ## Allowance and meaningful product activity
 
@@ -44,7 +58,10 @@ The registered participant allowance is authoritative. A participant with 10
 requests and an approved +5 grant has 15 total requests; the legacy workspace
 run cap is used only for non-participant users. Reservations are serialized by
 the participant row lock. A provider or system failure releases the reservation
-so failed work does not consume allowance.
+so failed work does not consume allowance. If the reservation RPC errors or
+returns no verifiable row, provider execution is blocked with a temporary
+service error; a beta request is never treated as unregistered merely because
+usage could not be verified.
 
 Counted operations are Discover, Define, Align, PM assistant generation, AI
 artifact generation, and market research with AI. Navigation, reads, evidence

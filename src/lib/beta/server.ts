@@ -10,6 +10,13 @@ export class BetaUsageLimitError extends Error {
   }
 }
 
+export class BetaUsageUnavailableError extends Error {
+  constructor() {
+    super("We couldn't verify your beta usage right now. Please try again in a moment.");
+    this.name = "BetaUsageUnavailableError";
+  }
+}
+
 type RpcClient = SupabaseClient;
 
 export type BetaUsageReservation = {
@@ -25,12 +32,12 @@ async function betaRpc<T>(supabase: RpcClient, functionName: string, args: Recor
   return response;
 }
 
-export async function reserveBetaRequest(supabase: RpcClient, operation: string): Promise<BetaUsageReservation | null> {
+export async function reserveBetaRequest(supabase: RpcClient, operation: string): Promise<BetaUsageReservation> {
   const response = await betaRpc<Array<{ allowed: boolean; reservation_id: string | null; registered: boolean; used_count: number; allowance: number | null; remaining: number | null }>>(supabase, "reserve_beta_request", {
     requested_operation: operation,
     requested_key: randomUUID(),
   });
-  if (response.error || !response.data?.[0]) return null;
+  if (response.error || !response.data?.[0]) throw new BetaUsageUnavailableError();
   const row = response.data[0];
   if (!row.allowed) throw new BetaUsageLimitError();
   return { id: row.reservation_id, registered: row.registered, used: row.used_count, allowance: row.allowance, remaining: row.remaining };

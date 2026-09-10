@@ -15,7 +15,7 @@ describe("BetaEntry", () => {
   it("collects name and email before opening authentication with the email prefilled", async () => {
     vi.stubGlobal("fetch", vi.fn().mockResolvedValue({
       ok: true,
-      json: async () => ({ participant: { email: "ahmed@example.com" } }),
+      json: async () => ({ participant: { email: "ahmed@example.com" }, created: true }),
     }));
 
     render(<BetaEntry />);
@@ -25,7 +25,7 @@ describe("BetaEntry", () => {
     fireEvent.click(screen.getByRole("button", { name: "Continue" }));
 
     await waitFor(() => expect(screen.getByRole("button", { name: "Continue to workspace" })).toBeVisible());
-    expect(screen.getByRole("dialog", { name: "Sign in to continue" })).toBeVisible();
+    expect(screen.getByRole("dialog", { name: "Create your account" })).toBeVisible();
     expect(screen.getByLabelText("Email")).toHaveValue("ahmed@example.com");
     expect(screen.queryByLabelText("Name")).not.toBeInTheDocument();
   });

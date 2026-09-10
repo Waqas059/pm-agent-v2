@@ -7,11 +7,11 @@ import { authenticatedFetch } from "@/lib/supabase/auth-fetch";
 
 type AuthMode = "sign_in" | "sign_up";
 type AuthStatus = "loading" | "signed_out" | "signed_in" | "not_configured";
-type AuthPanelProps = { triggerLabel?: string; initialEmail?: string; openOnMount?: boolean };
+type AuthPanelProps = { triggerLabel?: string; initialEmail?: string; initialMode?: AuthMode; openOnMount?: boolean };
 
-export default function AuthPanel({ triggerLabel = "Sign in", initialEmail = "", openOnMount = false }: AuthPanelProps) {
+export default function AuthPanel({ triggerLabel = "Sign in", initialEmail = "", initialMode = "sign_in", openOnMount = false }: AuthPanelProps) {
   const [status, setStatus] = useState<AuthStatus>("loading");
-  const [mode, setMode] = useState<AuthMode>("sign_in");
+  const [mode, setMode] = useState<AuthMode>(initialMode);
   const [email, setEmail] = useState(initialEmail);
   const [password, setPassword] = useState("");
   const [userEmail, setUserEmail] = useState<string | null>(null);

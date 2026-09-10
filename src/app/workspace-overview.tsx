@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 import PmEntryPanel from "./pm-entry-panel";
 import UiIcon, { type IconName } from "./ui-icons";
 import { CompactEmptyState, NextBestAction, StatusBadge } from "./workspace-primitives";
+import { resolveDisplayFirstName } from "@/lib/beta/name";
 
 type EvidencePreview = { id: string; kind: string; title: string; content: string; source_label: string; created_at: string };
 type WorkflowRun = { id: string; workflow_name: string; status: string; input: unknown; created_at: string; updated_at: string };
@@ -54,16 +55,12 @@ function dateLabel(value: string) {
   return new Intl.DateTimeFormat("en", { month: "short", day: "numeric" }).format(date);
 }
 
-function personLabel(email: string | undefined, metadata: unknown) {
+function personLabel(metadata: unknown) {
   if (metadata && typeof metadata === "object" && !Array.isArray(metadata)) {
-    const fullName = (metadata as Record<string, unknown>).full_name;
-    if (typeof fullName === "string" && fullName.trim()) return fullName.trim();
+    const values = metadata as Record<string, unknown>;
+    return resolveDisplayFirstName(null, typeof values.full_name === "string" ? values.full_name : null, typeof values.first_name === "string" ? values.first_name : null);
   }
-  if (metadata && typeof metadata === "object" && !Array.isArray(metadata)) {
-    const firstName = (metadata as Record<string, unknown>).first_name;
-    if (typeof firstName === "string" && firstName.trim()) return firstName.trim();
-  }
-  return "there";
+  return null;
 }
 
 export default function WorkspaceOverview() {
@@ -121,7 +118,7 @@ export default function WorkspaceOverview() {
         if (active) {
           setData({
             name: workspace.name,
-            greetingName: betaPayload?.displayName || personLabel(auth.user.email, auth.user.user_metadata),
+            greetingName: betaPayload?.displayName || personLabel(auth.user.user_metadata) || "",
             greeting: betaPayload?.greeting || "Welcome",
             context: context.count ?? 0,
             documents: documents.count ?? 0,
