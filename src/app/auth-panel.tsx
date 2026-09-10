@@ -57,7 +57,7 @@ export default function AuthPanel({ triggerLabel = "Sign in", initialEmail = "",
       window.clearTimeout(focusTimer);
       document.removeEventListener("keydown", handleDialogKeyDown);
     };
-  }, [isOpen]);
+  }, [isOpen, status]);
 
   useEffect(() => {
     let isMounted = true;
