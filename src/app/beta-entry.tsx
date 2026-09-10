@@ -82,6 +82,8 @@ export default function BetaEntry({ triggerLabel = "Use Bootstrap PM" }: BetaEnt
       setEmail("");
       setIsOpen(false);
       window.dispatchEvent(new Event("pm-auth-session-ready"));
+      window.history.replaceState(null, "", "#overview");
+      window.location.reload();
     } catch (error) {
       if (createdAnonymousSession) await createClient().auth.signOut({ scope: "local" }).catch(() => undefined);
       setMessage(error instanceof Error && error.message === "This workspace is already connected to a secure account."
