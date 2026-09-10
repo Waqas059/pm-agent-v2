@@ -361,6 +361,7 @@ button:disabled { cursor: not-allowed; }
 .beta-admin-table-wrap td small { margin-top: 3px; color: var(--ink-subtle); font-size: 10px; }
 .beta-admin-status { color: var(--ink-muted); font-size: 10px; font-weight: 700; text-transform: uppercase; }
 .beta-admin-status.is-active { color: var(--brand-dark); }
+.beta-admin-status.is-limit { color: var(--danger); }
 .beta-admin-status.is-paused, .beta-admin-status.is-declined { color: var(--danger); }
 .beta-admin-feedback-list { display: grid; gap: 10px; }
 .beta-admin-feedback-list article { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 7px 16px; padding: 16px; border: 1px solid var(--line); background: var(--surface); }
@@ -368,6 +369,7 @@ button:disabled { cursor: not-allowed; }
 .beta-admin-feedback-list article strong { color: var(--ink); font-size: 13px; }
 .beta-admin-feedback-list article small { margin-top: 4px; color: var(--ink-subtle); font-size: 10px; }
 .beta-admin-feedback-list article p { grid-column: 1 / -1; margin: 0; color: var(--ink-muted); font-size: 13px; line-height: 1.55; }
+.beta-admin-feedback-list article .beta-admin-feedback-meta { color: var(--ink-subtle); font-size: 11px; }
 .beta-admin-empty { color: var(--ink-subtle) !important; font-size: 12px !important; line-height: 1.55; }
 .beta-admin-attention { display: flex; align-items: center; justify-content: space-between; width: 100%; gap: 16px; padding: 10px 0; border: 0; border-top: 1px solid var(--line); background: transparent; color: var(--ink); text-align: left; }
 .beta-admin-attention:first-of-type { border-top: 0; }

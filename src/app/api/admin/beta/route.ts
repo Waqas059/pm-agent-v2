@@ -24,7 +24,10 @@ function participantMetrics(participantId: string, userId: string | null, events
     active: Boolean(lastActive && Date.parse(lastActive) >= Date.now() - 7 * 24 * 60 * 60 * 1000),
     workflowProgress: workflows,
     usefulOutput: relevant.some((event) => event.event_name === "workflow_completed" || event.event_name === "artifact_created" || event.event_name === "decision_created"),
+    artifactsCreated: relevant.filter((event) => event.event_name === "artifact_created").length,
+    evidenceCitationEngagement: relevant.filter((event) => event.event_name === "evidence_citation_inspected").length,
     contactClicked: relevant.some((event) => event.event_name === "beta_contact_clicked"),
+    latestContactClick: relevant.filter((event) => event.event_name === "beta_contact_clicked").map((event) => event.created_at).sort().at(-1) ?? null,
     participantId,
   };
 }
