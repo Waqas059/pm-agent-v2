@@ -2,7 +2,8 @@
 
 import { FormEvent, useEffect, useRef, useState } from "react";
 
-import AuthPanel from "./auth-panel";
+import { authenticatedFetch } from "@/lib/supabase/auth-fetch";
+import { createClient } from "@/lib/supabase/client";
 
 type BetaEntryProps = { triggerLabel?: string };
 
@@ -10,8 +11,6 @@ export default function BetaEntry({ triggerLabel = "Use Bootstrap PM" }: BetaEnt
   const [isOpen, setIsOpen] = useState(false);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
-  const [registeredEmail, setRegisteredEmail] = useState<string | null>(null);
-  const [registrationMode, setRegistrationMode] = useState<"sign_in" | "sign_up">("sign_up");
   const [message, setMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const triggerRef = useRef<HTMLButtonElement>(null);
@@ -53,27 +52,44 @@ export default function BetaEntry({ triggerLabel = "Use Bootstrap PM" }: BetaEnt
     event.preventDefault();
     setIsSubmitting(true);
     setMessage("");
+    let createdAnonymousSession = false;
     try {
-      const response = await fetch("/api/beta/register", {
+      const registrationResponse = await fetch("/api/beta/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name: name.trim(), email: email.trim() }),
       });
-      const payload = await response.json() as { participant?: { email?: string }; created?: boolean; error?: string };
+      const registrationPayload = await registrationResponse.json() as { error?: string };
+      if (!registrationResponse.ok) throw Error(registrationPayload.error || "We could not start your Bootstrap PM access.");
+
+      const supabase = createClient();
+      const { data: currentSession } = await supabase.auth.getSession();
+      if (currentSession.session && !currentSession.session.user.is_anonymous) {
+        throw Error("This workspace is already connected to a secure account.");
+      }
+      if (!currentSession.session) {
+        const { data: anonymousSession, error: anonymousError } = await supabase.auth.signInAnonymously();
+        if (anonymousError || !anonymousSession.session) throw anonymousError || Error("We could not open your workspace.");
+        createdAnonymousSession = true;
+      }
+
+      const response = await authenticatedFetch("/api/beta/enter", {
+        method: "POST",
+      });
+      const payload = await response.json() as { email?: string; created?: boolean; error?: string };
       if (!response.ok) throw Error(payload.error || "We could not start your Bootstrap PM access.");
-      const savedEmail = payload.participant?.email || email.trim().toLowerCase();
-      setRegisteredEmail(savedEmail);
-      setRegistrationMode(payload.created === false ? "sign_in" : "sign_up");
+      setName("");
+      setEmail("");
       setIsOpen(false);
+      window.dispatchEvent(new Event("pm-auth-session-ready"));
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : "We could not start your Bootstrap PM access.");
+      if (createdAnonymousSession) await createClient().auth.signOut({ scope: "local" }).catch(() => undefined);
+      setMessage(error instanceof Error && error.message === "This workspace is already connected to a secure account."
+        ? error.message
+        : "We could not open your workspace. Please try again.");
     } finally {
       setIsSubmitting(false);
     }
-  }
-
-  if (registeredEmail) {
-    return <div className="beta-entry-auth"><p className="beta-entry-auth-note" role="status">Registration saved. Continue with your account.</p><AuthPanel triggerLabel="Continue to workspace" initialEmail={registeredEmail} initialMode={registrationMode} openOnMount /></div>;
   }
 
   return <div className="beta-entry">
@@ -83,14 +99,15 @@ export default function BetaEntry({ triggerLabel = "Use Bootstrap PM" }: BetaEnt
         <button type="button" className="beta-entry-close" aria-label="Close registration" onClick={() => setIsOpen(false)}>×</button>
         <p className="public-landing-kicker">BOOTSTRAP PM BETA</p>
         <h2 id="beta-registration-title">Start using Bootstrap PM</h2>
-        <p>Tell us who you are and we’ll take you to the secure account step.</p>
+        <p>Tell us who you are and we’ll open your private workspace.</p>
         <form onSubmit={handleSubmit} className="beta-entry-form">
           <label htmlFor="beta-entry-name">Name<input ref={nameInputRef} id="beta-entry-name" name="name" type="text" autoComplete="name" value={name} onChange={(event) => setName(event.target.value)} required maxLength={160} /></label>
           <label htmlFor="beta-entry-email">Email<input id="beta-entry-email" name="email" type="email" autoComplete="email" value={email} onChange={(event) => setEmail(event.target.value)} required maxLength={320} /></label>
-          <button type="submit" className="beta-entry-submit" disabled={isSubmitting}>{isSubmitting ? "Saving…" : "Continue"}</button>
+          <button type="submit" className="beta-entry-submit" disabled={isSubmitting}>{isSubmitting ? "Preparing…" : "Continue"}</button>
         </form>
+        {isSubmitting ? <p className="beta-entry-progress" role="status" aria-live="polite">Preparing your Bootstrap PM workspace…</p> : null}
         {message ? <p className="beta-entry-error" role="alert">{message}</p> : null}
-        <p className="beta-entry-footnote">Your email is used to connect this registration to your Bootstrap PM workspace.</p>
+        <p className="beta-entry-footnote">Your email connects this workspace to your beta participant profile.</p>
       </div>
     </div> : null}
   </div>;

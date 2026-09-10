@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 
 import { authenticatedFetch } from "@/lib/supabase/auth-fetch";
+import { createClient } from "@/lib/supabase/client";
 
 type WorkflowProgress = { started: number; completed: number };
 type Participant = {
@@ -40,6 +41,7 @@ type AdminPayload = {
   needsAttention: Array<{ type: string; participantId: string; label: string; detail: string }>;
   overview: { participants: number; active: number; aiRequestsUsed: number; feedback: number; continuation: number; countryBreakdown: Record<string, number> };
 };
+type AdminAuthState = "loading" | "signed_out" | "checking" | "authorized" | "denied";
 
 function formatDate(value: string | null) {
   if (!value) return "Never";
@@ -56,6 +58,11 @@ function progressLabel(participant: Participant) {
 }
 
 export default function BetaAdminPage() {
+  const [authState, setAuthState] = useState<AdminAuthState>("loading");
+  const [authEmail, setAuthEmail] = useState("");
+  const [authPassword, setAuthPassword] = useState("");
+  const [authMessage, setAuthMessage] = useState("");
+  const [authSubmitting, setAuthSubmitting] = useState(false);
   const [data, setData] = useState<AdminPayload | null>(null);
   const [message, setMessage] = useState("Loading beta operations…");
   const [tab, setTab] = useState<"overview" | "participants" | "feedback">("overview");
@@ -71,10 +78,74 @@ export default function BetaAdminPage() {
     setMessage("");
   }
 
+  async function verifyAdmin(email?: string | null) {
+    setAuthState("checking");
+    if (email) setAuthEmail(email);
+    try {
+      const response = await authenticatedFetch("/api/admin/beta/access", { cache: "no-store" });
+      const payload = await response.json() as { isAdmin?: boolean };
+      if (!payload.isAdmin) {
+        setData(null);
+        setAuthState("denied");
+        return;
+      }
+      setAuthState("authorized");
+      await load();
+    } catch (error) {
+      setData(null);
+      setAuthState("denied");
+      setAuthMessage(error instanceof Error ? error.message : "Admin access could not be verified.");
+    }
+  }
+
   useEffect(() => {
-    const timer = window.setTimeout(() => { void load().catch((error: unknown) => setMessage(error instanceof Error ? error.message : "Could not load beta operations.")); }, 0);
-    return () => window.clearTimeout(timer);
+    let active = true;
+    let subscription: { unsubscribe: () => void } | undefined;
+    try {
+      const supabase = createClient();
+      void supabase.auth.getSession().then(({ data: sessionData }) => {
+        if (!active) return;
+        if (sessionData.session?.user) void verifyAdmin(sessionData.session.user.email);
+        else setAuthState("signed_out");
+      }).catch(() => { if (active) setAuthState("signed_out"); });
+      const authStateChange = supabase.auth.onAuthStateChange((_event, session) => {
+        if (!active) return;
+        setAuthMessage("");
+        if (session?.user) void verifyAdmin(session.user.email);
+        else { setData(null); setAuthState("signed_out"); }
+      });
+      subscription = authStateChange.data.subscription;
+    } catch {
+      window.setTimeout(() => { if (active) setAuthState("signed_out"); }, 0);
+    }
+    return () => { active = false; subscription?.unsubscribe(); };
+    // This subscription is intentionally established once for the page lifetime.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  async function handleSignIn(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setAuthSubmitting(true);
+    setAuthMessage("");
+    try {
+      const supabase = createClient();
+      const { data: result, error } = await supabase.auth.signInWithPassword({ email: authEmail.trim(), password: authPassword });
+      if (error) throw error;
+      setAuthPassword("");
+      await verifyAdmin(result.user?.email);
+    } catch (error) {
+      setAuthMessage(error instanceof Error ? error.message : "Unable to sign in.");
+      setAuthState("signed_out");
+    } finally {
+      setAuthSubmitting(false);
+    }
+  }
+
+  async function handleSignOut() {
+    await createClient().auth.signOut();
+    setData(null);
+    setAuthState("signed_out");
+  }
 
   async function act(body: Record<string, unknown>) {
     const response = await authenticatedFetch("/api/admin/beta", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
@@ -87,7 +158,9 @@ export default function BetaAdminPage() {
     setMessage(error instanceof Error ? error.message : fallback);
   }
 
-  if (!data) {
+  if (authState === "signed_out") return <AdminSignInScreen email={authEmail} password={authPassword} message={authMessage} submitting={authSubmitting} setEmail={setAuthEmail} setPassword={setAuthPassword} onSubmit={handleSignIn} />;
+  if (authState === "denied") return <main className="beta-admin-auth-page"><div className="beta-admin-auth-panel"><p className="pm-eyebrow">BOOTSTRAP PM ADMIN</p><h1>Access denied</h1><p>Your signed-in account is not authorized for beta operations.</p><button type="button" className="beta-admin-auth-secondary" onClick={() => void handleSignOut()}>Sign out</button></div></main>;
+  if (authState !== "authorized" || !data) {
     return <main className="beta-admin-page"><div className="beta-admin-header"><div><p className="pm-eyebrow">BETA OPERATIONS · SERVER-AUTHORIZED</p><h1>Product Manager beta</h1><p>{message}</p></div></div></main>;
   }
 
@@ -96,7 +169,7 @@ export default function BetaAdminPage() {
   return <main className="beta-admin-page">
     <header className="beta-admin-header">
       <div><p className="pm-eyebrow">BETA OPERATIONS · SERVER-AUTHORIZED</p><h1>Product Manager beta</h1><p>Manage participant access and product signals without exposing prompts, evidence, artifacts, or workspace content.</p></div>
-      <span className="beta-admin-mode">Access mode: {data.accessMode}</span>
+      <div className="beta-admin-header-actions"><span className="beta-admin-mode">Access mode: {data.accessMode}</span><button type="button" className="beta-admin-auth-secondary" onClick={() => void handleSignOut()}>Sign out</button></div>
     </header>
     {message && <p className="beta-admin-message" role="status">{message}</p>}
     <nav className="beta-admin-tabs" aria-label="Beta admin sections">
@@ -129,6 +202,10 @@ export default function BetaAdminPage() {
 
     {selectedParticipant && <div className="beta-admin-drawer-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) setSelectedParticipant(null); }}><aside className="beta-admin-drawer" role="dialog" aria-modal="true" aria-labelledby="beta-participant-title"><div className="beta-admin-drawer-header"><div><p className="pm-eyebrow">PARTICIPANT DETAIL</p><h2 id="beta-participant-title">{displayName(selectedParticipant)}</h2><p>{selectedParticipant.email}</p></div><button type="button" className="beta-admin-close" aria-label="Close participant detail" onClick={() => setSelectedParticipant(null)}>×</button></div><dl className="beta-admin-detail-list"><div><dt>Full name</dt><dd>{selectedParticipant.full_name}</dd></div><div><dt>Preferred name</dt><dd>{selectedParticipant.preferred_name || "Not set"}</dd></div><div><dt>Administrative status</dt><dd>{selectedParticipant.status}</dd></div><div><dt>Country</dt><dd>{selectedParticipant.country_name || "Not detected"}{selectedParticipant.country_code ? ` · ${selectedParticipant.country_code}` : ""}</dd></div><div><dt>First seen</dt><dd>{formatDate(selectedParticipant.created_at)}</dd></div><div><dt>Last active</dt><dd>{formatDate(selectedParticipant.lastActive)}</dd></div><div><dt>Requests used</dt><dd>{selectedParticipant.used}</dd></div><div><dt>Allowance</dt><dd>{selectedParticipant.request_allowance}</dd></div><div><dt>Remaining</dt><dd>{selectedParticipant.remaining}</dd></div><div><dt>Limit reached</dt><dd>{formatDate(selectedParticipant.limitReachedAt)}</dd></div><div><dt>Useful output reached</dt><dd>{selectedParticipant.usefulOutput ? "Yes" : "No"}</dd></div><div><dt>Continuation requested</dt><dd>{selectedParticipant.continuationRequested ? "Yes" : "No"}</dd></div><div><dt>Contact Waqas clicked</dt><dd>{selectedParticipant.contactClicked ? `Yes · ${formatDate(selectedParticipant.latestContactClick)}` : "No"}</dd></div><div><dt>Feedback submitted</dt><dd>{selectedParticipant.feedbackSubmitted ? "Yes" : "No"}</dd></div></dl><div className="beta-admin-detail-section"><h3>Workflow progress</h3>{Object.entries(selectedParticipant.workflowProgress).map(([workflow, progress]) => <p key={workflow}><span>{workflow.replaceAll("_", " ")}</span><strong>{progress.completed} completed · {progress.started} started</strong></p>)}</div><div className="beta-admin-detail-section"><h3>Engagement</h3><p><span>Artifacts created</span><strong>{selectedParticipant.artifactsCreated}</strong></p><p><span>Evidence / citation engagement</span><strong>{selectedParticipant.evidenceCitationEngagement}</strong></p></div><div className="beta-admin-detail-section"><h3>Allowance</h3><div className="beta-admin-inline-form"><input aria-label="Participant allowance" type="number" min="0" value={allowanceDraft} onChange={(event) => setAllowanceDraft(event.target.value)} /><button type="button" onClick={() => void act({ action: "update_participant", id: selectedParticipant.id, allowance: Number(allowanceDraft) }).then(() => setMessage("Allowance updated.")).catch((error: unknown) => showError(error, "Could not update allowance."))}>Save allowance</button></div><p className="beta-admin-help">Use +5 for a small extension, or set a total allowance explicitly.</p></div></aside></div>}
   </main>;
+}
+
+function AdminSignInScreen({ email, password, message, submitting, setEmail, setPassword, onSubmit }: { email: string; password: string; message: string; submitting: boolean; setEmail: (value: string) => void; setPassword: (value: string) => void; onSubmit: (event: FormEvent<HTMLFormElement>) => void }) {
+  return <main className="beta-admin-auth-page"><div className="beta-admin-auth-panel"><p className="pm-eyebrow">BOOTSTRAP PM ADMIN</p><h1>Bootstrap PM Admin</h1><p>Sign in to continue</p><form className="beta-admin-auth-form" onSubmit={onSubmit}><label htmlFor="beta-admin-email">Email<input id="beta-admin-email" name="email" type="email" autoComplete="username" required value={email} onChange={(event) => setEmail(event.target.value)} /></label><label htmlFor="beta-admin-password">Password<input id="beta-admin-password" name="password" type="password" autoComplete="current-password" required value={password} onChange={(event) => setPassword(event.target.value)} /></label><button type="submit" disabled={submitting}>{submitting ? "Signing in…" : "Sign in"}</button></form>{message ? <p className="beta-admin-auth-error" role="alert">{message}</p> : null}</div></main>;
 }
 
 function ContinuationReview({ item, participant, draft, setDraft, onAct, onError }: { item: ContinuationRequest; participant?: Participant; draft: string; setDraft: (value: string) => void; onAct: (body: Record<string, unknown>) => Promise<void>; onError: (error: unknown, fallback: string) => void }) {

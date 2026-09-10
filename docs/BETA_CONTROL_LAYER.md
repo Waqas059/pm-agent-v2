@@ -8,18 +8,19 @@ Supabase workspace behavior, workflow contracts, or saved drafts.
 ## Experience boundaries
 
 - Public visitors see the product page at `/` while signed out. “Use Bootstrap
-  PM” first opens a small Name + Email registration modal. The server creates
-  the participant with the default allowance, then the existing authentication
-  flow opens with the registration email prefilled. The public page never
-  exposes Supabase, access mode, or request-reservation mechanics.
-- Signed-in users see the existing PM workspace. The participant is matched
-  automatically by normalized auth email, promoted from `registered` to
-  `active` on product entry, and the PM is never asked to repeat their name.
+  PM” opens one Name + Email modal. Continue validates/registers the participant,
+  sets a short-lived HttpOnly server claim, silently establishes a Supabase
+  anonymous session, consumes the claim to bind the participant to that session,
+  creates or loads the first private workspace, and opens the PM workspace. The
+  PM is never shown an account, password, or infrastructure step.
+- Returning users with the same guest session open their existing workspace
+  directly. A different device or lost guest session does not start a recovery
+  flow yet; recovery is a future beta decision.
 - A signed-in account without a participant record sees a short profile-completion
-  screen instead of the workspace. It derives the email from the authenticated
-  session, keeps that email read-only, and creates the participant with the
-  default allowance after the user supplies a name. The configured Super Admin
-  is exempt so operations access and the existing workspace remain available.
+  screen instead of the workspace only for the existing non-guest account
+  path. Guest sessions without a completed handoff are returned to the public
+  entry flow. The configured Super Admin is exempt so operations access and
+  the existing workspace remain available.
 - The Super Admin portal is `/admin/beta`. Access is server-authorized by the
   signed-in email in `BETA_SUPER_ADMIN_EMAILS` and its analytics are limited to
   name, email, country, usage, engagement, feedback, continuation requests,
@@ -29,28 +30,31 @@ Supabase workspace behavior, workflow contracts, or saved drafts.
 ## Access and identity
 
 Keep `BETA_ACCESS_MODE=observe` while the final identity/access experience is
-being decided. Observe mode keeps final allowlist authentication deferred while
-the signed-in profile gate connects an account to the beta participant registry.
-The public registration route accepts only Name + Email and
-creates records through a server-only Supabase admin client; the browser cannot
-choose allowance, status, country, or auth identity. The route is duplicate
-safe by normalized email. The legacy `register_beta_participant` function
-remains in the historical migration for compatibility, but its execute
-privilege is revoked for public and normal authenticated roles by the additive
-lock migration.
+being decided. Observe mode keeps final allowlist authentication deferred. The
+beta registration accepts only Name + Email and returns only `email` and
+`created`; the server stores a short-lived, signed, HttpOnly claim cookie. The
+handoff requires the current Supabase anonymous session, consumes that claim,
+and uses a server-only admin client to bind the participant and create or load
+the owner workspace. The browser cannot choose allowance, status, country, or
+auth identity. The handoff is duplicate-safe by normalized email and refuses
+to rebind a participant already attached to another guest.
+The legacy `register_beta_participant` function remains in the historical
+migration for compatibility, but its execute privilege is revoked for public
+and normal authenticated roles by the additive lock migration.
 
-Country greeting detection is deterministic: trusted Vercel country header,
-then browser locale, then neutral copy. It does not use raw IP, GPS, an LLM, or
-email guessing. The shared `resolveDisplayFirstName` helper applies the name
-precedence: preferred name, first token of full name, first token of profile
-name, then no name. The UI must never render `undefined` or infer a name from
-an email address.
+Greeting language is deterministic: browser language first, country metadata as
+fallback, then English. It supports Arabic, French, Spanish, German, Turkish,
+Urdu, and English copy without requesting GPS or using an LLM. Country code and
+country name remain separate metadata for Admin analytics. The shared
+`resolveDisplayFirstName` helper applies the name precedence: preferred name,
+first token of full name, first token of profile name, then no name. The UI must
+never render `undefined` or infer a name from an email address.
 
-New public registrations open the existing Supabase auth panel in Create account
-mode with the normalized email prefilled. Duplicate registrations use Sign in
-mode. The registration endpoint enforces strict input and body-size validation,
-is idempotent by normalized email, and applies a short-lived per-source limit
-using an HMAC key held only in the server runtime; no raw IP is persisted.
+The beta registration response returns only `email` and `created`; participant
+metadata is available only after the anonymous session is authenticated. The
+registration enforces strict input and body-size validation, while the signed
+claim is short-lived and single-purpose because it is consumed when the
+participant receives its first `auth_user_id`.
 
 ## Allowance and meaningful product activity
 

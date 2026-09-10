@@ -28,6 +28,7 @@ import UiIcon, { type IconName } from "./ui-icons";
 import { PageHeader } from "./workspace-primitives";
 import PublicLandingPage from "./public-landing-page";
 import { createClient } from "@/lib/supabase/client";
+import { authenticatedFetch } from "@/lib/supabase/auth-fetch";
 import BetaAllowanceController from "./beta-allowance-controller";
 import BetaProfileGate from "./beta-profile-gate";
 
@@ -203,11 +204,30 @@ export default function Home() {
 
   useEffect(() => {
     let active = true;
+    async function applySession(session: { user: { is_anonymous?: boolean } } | null) {
+      if (!session) {
+        if (active) setSignedIn(false);
+        return;
+      }
+      if (!session.user.is_anonymous) {
+        if (active) setSignedIn(true);
+        return;
+      }
+      try {
+        const response = await authenticatedFetch("/api/beta/me", { cache: "no-store" });
+        const payload = await response.json() as { participant?: unknown; isAdmin?: boolean };
+        if (active) setSignedIn(response.ok && Boolean(payload.participant || payload.isAdmin));
+      } catch {
+        if (active) setSignedIn(false);
+      }
+    }
     try {
       const supabase = createClient();
-      void supabase.auth.getSession().then(({ data }) => { if (active) { setSignedIn(Boolean(data.session)); setAuthReady(true); } });
-      const { data: subscription } = supabase.auth.onAuthStateChange((_event, session) => { if (active) { setSignedIn(Boolean(session)); setAuthReady(true); } });
-      return () => { active = false; subscription.subscription.unsubscribe(); };
+      void supabase.auth.getSession().then(({ data }) => { if (active) { setAuthReady(true); void applySession(data.session); } });
+      const { data: subscription } = supabase.auth.onAuthStateChange((_event, session) => { if (active) { setAuthReady(true); window.setTimeout(() => { void applySession(session); }, 0); } });
+      const sessionReady = () => { if (active) { setSignedIn(true); setAuthReady(true); } };
+      window.addEventListener("pm-auth-session-ready", sessionReady);
+      return () => { active = false; subscription.subscription.unsubscribe(); window.removeEventListener("pm-auth-session-ready", sessionReady); };
     } catch {
       window.setTimeout(() => setAuthReady(true), 0);
       return () => { active = false; };

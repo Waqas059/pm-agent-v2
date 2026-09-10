@@ -1,26 +1,16 @@
 import { NextResponse } from "next/server";
 import { createHmac, randomBytes } from "node:crypto";
 
+import { betaClaimCookieName, betaClaimCookieOptions, createBetaClaimToken } from "@/lib/beta/claim";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 const emailPattern = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
-const participantSelect = "id,full_name,preferred_name,email,status,request_allowance";
+const participantSelect = "id,email,auth_user_id,status";
 const maxBodyBytes = 8_192;
 const rateLimitWindowMs = 10 * 60 * 1_000;
 const rateLimitMax = 5;
 const rateLimitSecret = process.env.BETA_RATE_LIMIT_SECRET?.trim() || randomBytes(32).toString("hex");
 const attempts = new Map<string, { count: number; resetAt: number }>();
-
-function safeParticipant(participant: Record<string, unknown>) {
-  return {
-    id: participant.id,
-    full_name: participant.full_name,
-    preferred_name: participant.preferred_name,
-    email: participant.email,
-    status: participant.status,
-    request_allowance: participant.request_allowance,
-  };
-}
 
 function sourceKey(request: Request) {
   const forwarded = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim();
@@ -78,11 +68,23 @@ export async function POST(request: Request) {
       status: "registered",
     }).select(participantSelect).single();
 
-    if (!error && data) return NextResponse.json({ participant: safeParticipant(data as unknown as Record<string, unknown>), created: true }, { status: 201 });
+    if (!error && data) {
+      const participant = data as { id: string; email: string };
+      const response = NextResponse.json({ email: participant.email, created: true }, { status: 201 });
+      response.cookies.set(betaClaimCookieName, createBetaClaimToken(participant.id, participant.email), betaClaimCookieOptions);
+      return response;
+    }
 
     if (error?.code === "23505") {
       const existing = await admin.from("beta_participants").select(participantSelect).eq("email", email).maybeSingle();
-      if (existing.data) return NextResponse.json({ participant: safeParticipant(existing.data as unknown as Record<string, unknown>), created: false }, { status: 200 });
+      if (existing.data) {
+        const participant = existing.data as { id: string; email: string; auth_user_id: string | null; status: string };
+        if (participant.auth_user_id) return NextResponse.json({ error: "This beta profile is already connected to another workspace." }, { status: 409 });
+        if (["paused", "declined"].includes(participant.status)) return NextResponse.json({ error: "This beta profile is not currently available." }, { status: 403 });
+        const response = NextResponse.json({ email: participant.email, created: false }, { status: 200 });
+        response.cookies.set(betaClaimCookieName, createBetaClaimToken(participant.id, participant.email), betaClaimCookieOptions);
+        return response;
+      }
     }
 
     return NextResponse.json({ error: "We could not start your Bootstrap PM access." }, { status: 502 });

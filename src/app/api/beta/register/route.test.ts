@@ -1,5 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 
+vi.mock("server-only", () => ({}));
+
 const adminMock = vi.hoisted(() => {
   const participant = {
     id: "participant-1",
@@ -34,14 +36,7 @@ describe("beta registration endpoint", () => {
 
     expect(response.status).toBe(201);
     expect(adminMock.insert).toHaveBeenCalledWith({ full_name: "Ahmed Al-Qahtani", email: "ahmed@example.com", request_allowance: 10, status: "registered" });
-    await expect(response.json()).resolves.toEqual({ participant: {
-      id: "participant-1",
-      full_name: "Ahmed Al-Qahtani",
-      preferred_name: null,
-      email: "ahmed@example.com",
-      status: "registered",
-      request_allowance: 10,
-    }, created: true });
+    await expect(response.json()).resolves.toEqual({ email: "ahmed@example.com", created: true });
   });
 
   it("rejects incomplete registration without touching Supabase", async () => {

@@ -3,6 +3,7 @@
 import { FormEvent, ReactNode, useEffect, useState } from "react";
 
 import { authenticatedFetch } from "@/lib/supabase/auth-fetch";
+import { createClient } from "@/lib/supabase/client";
 
 type GateState = "loading" | "profile" | "ready" | "error";
 
@@ -18,9 +19,13 @@ export default function BetaProfileGate({ children }: { children: ReactNode }) {
     void (async () => {
       try {
         const response = await authenticatedFetch("/api/beta/me", { cache: "no-store" });
-        const payload = await response.json() as { participant?: unknown; isAdmin?: boolean; userEmail?: string; error?: string };
+        const payload = await response.json() as { participant?: unknown; isAdmin?: boolean; isAnonymous?: boolean; userEmail?: string; error?: string };
         if (!response.ok) throw Error(payload.error || "Beta access could not be checked.");
         if (!active) return;
+        if (payload.isAnonymous && !payload.participant && !payload.isAdmin) {
+          await createClient().auth.signOut({ scope: "local" });
+          throw Error("Your private workspace could not be opened. Please start again.");
+        }
         setEmail(payload.userEmail || "");
         setState(payload.isAdmin || payload.participant ? "ready" : "profile");
       } catch (error) {

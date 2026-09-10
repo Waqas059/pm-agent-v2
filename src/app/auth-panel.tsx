@@ -15,6 +15,7 @@ export default function AuthPanel({ triggerLabel = "Sign in", initialEmail = "",
   const [email, setEmail] = useState(initialEmail);
   const [password, setPassword] = useState("");
   const [userEmail, setUserEmail] = useState<string | null>(null);
+  const [isAnonymous, setIsAnonymous] = useState(false);
   const [message, setMessage] = useState("");
   const [isOpen, setIsOpen] = useState(openOnMount);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -82,22 +83,25 @@ export default function AuthPanel({ triggerLabel = "Sign in", initialEmail = "",
       void supabase.auth.getSession().then(({ data }) => {
         if (!isMounted) return;
         setUserEmail(data.session?.user.email ?? null);
+        setIsAnonymous(data.session?.user.is_anonymous === true);
         setStatus(data.session ? "signed_in" : "signed_out");
-        if (data.session) void authenticatedFetch("/api/admin/beta/access", { cache: "no-store" }).then(async (response) => response.ok ? await response.json() as { isAdmin?: boolean } : null).then((payload) => { if (isMounted) setIsBetaAdmin(payload?.isAdmin === true); }).catch(() => undefined);
+        if (data.session && !data.session.user.is_anonymous) void authenticatedFetch("/api/admin/beta/access", { cache: "no-store" }).then(async (response) => response.ok ? await response.json() as { isAdmin?: boolean } : null).then((payload) => { if (isMounted) setIsBetaAdmin(payload?.isAdmin === true); }).catch(() => undefined);
       });
 
       const authState = supabase.auth.onAuthStateChange((_event, session) => {
         if (!isMounted) return;
         setUserEmail(session?.user.email ?? null);
+        setIsAnonymous(session?.user.is_anonymous === true);
         setStatus(session?.user ? "signed_in" : "signed_out");
         if (!session?.user) setIsBetaAdmin(false);
-        if (session?.user) void authenticatedFetch("/api/admin/beta/access", { cache: "no-store" }).then(async (response) => response.ok ? await response.json() as { isAdmin?: boolean } : null).then((payload) => { if (isMounted) setIsBetaAdmin(payload?.isAdmin === true); }).catch(() => undefined);
+        if (session?.user && !session.user.is_anonymous) void authenticatedFetch("/api/admin/beta/access", { cache: "no-store" }).then(async (response) => response.ok ? await response.json() as { isAdmin?: boolean } : null).then((payload) => { if (isMounted) setIsBetaAdmin(payload?.isAdmin === true); }).catch(() => undefined);
       });
       subscription = authState.data.subscription;
 
       const invalidateSession = () => {
         if (!isMounted) return;
         setUserEmail(null);
+        setIsAnonymous(false);
         setIsBetaAdmin(false);
         setStatus("signed_out");
         setIsOpen(false);
@@ -201,10 +205,11 @@ export default function AuthPanel({ triggerLabel = "Sign in", initialEmail = "",
   }
 
   if (status === "not_configured") {
-    return <span className="text-xs font-medium text-[#a06b58]">Supabase configuration needed</span>;
+    return <span className="text-xs font-medium text-[#a06b58]">Secure sign-in is temporarily unavailable</span>;
   }
 
   if (status === "signed_in") {
+    if (isAnonymous) return null;
     return (
       <div className="flex items-center gap-2 sm:gap-3">
         <span className="hidden max-w-44 truncate text-xs font-medium text-[#68748a] sm:inline">{userEmail}</span>
@@ -228,7 +233,7 @@ export default function AuthPanel({ triggerLabel = "Sign in", initialEmail = "",
           <div>
             <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#5269d8]">Workspace access</p>
             <h2 id="auth-dialog-title" className="mt-2 text-lg font-semibold tracking-[-0.03em] text-[#192235]">{mode === "sign_in" ? "Sign in to continue" : "Create your account"}</h2>
-            <p className="mt-1 text-xs leading-5 text-[#68748a]">Your workspace data and workflows are protected by Supabase.</p>
+            <p className="mt-1 text-xs leading-5 text-[#68748a]">{mode === "sign_in" ? "Sign in securely to continue to Bootstrap PM." : "Create a secure account to continue."}</p>
           </div>
 
           <form className="mt-5 space-y-3" onSubmit={handleSubmit}>
