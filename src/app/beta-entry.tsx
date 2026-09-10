@@ -53,6 +53,7 @@ export default function BetaEntry({ triggerLabel = "Use Bootstrap PM" }: BetaEnt
     setIsSubmitting(true);
     setMessage("");
     let createdAnonymousSession = false;
+    let sessionAccessToken: string | undefined;
     try {
       const registrationResponse = await fetch("/api/beta/register", {
         method: "POST",
@@ -67,14 +68,17 @@ export default function BetaEntry({ triggerLabel = "Use Bootstrap PM" }: BetaEnt
       if (currentSession.session && !currentSession.session.user.is_anonymous) {
         throw Error("This workspace is already connected to a secure account.");
       }
+      sessionAccessToken = currentSession.session?.access_token;
       if (!currentSession.session) {
         const { data: anonymousSession, error: anonymousError } = await supabase.auth.signInAnonymously();
         if (anonymousError || !anonymousSession.session) throw anonymousError || Error("We could not open your workspace.");
         createdAnonymousSession = true;
+        sessionAccessToken = anonymousSession.session.access_token;
       }
 
       const response = await authenticatedFetch("/api/beta/enter", {
         method: "POST",
+        headers: sessionAccessToken ? { Authorization: `Bearer ${sessionAccessToken}` } : undefined,
       });
       const payload = await response.json() as { email?: string; created?: boolean; error?: string };
       if (!response.ok) throw Error(payload.error || "We could not start your Bootstrap PM access.");
@@ -82,8 +86,6 @@ export default function BetaEntry({ triggerLabel = "Use Bootstrap PM" }: BetaEnt
       setEmail("");
       setIsOpen(false);
       window.dispatchEvent(new Event("pm-auth-session-ready"));
-      window.history.replaceState(null, "", "#overview");
-      window.location.reload();
     } catch (error) {
       if (createdAnonymousSession) await createClient().auth.signOut({ scope: "local" }).catch(() => undefined);
       setMessage(error instanceof Error && error.message === "This workspace is already connected to a secure account."
