@@ -7,16 +7,16 @@ import { authenticatedFetch } from "@/lib/supabase/auth-fetch";
 
 type AuthMode = "sign_in" | "sign_up";
 type AuthStatus = "loading" | "signed_out" | "signed_in" | "not_configured";
-type AuthPanelProps = { triggerLabel?: string };
+type AuthPanelProps = { triggerLabel?: string; initialEmail?: string; openOnMount?: boolean };
 
-export default function AuthPanel({ triggerLabel = "Sign in" }: AuthPanelProps) {
+export default function AuthPanel({ triggerLabel = "Sign in", initialEmail = "", openOnMount = false }: AuthPanelProps) {
   const [status, setStatus] = useState<AuthStatus>("loading");
   const [mode, setMode] = useState<AuthMode>("sign_in");
-  const [email, setEmail] = useState("");
+  const [email, setEmail] = useState(initialEmail);
   const [password, setPassword] = useState("");
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const [message, setMessage] = useState("");
-  const [isOpen, setIsOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState(openOnMount);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [needsConfirmation, setNeedsConfirmation] = useState(false);
   const [authError, setAuthError] = useState(false);

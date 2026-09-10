@@ -7,13 +7,14 @@ Supabase workspace behavior, workflow contracts, or saved drafts.
 
 ## Experience boundaries
 
-- Public visitors see the product page at `/` while signed out. It explains the
-  product and routes the user into the existing auth boundary through “Use
-  Bootstrap PM”. It does not expose the beta registry, Supabase, access mode,
-  or request-reservation mechanics.
-- Signed-in users see the existing PM workspace. An admin-created participant
-  is matched automatically by normalized auth email; the PM is never asked to
-  repeat their name or email for beta registration.
+- Public visitors see the product page at `/` while signed out. “Use Bootstrap
+  PM” first opens a small Name + Email registration modal. The server creates
+  the participant with the default allowance, then the existing authentication
+  flow opens with the registration email prefilled. The public page never
+  exposes Supabase, access mode, or request-reservation mechanics.
+- Signed-in users see the existing PM workspace. The participant is matched
+  automatically by normalized auth email, promoted from `registered` to
+  `active` on product entry, and the PM is never asked to repeat their name.
 - The Super Admin portal is `/admin/beta`. Access is server-authorized by the
   signed-in email in `BETA_SUPER_ADMIN_EMAILS` and its analytics are limited to
   name, email, country, usage, engagement, feedback, continuation requests,
@@ -23,11 +24,14 @@ Supabase workspace behavior, workflow contracts, or saved drafts.
 ## Access and identity
 
 Keep `BETA_ACCESS_MODE=observe` while the final identity/access experience is
-being decided. Observe mode records approved participants without blocking
-other signed-in users. The participant record is created only by the Super
-Admin portal. The legacy `register_beta_participant` function remains in the
-historical migration for compatibility, but its execute privilege is revoked
-for public and normal authenticated roles by the additive lock migration.
+being decided. Observe mode records participants without blocking other
+signed-in users. The public registration route accepts only Name + Email and
+creates records through a server-only Supabase admin client; the browser cannot
+choose allowance, status, country, or auth identity. The route is duplicate
+safe by normalized email. The legacy `register_beta_participant` function
+remains in the historical migration for compatibility, but its execute
+privilege is revoked for public and normal authenticated roles by the additive
+lock migration.
 
 Country greeting detection is deterministic: trusted Vercel country header,
 then browser locale, then neutral copy. It does not use raw IP, GPS, an LLM, or
@@ -83,6 +87,7 @@ server-authoritative allowances in a deployed environment:
 
 - `supabase/migrations/20260909010000_beta_control_layer.sql`
 - `supabase/migrations/20260909020000_lock_beta_participant_creation.sql`
+- `supabase/migrations/20260910010000_beta_self_registration.sql`
 
 The service-role key is server-only and must never be placed in a
 `NEXT_PUBLIC_*` variable, logged, or returned to the browser.

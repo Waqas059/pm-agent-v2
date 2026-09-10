@@ -23,7 +23,7 @@ function participantMetrics(participantId: string, userId: string | null, events
     lastActive,
     active: Boolean(lastActive && Date.parse(lastActive) >= Date.now() - 7 * 24 * 60 * 60 * 1000),
     workflowProgress: workflows,
-    usefulOutput: relevant.some((event) => event.event_name === "workflow_completed" || event.event_name === "artifact_created" || event.event_name === "decision_created"),
+    usefulOutput: relevant.some((event) => event.event_name === "artifact_created" || event.event_name === "decision_created" || (event.event_name === "workflow_completed" && event.workflow_name === "align_communicate")),
     artifactsCreated: relevant.filter((event) => event.event_name === "artifact_created").length,
     evidenceCitationEngagement: relevant.filter((event) => event.event_name === "evidence_citation_inspected").length,
     contactClicked: relevant.some((event) => event.event_name === "beta_contact_clicked"),
@@ -83,14 +83,14 @@ export async function POST(request: Request) {
       const fullName = typeof values.fullName === "string" ? values.fullName.trim() : "";
       const email = typeof values.email === "string" ? values.email.trim().toLowerCase() : "";
       if (!fullName || !email.includes("@")) return NextResponse.json({ error: "Full name and email are required." }, { status: 400 });
-      const { error } = await context.admin.from("beta_participants").insert({ full_name: fullName, preferred_name: typeof values.preferredName === "string" ? values.preferredName.trim() || null : null, email, request_allowance: Number.isInteger(values.allowance) && Number(values.allowance) >= 0 ? Number(values.allowance) : betaConfig.defaultAllowance, status: "active" });
+      const { error } = await context.admin.from("beta_participants").insert({ full_name: fullName, preferred_name: typeof values.preferredName === "string" ? values.preferredName.trim() || null : null, email, request_allowance: Number.isInteger(values.allowance) && Number(values.allowance) >= 0 ? Number(values.allowance) : betaConfig.defaultAllowance, status: "registered" });
       if (error) return NextResponse.json({ error: error.code === "23505" ? "A participant with this normalized email already exists." : "The participant could not be added." }, { status: error.code === "23505" ? 409 : 502 });
     } else if (action === "update_participant") {
       const id = typeof values.id === "string" ? values.id : "";
-      const patch: { full_name?: string; preferred_name?: string | null; status?: "invited" | "active" | "paused" | "declined"; request_allowance?: number } = {};
+      const patch: { full_name?: string; preferred_name?: string | null; status?: "invited" | "registered" | "pending_access" | "active" | "paused" | "declined"; request_allowance?: number } = {};
       if (typeof values.fullName === "string" && values.fullName.trim()) patch.full_name = values.fullName.trim();
       if (typeof values.preferredName === "string") patch.preferred_name = values.preferredName.trim() || null;
-      if (["invited", "active", "paused", "declined"].includes(String(values.status))) patch.status = values.status as typeof patch.status;
+      if (["invited", "registered", "pending_access", "active", "paused", "declined"].includes(String(values.status))) patch.status = values.status as typeof patch.status;
       if (Number.isInteger(values.allowance) && Number(values.allowance) >= 0) patch.request_allowance = Number(values.allowance);
       const { error } = await context.admin.from("beta_participants").update(patch).eq("id", id);
       if (error) throw error;
