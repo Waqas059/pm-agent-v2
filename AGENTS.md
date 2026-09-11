@@ -10,6 +10,8 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 # PM Agent V2 — Codex project rules
 
+For frontend work, read `docs/CODEX_DESIGN_SKILLS.md` and apply the matching project-local design skill under `.agents/skills/`. Preserve and combine the globally installed `frontend-design` and `ui-ux-pro-max` skills as described there. Use `frontend-production-shadcn` for product workspace UI and `design-lead-gen-landing-page` for the public marketing website.
+
 ## Source of truth
 
 Read `docs/PM_AGENT_V2_MASTER_SPEC.md` before making product, architecture, or scope decisions. It supersedes the older planning documents and this repository's implementation must stay inside the currently approved task.
