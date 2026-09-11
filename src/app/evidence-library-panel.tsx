@@ -271,7 +271,7 @@ export default function EvidenceLibraryPanel() {
   }
 
   if (status === "loading") return <PanelMessage title="Loading evidence" body="Searching the connected workspace." />;
-  if (status === "not_configured") return <PanelMessage title="Connect Supabase to retrieve evidence" body="Add your project URL and publishable key to .env.local, then reload the app." />;
+  if (status === "not_configured") return <PanelMessage title="Workspace configuration required" body="Connect the workspace service in .env.local, then reload the app." />;
   if (status === "signed_out") return <PanelMessage title="Sign in to access workspace evidence" body="Your evidence library is private. The same library structure will remain here after authentication." />;
   if (status === "no_workspace") return <PanelMessage title="Create a workspace first" body="Your evidence library will appear after an authenticated workspace is created in the Product Context section." />;
   if (status === "error") return <PanelMessage title="We could not load your evidence" body={message || "Please try again."} action={<button type="button" onClick={() => void loadEvidence(activeSearch)} className="pm-button pm-button-secondary">Try again</button>} />;

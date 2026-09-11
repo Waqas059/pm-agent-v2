@@ -109,6 +109,21 @@ server-authoritative allowances in a deployed environment:
 - `supabase/migrations/20260909010000_beta_control_layer.sql`
 - `supabase/migrations/20260909020000_lock_beta_participant_creation.sql`
 - `supabase/migrations/20260910010000_beta_self_registration.sql`
+- `supabase/migrations/20260910030000_fix_beta_participant_lookup.sql`
+- `supabase/migrations/20260911010000_anonymous_beta_identity_lock.sql`
+
+The final two migrations are both required for the anonymous handoff. The
+lookup repair removes the SQL ambiguity from the participant update, and the
+identity-lock migration makes the authenticated anonymous user ID the only
+participant lookup key after `/api/beta/enter` binds the session. Do not edit
+or reorder migrations that have already been applied; apply missing migrations
+additively through the normal Supabase workflow.
+
+Production server configuration must include separate random values for
+`BETA_CLAIM_SECRET` and `BETA_RATE_LIMIT_SECRET`. The claim secret is required
+for production; local development may use the documented local fallback. The
+registration limiter is intentionally a basic instance-local guard on
+serverless infrastructure, not a distributed abuse-prevention system.
 
 The service-role key is server-only and must never be placed in a
 `NEXT_PUBLIC_*` variable, logged, or returned to the browser.

@@ -5,7 +5,7 @@ import { FormEvent, ReactNode, useEffect, useState } from "react";
 import { authenticatedFetch } from "@/lib/supabase/auth-fetch";
 import { createClient } from "@/lib/supabase/client";
 
-type GateState = "loading" | "profile" | "ready" | "error";
+type GateState = "loading" | "profile" | "ready" | "error" | "returning";
 
 export default function BetaProfileGate({ children }: { children: ReactNode }) {
   const [state, setState] = useState<GateState>("loading");
@@ -24,7 +24,8 @@ export default function BetaProfileGate({ children }: { children: ReactNode }) {
         if (!active) return;
         if (payload.isAnonymous && !payload.participant && !payload.isAdmin) {
           await createClient().auth.signOut({ scope: "local" });
-          throw Error("Your private workspace could not be opened. Please start again.");
+          if (active) setState("returning");
+          return;
         }
         setEmail(payload.userEmail || "");
         setState(payload.isAdmin || payload.participant ? "ready" : "profile");
@@ -55,6 +56,7 @@ export default function BetaProfileGate({ children }: { children: ReactNode }) {
 
   if (state === "ready") return <>{children}</>;
   if (state === "loading") return <main className="beta-profile-page" aria-busy="true"><div className="beta-profile-panel"><p className="pm-eyebrow">BOOTSTRAP PM BETA</p><h1>Checking your beta access</h1><p>One moment while we connect your account to the workspace.</p></div></main>;
+  if (state === "returning") return <main className="beta-profile-page" aria-busy="true"><div className="beta-profile-panel"><p className="pm-eyebrow">BOOTSTRAP PM BETA</p><h1>Return to beta entry</h1><p>Your workspace entry was not completed. Returning you to the public beta flow.</p></div></main>;
   if (state === "error") return <main className="beta-profile-page"><div className="beta-profile-panel"><p className="pm-eyebrow">BOOTSTRAP PM BETA</p><h1>We could not check your access</h1><p role="alert">{message}</p><button type="button" className="pm-button pm-button-primary" onClick={() => window.location.reload()}>Try again</button></div></main>;
   return <main className="beta-profile-page"><div className="beta-profile-panel"><p className="pm-eyebrow">BOOTSTRAP PM BETA</p><h1>Complete your Bootstrap PM beta profile</h1><p>We use your name to personalize the workspace. Your signed-in email stays locked to this account.</p><form className="beta-profile-form" onSubmit={completeProfile}><label htmlFor="beta-profile-name">Name<input id="beta-profile-name" name="name" autoComplete="name" required maxLength={160} value={name} onChange={(event) => setName(event.target.value)} /></label><label htmlFor="beta-profile-email">Email<input id="beta-profile-email" name="email" type="email" value={email} readOnly aria-readonly="true" /></label><button type="submit" className="pm-button pm-button-primary" disabled={submitting}>{submitting ? "Saving…" : "Continue"}</button></form>{message ? <p className="beta-profile-error" role="alert">{message}</p> : null}</div></main>;
 }

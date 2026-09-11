@@ -65,4 +65,16 @@ describe("beta entry handoff", () => {
     expect(workspaceInsert.insert).toHaveBeenCalledWith(expect.objectContaining({ owner_id: "guest-1", name: "Product workspace" }));
     expect(participantActivation.update).toHaveBeenCalledWith({ status: "active" });
   });
+
+  it("refuses to rebind a participant already linked to another guest", async () => {
+    serverMock.getAuthenticatedUser.mockResolvedValueOnce({ data: { user: { id: "guest-2", is_anonymous: true } }, error: null });
+    const participantRead = queryChain({ data: { id: "participant-1", email: "ahmed@example.com", status: "active", auth_user_id: "guest-1" }, error: null });
+    const admin = { from: vi.fn().mockReturnValueOnce(participantRead) };
+    adminMock.createAdminClient.mockReturnValueOnce(admin);
+
+    const response = await POST(new Request("http://localhost/api/beta/enter", { method: "POST" }));
+
+    expect(response.status).toBe(409);
+    expect(admin.from).toHaveBeenCalledOnce();
+  });
 });

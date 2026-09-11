@@ -4,7 +4,13 @@ import { createHmac, timingSafeEqual } from "node:crypto";
 
 export const betaClaimCookieName = "bp_beta_claim";
 const claimLifetimeSeconds = 5 * 60;
-const claimSecret = process.env.BETA_CLAIM_SECRET?.trim() || process.env.BETA_RATE_LIMIT_SECRET?.trim() || "local-beta-claim-secret";
+
+function getClaimSecret() {
+  const configured = process.env.BETA_CLAIM_SECRET?.trim();
+  if (configured) return configured;
+  if (process.env.NODE_ENV === "production") throw new Error("BETA_CLAIM_SECRET is required in production.");
+  return "local-beta-claim-secret";
+}
 
 type BetaClaim = { participantId: string; email: string; expiresAt: number };
 
@@ -13,7 +19,7 @@ function encode(value: string) {
 }
 
 function sign(value: string) {
-  return createHmac("sha256", claimSecret).update(value).digest("base64url");
+  return createHmac("sha256", getClaimSecret()).update(value).digest("base64url");
 }
 
 export function createBetaClaimToken(participantId: string, email: string) {

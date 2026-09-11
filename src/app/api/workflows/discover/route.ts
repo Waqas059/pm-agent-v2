@@ -131,7 +131,7 @@ export async function POST(request: Request) {
     if (error instanceof WorkflowUsageLimitError) return errorResponse(error.message, 429);
     const message = error instanceof Error ? error.message : "The discovery workflow could not be completed.";
     if (message.startsWith("Supabase is not configured")) {
-      return errorResponse("Connect Supabase before running a discovery workflow.", 503);
+      return errorResponse("Connect your workspace before running a discovery workflow.", 503);
     }
     if (message.startsWith("OpenAI is not configured")) {
       return errorResponse("Configure the server-side OpenAI settings before running a discovery workflow.", 503);

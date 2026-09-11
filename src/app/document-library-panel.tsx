@@ -258,7 +258,7 @@ export default function DocumentLibraryPanel() {
   }
 
   if (status === "loading") return <PanelMessage title="Loading your document library…" body="Checking the connected workspace." />;
-  if (status === "not_configured") return <PanelMessage title="Connect Supabase to manage documents" body="Add your project URL and publishable key to .env.local, then reload the app." />;
+  if (status === "not_configured") return <PanelMessage title="Workspace configuration required" body="Connect the workspace service in .env.local, then reload the app." />;
   if (status === "signed_out") return <PanelMessage title="Sign in to manage documents" body="Files are private workspace assets. An authenticated session is required before they can be read or changed." />;
   if (status === "no_workspace") return <PanelMessage title="Create a workspace first" body="Your document library will appear after an authenticated workspace is created in the Product Context section." />;
   if (status === "error") return <PanelMessage title="We could not load your documents" body={message || "Please try again."} action={<button type="button" onClick={() => void loadDocuments()} className="mt-5 rounded-lg border border-[#d8dee8] bg-white px-4 py-2.5 text-sm font-semibold text-[#526075] hover:border-[#aab8ee]">Try again</button>} />;

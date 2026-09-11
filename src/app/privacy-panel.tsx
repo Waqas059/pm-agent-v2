@@ -7,7 +7,7 @@ import { authenticatedFetch } from "@/lib/supabase/auth-fetch";
 
 const controls = [
   { label: "Credentials", detail: "Provider keys stay server-side and are not exposed through browser variables.", status: "Protected" },
-  { label: "Workspace access", detail: "Supabase authentication and workspace-scoped row-level policies protect durable records.", status: "Protected" },
+  { label: "Workspace access", detail: "Authenticated access and workspace-scoped policies protect durable records.", status: "Protected" },
   { label: "Uploaded files", detail: "Documents use private, workspace-scoped storage and member-aware access rules.", status: "Protected" },
   { label: "AI responses", detail: "Responses API calls use store:false; prompts and model output are not logged by the app.", status: "Protected" },
 ];

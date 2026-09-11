@@ -221,11 +221,11 @@ export default function ProductContextPanel() {
   }
 
   if (status === "not_configured") {
-    return <PanelMessage title="Connect Supabase to manage context" body="Add your project URL and publishable key to .env.local, then reload the app." />;
+    return <PanelMessage title="Workspace configuration required" body="Connect the workspace service in .env.local, then reload the app." />;
   }
 
   if (status === "signed_out") {
-    return <PanelMessage title="Sign in to manage product context" body="This workspace is protected by Supabase. An authenticated session is required before context can be read or changed." />;
+    return <PanelMessage title="Sign in to manage product context" body="This workspace is private. An authenticated session is required before context can be read or changed." />;
   }
 
   if (status === "no_workspace") {

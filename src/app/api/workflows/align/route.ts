@@ -91,7 +91,7 @@ export async function POST(request: Request) {
     if (error instanceof BetaUsageUnavailableError) return errorResponse(error.message, 503);
     if (error instanceof WorkflowUsageLimitError) return errorResponse(error.message, 429);
     const message = error instanceof Error ? error.message : "The communication workflow could not be completed.";
-    if (message.startsWith("Supabase is not configured")) return errorResponse("Connect Supabase before running a communication workflow.", 503);
+    if (message.startsWith("Supabase is not configured")) return errorResponse("Connect your workspace before running a communication workflow.", 503);
     if (message.startsWith("OpenAI is not configured")) return errorResponse("Configure the server-side OpenAI settings before running a communication workflow.", 503);
     if (message.startsWith("The selected context and evidence are too large")) return errorResponse(message, 422);
     return errorResponse("The communication workflow could not be completed. Review the inputs and try again.", 502);

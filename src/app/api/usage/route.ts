@@ -38,7 +38,7 @@ export async function GET() {
     return NextResponse.json({ used: count ?? 0, limit: SERVER_WORKFLOW_RUN_LIMIT, registered: false, remaining: Math.max(SERVER_WORKFLOW_RUN_LIMIT - (count ?? 0), 0) });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Workspace usage could not be read.";
-    if (message.startsWith("Supabase is not configured")) return errorResponse("Connect Supabase before reading workspace usage.", 503);
+    if (message.startsWith("Supabase is not configured")) return errorResponse("Connect your workspace before reading usage.", 503);
     return errorResponse("Workspace usage could not be read.", 502);
   }
 }
