@@ -151,18 +151,22 @@ export default function WorkspaceOverview() {
       ? { action: `Review ${stageLabels[stageForWorkflow(firstRun.workflow_name)]} output`, href: workflowHref(firstRun.workflow_name), detail: "Carry the reviewed work into the next stage." }
       : { action: "Start with a focused product question", href: "#discover", detail: "Turn the question into a source-backed investigation." };
 
+  const isLoading = !data && message.startsWith("Loading");
+  const hasUnavailableState = !data && !isLoading;
+  const needsWorkspace = message.startsWith("Create your workspace");
+
   return (
     <section className="pm-home" aria-label="Bootstrap PM home workspace">
-      <header className="pm-home-header"><div><p className="pm-eyebrow">WORKSPACE</p><h1>{data?.greeting ?? "Welcome"}{data?.greetingName ? `, ${data.greetingName}` : ""}</h1><p className="pm-page-description">Your focused place to move a product question toward a decision.</p></div></header>
+      <header className="pm-home-header"><div><p className="pm-eyebrow">{data?.name || "PRODUCT WORKSPACE"}</p><h1>{data?.greeting ?? "Welcome"}{data?.greetingName ? `, ${data.greetingName}` : ""}</h1><p className="pm-page-description">Your focused place to move a product question toward a decision.</p></div><div className="pm-home-header-note"><span className="pm-home-live-dot" aria-hidden="true" />Private workspace<br /><strong>Context stays with the work.</strong></div></header>
 
       <section className="pm-ask-surface" aria-labelledby="pm-ask-heading">
         <div><p className="pm-eyebrow">START HERE</p><h2 id="pm-ask-heading">Ask Bootstrap PM</h2></div>
         <PmEntryPanel compact />
       </section>
 
-      {message && <p role="status" className="pm-status-message">{message}</p>}
+      {message && !hasUnavailableState && <p role="status" className="pm-status-message">{message}</p>}
 
-      {data === null && message.startsWith("Loading") ? <div className="pm-loading-state" role="status" aria-label="Loading workspace summary"><span className="pm-loading-line pm-loading-line-wide" /><span className="pm-loading-line" /><span className="pm-loading-line pm-loading-line-short" /><p>Loading your work queue and review items…</p></div> : <>
+      {isLoading ? <div className="pm-loading-state" role="status" aria-label="Loading workspace summary"><span className="pm-loading-line pm-loading-line-wide" /><span className="pm-loading-line" /><span className="pm-loading-line pm-loading-line-short" /><p>Loading your work queue and review items…</p></div> : hasUnavailableState ? <section className="pm-home-unavailable" role={needsWorkspace ? "status" : "alert"}><div><p className="pm-eyebrow">{needsWorkspace ? "READY WHEN YOU ARE" : "WORKSPACE UNAVAILABLE"}</p><h2>{needsWorkspace ? "Start your product workspace." : "We couldn’t read your workspace summary."}</h2><p>{message}</p></div><div className="pm-home-unavailable-actions"><button type="button" className="pm-button pm-button-secondary" onClick={() => { setMessage("Loading your workspace…"); setRevision((value) => value + 1); }}>Try again</button><a className="pm-button pm-button-ghost" href="#context">Open product context <UiIcon name="arrow-up-right" size={14} /></a></div></section> : <div className="pm-home-grid"><div className="pm-home-main">
       <section className="pm-home-section" aria-labelledby="product-work-heading">
         <div className="pm-section-header"><div><p className="pm-eyebrow">WORK QUEUE</p><h2 id="product-work-heading">Your product work</h2></div><a href="#activity" className="pm-inline-link">View all <UiIcon name="arrow-up-right" size={13} /></a></div>
         {data?.runs.length ? <div className="pm-work-list">{data.runs.slice(0, 3).map((run) => { const stage = stageForWorkflow(run.workflow_name); return <a className="pm-work-row" href={workflowHref(run.workflow_name)} key={run.id}><span className="pm-work-row-icon"><UiIcon name={stageIcons[stage]} size={17} /></span><span className="pm-work-row-copy"><strong>{runQuestion(run.input) || workflowLabel(run.workflow_name)}</strong><small>{workflowLabel(run.workflow_name)} · Updated {dateLabel(run.updated_at)}</small></span><StatusBadge label={stageLabels[stage]} tone={stage === "align" ? "violet" : stage === "define" ? "blue" : "neutral"} /><UiIcon name="chevron-right" size={15} /></a>; })}</div> : <CompactEmptyState title="No active product work yet" body="Start with the product question you need to answer." icon="compass" action={<a className="pm-button pm-button-primary" href="#discover">Start product work <UiIcon name="arrow-up-right" size={14} /></a>} />}
@@ -174,7 +178,10 @@ export default function WorkspaceOverview() {
       </section>
 
       <NextBestAction action={nextAction.action} href={nextAction.href}>{nextAction.detail}</NextBestAction>
-      </>}
+      </div><aside className="pm-home-rail" aria-label="Workspace readiness">
+        <section className="pm-home-rail-card" aria-labelledby="readiness-heading"><div className="pm-section-header"><div><p className="pm-eyebrow">READINESS</p><h2 id="readiness-heading">Your foundation</h2></div><UiIcon name="layers" size={18} /></div><ul className="pm-readiness-list"><li><a href="#context"><span><UiIcon name="layers" size={15} /><strong>Product context</strong></span><b>{data?.context ?? 0}</b><small>{data?.context ? "facts saved" : "Add the product basics"}</small></a></li><li><a href="#documents"><span><UiIcon name="files" size={15} /><strong>Documents</strong></span><b>{data?.documents ?? 0}</b><small>{data?.documents ? "files available" : "Add a source file"}</small></a></li><li><a href="#evidence"><span><UiIcon name="scan" size={15} /><strong>Evidence</strong></span><b>{data?.evidence ?? 0}</b><small>{data?.evidence ? "items traceable" : "Record what you know"}</small></a></li></ul></section>
+        <section className="pm-home-rail-card pm-home-evidence-card" aria-labelledby="evidence-preview-heading"><div className="pm-section-header"><div><p className="pm-eyebrow">RECENT KNOWLEDGE</p><h2 id="evidence-preview-heading">Latest evidence</h2></div><a href="#evidence" className="pm-inline-link" aria-label="Open evidence library"><UiIcon name="arrow-up-right" size={14} /></a></div>{data?.evidenceItems.length ? <ul className="pm-evidence-preview-list">{data.evidenceItems.map((item) => <li key={item.id}><span className="pm-evidence-kind">{item.kind}</span><strong>{item.title}</strong><small>{item.source_label} · {dateLabel(item.created_at)}</small></li>)}</ul> : <CompactEmptyState title="No evidence saved yet" body="Evidence gives Discover something concrete to work with." action={<a className="pm-button pm-button-secondary" href="#evidence">Add evidence <UiIcon name="arrow-up-right" size={14} /></a>} />}</section>
+      </aside></div>}
     </section>
   );
 }
